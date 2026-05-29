@@ -31,6 +31,8 @@ const parsedAt = ref("");
  * Splits the input text from the textarea into a list of cleaned words.
  *
  * - Trims leading and trailing whitespace from the text.
+ * - Inserts a word break after each em dash (—), keeping the dash attached to the preceding word
+ *   (e.g. "adulthood—ages" becomes "adulthood—" and "ages").
  * - Replaces all consecutive whitespace characters (spaces, tabs, newlines) within the text with a single space,
  *   ensuring words are separated by only one space.
  *     - Uses the regex /\s+/g, which matches every sequence of one or more whitespace characters (including:
@@ -45,6 +47,9 @@ const parsedAt = ref("");
 function parse() {
     // Trim whitespace from both ends of the input text
     let cleanText = props.text.trim();
+
+    // Split at em dashes while keeping the dash on the preceding word
+    cleanText = cleanText.replace(/—/g, "— ");
 
     // Replace any sequence of whitespace characters (spaces, tabs, newlines etc.) with a single space.
     // Regex explanation:
@@ -66,9 +71,11 @@ function parse() {
         hour12: true
     });
 
+    // if the text is not empty, show the parsed words
     if (wordList.value[0] != "") {
         didParse.value = true;
     }
+    // if the text is empty, hide the parsed words
     else {
         didParse.value = false;
     }
