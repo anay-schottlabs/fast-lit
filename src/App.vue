@@ -9,7 +9,7 @@ import TextBox from './components/TextBox.vue';
             <h1>Speed Reader</h1>
         </div>
         <div class="row flex-grow-1">
-            <div class="col border border-2 border-black">
+            <div class="col border border-2 border-black p-1">
                 <Reader />
             </div>
             <div class="col border border-2 border-black p-1">

@@ -1,16 +1,17 @@
 <script setup></script>
 
 <template>
-    <div class="mb-3 h-100">
-        <textarea
-            class="form-control h-100"
-            placeholder="Paste some text to start reading..."
-        ></textarea>
-    </div>
+    <!-- .form-control gives textarea the full width -->
+    <!-- .h-100 gives textarea the full height -->
+    <textarea
+        class="form-control h-100"
+        placeholder="Paste some text to start reading..."
+    ></textarea>
 </template>
 
 <style scoped>
-    textarea {
-        resize: none;
-    }
+/* prevents textarea from being rescaled */
+textarea {
+    resize: none;
+}
 </style>
