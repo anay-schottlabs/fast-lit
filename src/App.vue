@@ -13,8 +13,8 @@ function textUpdate(newText) {
 
 <template>
     <div class="d-flex flex-column vh-100 p-3">
-        <div class="row">
-            <h1>Speed Reader</h1>
+        <div class="row text-center">
+            <p class="fs-1 fw-bold">Speed Reader</p>
         </div>
         <div class="row flex-grow-1">
             <div class="col p-1">

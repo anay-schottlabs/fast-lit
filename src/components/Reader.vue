@@ -10,6 +10,9 @@ const props = defineProps({
 // starts out empty, will be filled up by the parse method
 const wordList = ref([]);
 
+// the index of the current word in the word list
+const wordIndex = ref(0);
+
 // enum to manage reader states
 const PlayState = Object.freeze({
     STOPPED: "stopped",
@@ -17,7 +20,12 @@ const PlayState = Object.freeze({
     PLAYING: "playing"
 });
 
+const didParse = ref(false);
+
 const playState = ref(PlayState.STOPPED);
+
+// time text was last parsed at
+const parsedAt = ref("");
 
 /**
  * Splits the input text from the textarea into a list of cleaned words.
@@ -50,6 +58,20 @@ function parse() {
 
     // Output resulting word list to console for verification/debugging
     console.log(wordList.value);
+
+    // store the time that the text was parsed at
+    parsedAt.value = new Date().toLocaleTimeString("en-US", {
+        hour: "numeric",
+        minute: "2-digit",
+        hour12: true
+    });
+
+    if (wordList.value[0] != "") {
+        didParse.value = true;
+    }
+    else {
+        didParse.value = false;
+    }
 }
 
 function start() {
@@ -67,26 +89,78 @@ function end() {
 
 <template>
     <div class="d-flex flex-column">
+
+        <!-- Parse Button Section -->
         <div class="d-grid mb-1">
-            <button class="btn btn-secondary" @click="parse">Parse Text</button>
+            <!-- Button to parse the raw text input -->
+            <button 
+                class="btn btn-secondary" 
+                @click="parse"
+            >
+                Parse Text
+            </button>
         </div>
-        <div class="btn-group">
+
+        <!-- Reader Controls Section -->
+        <div v-if="didParse" class="btn-group mb-5">
+            <!-- Show "Start/Continue Reader" if NOT currently playing -->
             <button
                 class="btn btn-primary"
                 v-if="playState != PlayState.PLAYING"
                 @click="start"
-            >{{ playState == PlayState.PAUSED ? "Continue Reader" : "Start Reader" }}</button>
+            >
+                {{ playState == PlayState.PAUSED ? "Continue Reader" : "Start Reader" }}
+            </button>
+
+            <!-- Show "Pause Reader" button ONLY if currently playing -->
             <button
                 class="btn btn-warning"
                 v-if="playState == PlayState.PLAYING"
                 @click="pause"
-            >Pause Reader</button>
+            >
+                Pause Reader
+            </button>
+
+            <!-- Show "End Reader" unless already stopped -->
             <button
                 class="btn btn-danger"
                 v-if="playState != PlayState.STOPPED"
                 @click="end"
-            >End Reader</button>
+            >
+                End Reader
+            </button>
         </div>
+
+        <!-- Display parsed text info and the current word only after parsing -->
+        <div v-if="didParse" class="mt-5">
+            <!-- Show time at which text was parsed -->
+            <p class="text-center fs-6 fw-light">
+                Parsed at {{ parsedAt }}
+            </p>
+            <!-- Show the word currently being displayed by the reader -->
+            <p class="text-center fs-1 fw-bold">
+                {{ wordList[wordIndex] }}
+            </p>
+            <!-- Controls to manually move through word list -->
+            <div class="row">
+                <div class="col d-grid">
+                    <button
+                        class="btn btn-warning"
+                        :disabled="wordIndex == 0"
+                        @click="wordIndex--"
+                    >Previous</button>
+                </div>
+                <div class="col"></div>
+                <div class="col d-grid">
+                    <button
+                        class="btn btn-warning"
+                        :disabled="wordIndex == wordList.length - 1"
+                        @click="wordIndex++"
+                    >Next</button>
+                </div>
+            </div>
+        </div>
+
     </div>
 </template>
 
