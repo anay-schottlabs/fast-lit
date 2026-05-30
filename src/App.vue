@@ -5,7 +5,7 @@ import Reader from './components/Reader.vue';
 
 // form values
 const formText = ref(
-  "Welcome to Speed Reader!" +
+  "Welcome to Speed Lit!" +
   " This app uses RSVP, or Rapid Serial Visual Presentation," +
   " a technique that puts one word on the screen at a time." +
   " This means you can focus on the words instead of having to move your eyes around," +
@@ -50,7 +50,7 @@ function cancelSettings() {
         <div class="row text-center">
             <div class="d-flex justify-content-center align-items-center">
                 <div class="w-100 d-flex align-items-center justify-content-center position-relative">
-                    <p class="fs-1 fw-bold m-0 text-center w-100">Speed Reader</p>
+                    <p class="fs-1 fw-bold m-0 text-center w-100">Speed Lit</p>
                     <i
                         class="ms-3 bi bi-gear fs-4 align-middle btn position-absolute"
                         style="right: 0; vertical-align: middle;"
