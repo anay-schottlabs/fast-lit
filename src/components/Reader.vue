@@ -126,10 +126,64 @@ watch(() => props.text, parse, { immediate: true });
 // the pause() and end() methods clear the interval using the stored ID
 var readerLoop;
 
+const DelayState = Object.freeze({
+    NONE: "none",
+    SHORT_PAUSE: "shortPause",
+    MEDIUM_PAUSE: "mediumPause",
+    LONG_PAUSE: "longPause"
+});
+
+const delayState = ref(DelayState.NONE);
+
 function start() {
     playState.value = PlayState.PLAYING;
     readerLoop = setInterval(() => {
-        wordIndex.value++;
+        // Punctuation pauses keep the current word on screen for extra ticks before advancing.
+        // Periods use three extra ticks (LONG → MEDIUM → SHORT); commas, em dashes, semicolons, and colons use one (SHORT).
+
+        if (delayState.value == DelayState.LONG_PAUSE) {
+            // First extra tick after a period — stay on the same word.
+            delayState.value = DelayState.MEDIUM_PAUSE;
+            return;
+        }
+        else if (delayState.value == DelayState.MEDIUM_PAUSE) {
+            // Second extra tick after a period — stay on the same word.
+            delayState.value = DelayState.SHORT_PAUSE;
+            return;
+        }
+        else if (delayState.value == DelayState.SHORT_PAUSE) {
+            // Pause finished — resume normal reading and move to the next word.
+            delayState.value = DelayState.NONE;
+            if (wordIndex.value >= wordList.value.length - 1) {
+                clearInterval(readerLoop);
+                playState.value = PlayState.STOPPED;
+                return;
+            }
+            wordIndex.value++;
+            return;
+        }
+        else if (delayState.value == DelayState.NONE) {
+            const lastChar = word.value[word.value.length - 1];
+
+            if (lastChar == ".") {
+                // Sentence end — start a long pause without advancing yet.
+                delayState.value = DelayState.LONG_PAUSE;
+                return;
+            }
+            else if ([",", "—", ";", ":"].includes(lastChar)) {
+                // Clause break — start a short pause without advancing yet.
+                delayState.value = DelayState.SHORT_PAUSE;
+                return;
+            }
+
+            // No trailing punctuation — advance immediately, or stop at the last word.
+            if (wordIndex.value >= wordList.value.length - 1) {
+                clearInterval(readerLoop);
+                playState.value = PlayState.STOPPED;
+                return;
+            }
+            wordIndex.value++;
+        }
     }, interval.value);
 }
 
@@ -142,6 +196,7 @@ function end() {
     playState.value = PlayState.STOPPED;
     clearInterval(readerLoop);
     wordIndex.value = 0;
+    delayState.value = DelayState.NONE;
 }
 </script>
 
