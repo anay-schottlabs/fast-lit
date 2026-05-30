@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, computed, watch } from 'vue';
 
 // text in the textarea is passed down from App.vue
 const props = defineProps({
@@ -12,6 +12,29 @@ const wordList = ref([]);
 
 // the index of the current word in the word list
 const wordIndex = ref(0);
+
+const wpm = ref(60);
+const interval = computed(() => {
+    // This computation determines the delay (in milliseconds) between showing each word,
+    // based on the current words per minute (wpm) setting.
+    //
+    // Explanation:
+    // - 60: There are 60 seconds in a minute.
+    // - wpm / 60: Converts words per minute to words per second.
+    // - 1000: There are 1000 milliseconds in one second.
+    //
+    // Steps:
+    // 1. Calculate how many words are shown per second (words per second = wpm / 60).
+    // 2. To determine the interval between words, take the length of one second (1000 ms)
+    //    and divide it by the number of words displayed per second.
+    //    This results in the number of milliseconds to wait between displaying each word.
+    //
+    // For example, at 120 wpm:
+    //   words per second = 120 / 60 = 2
+    //   interval = 1000 / 2 = 500 ms
+    //   (each word will be shown for 500 milliseconds)
+    return Math.floor(1000 / (wpm.value / 60));
+});
 
 // enum to manage reader states
 const PlayState = Object.freeze({
@@ -42,7 +65,7 @@ const parsedAt = ref("");
  * - The resulting wordList will be used for sequential display during the speed reading session.
  * - Logs the parsed word list to the console for debugging.
  *
- * This method is intended to be called when the user clicks "Parse Text".
+ * Called automatically whenever the textarea text changes.
  */
 function parse() {
     // Trim whitespace from both ends of the input text
@@ -60,9 +83,7 @@ function parse() {
 
     // Split the resulting string at each single space to create an array of words
     wordList.value = cleanText.split(" ");
-
-    // Output resulting word list to console for verification/debugging
-    console.log(wordList.value);
+    wordIndex.value = 0;
 
     // store the time that the text was parsed at
     parsedAt.value = new Date().toLocaleTimeString("en-US", {
@@ -81,6 +102,8 @@ function parse() {
     }
 }
 
+watch(() => props.text, parse, { immediate: true });
+
 function start() {
     playState.value = PlayState.PLAYING;
 }
@@ -96,17 +119,6 @@ function end() {
 
 <template>
     <div class="d-flex flex-column">
-
-        <!-- Parse Button Section -->
-        <div class="d-grid mb-1">
-            <!-- Button to parse the raw text input -->
-            <button 
-                class="btn btn-secondary" 
-                @click="parse"
-            >
-                Parse Text
-            </button>
-        </div>
 
         <!-- Reader Controls Section -->
         <div v-if="didParse" class="btn-group mb-5">
@@ -140,6 +152,7 @@ function end() {
 
         <!-- Display parsed text info and the current word only after parsing -->
         <div v-if="didParse" class="mt-5">
+            <hr>
             <!-- Show time at which text was parsed -->
             <p class="text-center fs-6 fw-light">
                 Parsed at {{ parsedAt }}
@@ -166,6 +179,21 @@ function end() {
                     >Next</button>
                 </div>
             </div>
+            <hr>
+            <input
+                type="range"
+                class="form-range"
+                min="60"
+                max="600"
+                step="10"
+                v-model.value="wpm"
+            >
+            <p
+                class="text-center fs-6 fw-light"
+            >Speed (words per minute): {{ wpm }}</p>
+            <p
+                class="text-center fs-6 fw-light"
+            >Estimated reading time (minutes): {{ wordList.length * interval / 1000 }}</p>
         </div>
 
     </div>
