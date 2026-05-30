@@ -169,15 +169,18 @@ function end() {
             <p class="text-center fs-6 fw-light">
                 Parsed at {{ parsedAt }}
             </p>
-            <!-- Show the word currently being displayed by the reader -->
+            <!-- Display the current word with its middle character highlighted in red -->
             <p class="text-center fs-1 fw-bold">
                 {{
+                    // Show the first half (before the middle character)
                     word.slice(0, Math.floor(word.length / 2))
                 }}<span class="text-danger">
                     {{
+                        // Highlight the middle character
                         word[Math.floor(word.length / 2)] 
                     }}
                 </span>{{
+                    // Show the second half (after the middle character)
                     word.slice(Math.floor(word.length / 2) + 1, word.length)
                 }}
             </p>
