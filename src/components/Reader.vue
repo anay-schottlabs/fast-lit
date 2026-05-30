@@ -278,15 +278,17 @@ function end() {
                 <div class="progress" style="height: 100%;">
                     <div
                         v-if="wordIndex == 0"
-                        class="progress-bar progress-bar-striped"
+                        class="progress-bar progress-bar-striped no-transition"
                         style="width: 0%"
                     ></div>
                     <div
                         v-else
-                        class="progress-bar progress-bar-striped"
-                        :style="{ width: `${(wordIndex + 1) / wordList.length * 100}%`, transition: 'width 0.2s' }"
+                        class="progress-bar progress-bar-striped no-transition"
+                        :class="playState == PlayState.PLAYING ? 'progress-bar-animated' : ''"
+                        :style="{ width: `${(wordIndex + 1) / wordList.length * 100}%` }"
                     ></div>
                 </div>
+
                 <!-- Draggable slider overlay for seeking -->
                 <input
                     type="range"
@@ -331,4 +333,8 @@ function end() {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+.no-transition {
+    transition: none !important;
+}
+</style>
