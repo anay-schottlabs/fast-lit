@@ -249,6 +249,7 @@ function end() {
   
             <!-- Controls to manually move through word list -->
             <div class="row" v-if="playState != PlayState.PLAYING">
+                <!-- button to move to previous word -->
                 <div class="col d-grid">
                     <button
                         class="btn btn-warning"
@@ -256,7 +257,9 @@ function end() {
                         @click="wordIndex--"
                     >Previous</button>
                 </div>
+                <!-- spacer -->
                 <div class="col"></div>
+                <!-- button to move to next word -->
                 <div class="col d-grid">
                     <button
                         class="btn btn-warning"
@@ -265,7 +268,49 @@ function end() {
                     >Next</button>
                 </div>
             </div>
+
+
             <hr>
+
+            <!-- progress bar for visual representation of reading progress -->
+            <div class="my-5" style="position: relative; height: 30px;">
+                <!-- Visual progress bar background -->
+                <div class="progress" style="height: 100%;">
+                    <div
+                        v-if="wordIndex == 0"
+                        class="progress-bar progress-bar-striped"
+                        style="width: 0%"
+                    ></div>
+                    <div
+                        v-else
+                        class="progress-bar progress-bar-striped"
+                        :style="{ width: `${(wordIndex + 1) / wordList.length * 100}%`, transition: 'width 0.2s' }"
+                    ></div>
+                </div>
+                <!-- Draggable slider overlay for seeking -->
+                <input
+                    type="range"
+                    class="form-range"
+                    style="
+                        position: absolute;
+                        top: 0;
+                        left: 0;
+                        width: 100%;
+                        height: 100%;
+                        opacity: 0;
+                        cursor: pointer;
+                        margin: 0;
+                        z-index: 2;"
+                    min="0"
+                    :max="wordList.length > 0 ? wordList.length - 1 : 0"
+                    step="1"
+                    v-model.number="wordIndex"
+                    :disabled="playState == PlayState.PLAYING"
+                    aria-label="Seek Progress"
+                >
+            </div>
+
+            <!-- words per minute slider -->
             <input
                 type="range"
                 class="form-range"
