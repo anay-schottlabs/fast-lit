@@ -104,16 +104,24 @@ function parse() {
 
 watch(() => props.text, parse, { immediate: true });
 
+var readerLoop;
+
 function start() {
     playState.value = PlayState.PLAYING;
+    readerLoop = setInterval(() => {
+        wordIndex.value++;
+    }, interval.value);
 }
 
 function pause() {
     playState.value = PlayState.PAUSED;
+    clearInterval(readerLoop);
 }
 
 function end() {
     playState.value = PlayState.STOPPED;
+    clearInterval(readerLoop);
+    wordIndex.value = 0;
 }
 </script>
 
@@ -162,7 +170,7 @@ function end() {
                 {{ wordList[wordIndex] }}
             </p>
             <!-- Controls to manually move through word list -->
-            <div class="row">
+            <div class="row" v-if="playState != PlayState.PLAYING">
                 <div class="col d-grid">
                     <button
                         class="btn btn-warning"
@@ -187,6 +195,7 @@ function end() {
                 max="600"
                 step="10"
                 v-model.value="wpm"
+                :disabled="playState == PlayState.PLAYING"
             >
             <p
                 class="text-center fs-6 fw-light"
