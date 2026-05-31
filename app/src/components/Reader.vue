@@ -153,8 +153,6 @@ function start() {
                 delayState.value = DelayState.SHORT_PAUSE;
                 return;
             }
-       
-       
 
             // No trailing punctuation — advance immediately, or stop at the last word.
             if (wordIndex.value >= wordList.value.length - 1) {
