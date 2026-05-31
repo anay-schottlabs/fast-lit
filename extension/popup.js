@@ -1,10 +1,10 @@
-var html;
+var htmlString;
 
 const getDataButton = document.querySelector("#getData");
 const injectDataButton = document.querySelector("#injectData");
 
 getDataButton.addEventListener("click", getPageData);
-injectDataButton.addEventListener("click", injectDataToFastLib);
+injectDataButton.addEventListener("click", injectDataToFastLit);
 
 async function getPageData() {
     const [tab] = await chrome.tabs.query({
@@ -17,11 +17,13 @@ async function getPageData() {
         func: () => document.documentElement.outerHTML
     });
 
-    html = results[0].result;
-    console.log(html);
+    htmlString = results[0].result;
+
+    console.log("Grabbed HTML from page:");
+    console.log(htmlString);
 }
 
-async function injectDataToFastLib() {
+async function injectDataToFastLit() {
     const [tab] = await chrome.tabs.query({
         active: true,
         currentWindow: true
@@ -35,6 +37,6 @@ async function injectDataToFastLib() {
                 window.loadFromGrabber(htmlString)
             }
         },
-        args: [html]
+        args: ["test HTML"]
     });
 }

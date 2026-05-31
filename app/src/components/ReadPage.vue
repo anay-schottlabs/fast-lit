@@ -44,7 +44,7 @@ function cancelSettings() {
 }
 
 function loadFromGrabber(htmlString) {
-    console.log("this method was called");
+    console.log("Received data from extension (Fast Lit Grabber):")
     console.log(htmlString);
 }
 
