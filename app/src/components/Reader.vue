@@ -130,18 +130,47 @@ function start() {
             const lastChar = word.value[word.value.length - 1];
 
             const shortPauseChars = [
-                ",", "—", ";", ":", 
-                ",'", ",\"", // comma followed by single or double quote
-                "—'", "—\"",
-                ";'", ";\"",
-                ":'", ":\""
+                // single short-pause punctuation
+                ",",      // comma
+                "—",      // em dash
+                ";",      // semicolon
+                ":",      // colon
+
+                // punctuation followed by closing parenthesis
+                ",)",     // comma before closing parenthesis
+                ";)",     // semicolon before closing parenthesis
+                ":)",     // colon before closing parenthesis
+
+                // punctuation followed by single or double quote
+                ",'",     // comma followed by single quote
+                ",\"",    // comma followed by double quote
+                "—'",     // em dash followed by single quote
+                "—\"",    // em dash followed by double quote
+                ";'",     // semicolon followed by single quote
+                ";\"",    // semicolon followed by double quote
+                ":'",     // colon followed by single quote
+                ":\"",    // colon followed by double quote
             ];
             const longPauseChars = [
-                ".", "!", "?", 
-                ".'", ".\"", // period followed by single or double quote
-                "!'", "!\"",
-                "?'", "?\""
+                // single long-pause punctuation
+                ".",      // period
+                "!",      // exclamation mark
+                "?",      // question mark
+
+                // punctuation followed by closing parenthesis
+                ".)",     // period before closing parenthesis
+                "!)",     // exclamation mark before closing parenthesis
+                "?)",     // question mark before closing parenthesis
+
+                // punctuation followed by single or double quote
+                ".'",     // period followed by single quote
+                ".\"",    // period followed by double quote
+                "!'",     // exclamation mark followed by single quote
+                "!\"",    // exclamation mark followed by double quote
+                "?'",     // question mark followed by single quote
+                "?\"",    // question mark followed by double quote
             ];
+       
        
             if (longPauseChars.includes(lastChar)) {
                 // Sentence end — start a long pause without advancing yet.
