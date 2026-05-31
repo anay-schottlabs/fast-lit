@@ -57,7 +57,52 @@ function loadFromGrabber(html) {
         const domParser = new DOMParser();
         const doc = domParser.parseFromString(html, "text/html");
         const article = new Readability(doc).parse();
-        grabberExtractedText.value = article.textContent;
+
+        if (!article || !article.content) {
+            grabberExtractedText.value = "";
+            return;
+        }
+
+        // Readability gives us clean article HTML in .content.
+        // .textContent on that HTML glues block elements together with no space
+        // (e.g. "sentence.This" from two <p> tags), which breaks word splitting
+        // in the reader. Instead, pull text from each block element separately
+        // and join them with blank lines — Reader.parse() collapses that to spaces.
+
+        const articleDoc = domParser.parseFromString(article.content, "text/html");
+
+        const blockTagNames = [
+            "p", "h1", "h2", "h3", "h4", "h5", "h6",
+            "li", "blockquote", "figcaption"
+        ];
+        // Compose a CSS selector that matches all the HTML block elements representing "paragraphs" or standalone units of text content in an article
+        // This makes a selector string like "p, h1, h2, h3, h4, h5, h6, li, blockquote, figcaption"
+        const blockSelector = blockTagNames.join(", ");
+
+        // Use querySelectorAll to get all elements matching those block-level tags from the parsed Readability article HTML
+        // This list will typically include all paragraphs, headings, blockquotes, list items, and captions in article order
+        const blockElements = articleDoc.body.querySelectorAll(blockSelector);
+
+        // Prepare an array to collect the visible text from each block, respecting internal structure like line breaks within a block
+        const textParts = [];
+
+        for (const block of blockElements) {
+            // Use innerText (not textContent!) so that explicit line breaks (such as <br> tags inside a paragraph) are preserved as actual line breaks.
+            // textContent collapses everything and removes formatting.
+            // Example: <p>Hello<br>world</p> -> innerText: "Hello\nworld", textContent: "Helloworld"
+            const blockText = block.innerText.trim();
+
+            // Only include the block if there's real content (ignore empty blocks).
+            if (blockText.length > 0) {
+                textParts.push(blockText);
+            }
+        }
+
+        // Join all blocks with two newlines ("\n\n") separating them to simulate paragraph breaks.
+        // This gives the main Reader robust, space-separated text (Reader.parse() will further collapse multiple breaks to single spaces/paragraphs).
+        // The result preserves the original separation between paragraphs, headings, and similar units from the article.
+        grabberExtractedText.value = textParts.join("\n\n");
+   
     }
 }
 window.loadFromGrabber = loadFromGrabber;
