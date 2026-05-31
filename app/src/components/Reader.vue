@@ -129,17 +129,32 @@ function start() {
         else if (delayState.value == DelayState.NONE) {
             const lastChar = word.value[word.value.length - 1];
 
-            if ([".", "!", "?"].includes(lastChar)) {
+            const shortPauseChars = [
+                ",", "—", ";", ":", 
+                ",'", ",\"", // comma followed by single or double quote
+                "—'", "—\"",
+                ";'", ";\"",
+                ":'", ":\""
+            ];
+            const longPauseChars = [
+                ".", "!", "?", 
+                ".'", ".\"", // period followed by single or double quote
+                "!'", "!\"",
+                "?'", "?\""
+            ];
        
+            if (longPauseChars.includes(lastChar)) {
                 // Sentence end — start a long pause without advancing yet.
                 delayState.value = DelayState.LONG_PAUSE;
                 return;
             }
-            else if ([",", "—", ";", ":"].includes(lastChar)) {
+            else if (shortPauseChars.includes(lastChar)) {
                 // Clause break — start a short pause without advancing yet.
                 delayState.value = DelayState.SHORT_PAUSE;
                 return;
             }
+       
+       
 
             // No trailing punctuation — advance immediately, or stop at the last word.
             if (wordIndex.value >= wordList.value.length - 1) {
