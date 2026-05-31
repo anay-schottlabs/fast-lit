@@ -13,7 +13,6 @@ var toast;
 onMounted(() => {
     toastElement = document.querySelector("#toast");
     toast = Toast.getOrCreateInstance(toastElement);
-    triggerToast("hello world");
 });
 
 function triggerToast(message) {
@@ -55,15 +54,19 @@ const formWpm = ref(300);
 const text = ref(formText.value);
 const wpm = ref(formWpm.value);
 
-function updateSettings() {
+function updateSettings(showMessage=true) {
     text.value = formText.value;
     wpm.value = formWpm.value;
+    if (showMessage) {
+        triggerToast("Updated, settings changed");
+    }
 }
 
 function cancelSettings() {
     formText.value = text.value;
     formWpm.value = wpm.value;
     grabberExtractedText.value = "";
+    triggerToast("Canceled, did not update settings");
 }
 
 // handling grabber extension
@@ -140,7 +143,7 @@ onMounted(() => {
 function openGrabber() {
     settingsModal.hide();
     grabberModal.show();
-    updateSettings();
+    updateSettings(false);
     grabberModalActive.value = true;
 }
 
@@ -149,6 +152,7 @@ function updateGrab() {
     settingsModal.show();
     grabberModalActive.value = false;
     formText.value = grabberExtractedText.value;
+    triggerToast("Grabbed article, placing in settings");
 }
 
 function cancelGrab() {
@@ -156,6 +160,7 @@ function cancelGrab() {
     settingsModal.show();
     grabberModalActive.value = false;
     grabberExtractedText.value = "";
+    triggerToast("Canceled grab, returning to settings");
 }
 </script>
 
@@ -301,7 +306,12 @@ function cancelGrab() {
         <div id="toast" class="toast" role="alert">
             <div class="d-flex">
                 <div class="toast-body">{{ toastMessage }}</div>
-                <button class="btn-close align-center" data-bs-dismiss="toast"></button>
+                <button
+                    class="btn-close me-2 align-self-center"
+                    style="margin-left: auto; margin-right: 0.1rem;"
+                    data-bs-dismiss="toast"
+                ></button>
+          
             </div>
         </div>
     </div>
