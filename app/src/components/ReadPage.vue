@@ -1,9 +1,25 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, onMounted } from 'vue';
 import { Readability } from '@mozilla/readability';
+import { Toast, Modal } from 'bootstrap';
 
 import Reader from './Reader.vue';
 import LinedHeader from './LinedHeader.vue';
+
+const toastMessage = ref("");
+var toastElement;
+var toast;
+
+onMounted(() => {
+    toastElement = document.querySelector("#toast");
+    toast = Toast.getOrCreateInstance(toastElement);
+    triggerToast("hello world");
+});
+
+function triggerToast(message) {
+    toastMessage.value = message;
+    toast.show();
+}
 
 // form values
 const formText = ref(
@@ -47,6 +63,7 @@ function updateSettings() {
 function cancelSettings() {
     formText.value = text.value;
     formWpm.value = wpm.value;
+    grabberExtractedText.value = "";
 }
 
 // handling grabber extension
@@ -106,22 +123,37 @@ function loadFromGrabber(html) {
         // This gives the main Reader robust, space-separated text (Reader.parse() will further collapse multiple breaks to single spaces/paragraphs).
         // The result preserves the original separation between paragraphs, headings, and similar units from the article.
         grabberExtractedText.value = textParts.join("\n\n");
-   
     }
 }
 window.loadFromGrabber = loadFromGrabber;
 
+var settingsModal;
+var grabberModal;
+
+onMounted(() => {
+    const settingsModalElement = document.querySelector("#settingsModal");
+    const grabberModalElement = document.querySelector("#grabberModal");
+    settingsModal = Modal.getOrCreateInstance(settingsModalElement);
+    grabberModal = Modal.getOrCreateInstance(grabberModalElement);
+});
+
 function openGrabber() {
+    settingsModal.hide();
+    grabberModal.show();
     updateSettings();
     grabberModalActive.value = true;
 }
 
 function updateGrab() {
+    grabberModal.hide();
+    settingsModal.show();
     grabberModalActive.value = false;
     formText.value = grabberExtractedText.value;
 }
 
 function cancelGrab() {
+    grabberModal.hide();
+    settingsModal.show();
     grabberModalActive.value = false;
     grabberExtractedText.value = "";
 }
@@ -160,14 +192,11 @@ function cancelGrab() {
             <div class="modal-header border-0">
                 <!-- Close button in top left corner -->
                 <button
-                    type="button"
-                    class="btn position-absolute start-0 top-0 ms-2 mt-2 p-2"
-                    data-bs-dismiss="modal"
-                    style="z-index:2;"
+                    class="btn-close position-absolute start-0 top-0 ms-2 mt-2"
                     @click="cancelSettings"
-                >
-                    <i class="bi bi-x-lg fs-4"></i>
-                </button>
+                    data-bs-dismiss="modal"
+                ></button>
+          
                 <!-- Centered settings text -->
                 <div class="col text-center">
                     <span class="fs-2">Settings</span>
@@ -194,10 +223,7 @@ function cancelGrab() {
                 <div>
                     <button
                         class="btn btn-secondary"
-                        data-bs-dismiss="modal"
                         @click="openGrabber"
-                        data-bs-toggle="modal"
-                        data-bs-target="#grabberModal"
                     >Use Grabber</button>
                 </div>
                 <!-- section to manually paste text in -->
@@ -232,14 +258,9 @@ function cancelGrab() {
             <div class="modal-header border-0">
                 <!-- Close button in top left corner -->
                 <button
-                    type="button"
-                    class="btn position-absolute start-0 top-0 ms-2 mt-2 p-2"
-                    data-bs-dismiss="modal"
-                    style="z-index:2;"
+                    class="btn-close position-absolute start-0 top-0 ms-2 mt-2"
                     @click="cancelGrab"
-                >
-                    <i class="bi bi-x-lg fs-4"></i>
-                </button>
+                ></button>
                 <!-- Centered settings text -->
                 <div class="col text-center">
                     <span class="fs-2">Grabbing Articles</span>
@@ -268,11 +289,19 @@ function cancelGrab() {
                     <button
                         class="btn btn-primary"
                         @click="updateGrab"
-                        data-bs-dismiss="modal"
-                        data-bs-toggle="modal"
-                        data-bs-target="#settingsModal"
                     >Update</button>
                 </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- toast -->
+    <!-- only one toast used for all alerts -->
+    <div class="toast-container position-fixed bottom-0 end-0 p-3">
+        <div id="toast" class="toast" role="alert">
+            <div class="d-flex">
+                <div class="toast-body">{{ toastMessage }}</div>
+                <button class="btn-close align-center" data-bs-dismiss="toast"></button>
             </div>
         </div>
     </div>
