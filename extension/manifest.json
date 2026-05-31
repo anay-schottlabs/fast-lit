@@ -1,0 +1,9 @@
+{
+    "name": "Fast Lib",
+    "description": "A tool to quickly and easily insert articles into Fast Lib to read.",
+    "version": "1.0",
+    "manifest_version": 3,
+    "action": {
+        "default_popup": "extension.html"
+    }
+}
