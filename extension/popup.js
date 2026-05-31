@@ -17,18 +17,18 @@ async function getPageData() {
         currentWindow: true
     });
 
-    // chrome.scripting.executeScript: runs a function inside the target tab's page.
-    // The page's DOM is off-limits from the popup, so we inject a small script to read it.
-    // "func" must be a plain function (not a closure over popup variables); Chrome serializes
-    // it and runs it in the tab. The return value comes back in results[0].result.
+    // Use XMLSerializer to serialize the DOM to an HTML string in the page context.
     const results = await chrome.scripting.executeScript({
         target: { tabId: tab.id },
-        func: () => document.documentElement.outerHTML
+        func: () => {
+            // Use XMLSerializer for HTML serialization
+            return new XMLSerializer().serializeToString(document.documentElement);
+        }
     });
 
     const html = results[0].result;
 
-    console.log("Grabbed HTML from page:");
+    console.log("Grabbed HTML from page using XMLSerializer:");
     console.log(html);
 
     // chrome.storage.local: key-value store private to this extension, persisted on disk.
@@ -69,5 +69,4 @@ async function injectDataToFastLit() {
     else {
         console.log("Could not load grabbed HTML, cannot inject data.");
     }
-
 }
