@@ -250,37 +250,38 @@ function cancelGrab() {
         
             <!-- Centered header -->
             <div class="text-center mt-1 text-2xl font-bold align-top">
-                <span class="">Settings</span>
+                <span>Settings</span>
             </div>
 
             <!-- section to choose words per minute of reader -->
-            <p>Choose WPM</p>
+            <p class="divider mt-10">Speed</p>
             <div>
                 <input
                     type="range"
-                    class="form-range"
+                    class="range w-full"
                     min="60"
                     max="600"
                     step="10"
                     v-model="formWpm"
                 >
-                <p class="">{{ formWpm }} words per minute</p>
+                <p class="text-center text-sm mt-5">{{ formWpm }} words per minute</p>
             </div>
 
             <!-- section to open grabber modal to interact with extension -->
-            <p>Grab Text</p>
+            <p class="divider mt-10">Grab Text</p>
             <div>
                 <button
-                    class=""
+                    class="btn !text-red bg-white transition-opacity duration-200 btn-block"
+                    :class="{ 'hover:opacity-80': true }"
                     @click="openGrabber"
                 >Use Grabber</button>
             </div>
 
             <!-- section to manually paste text in -->
-            <p>Paste Text</p>
+            <p class="divider mt-10">Paste Text</p>
             <div>
                 <textarea
-                    class=""
+                    class="textarea w-full bg-deepblue"
                     style="height: 300px;"
                     placeholder="Paste some text to start reading..."
                     v-model="formText"
@@ -289,10 +290,12 @@ function cancelGrab() {
 
             <!-- button to update settings changes -->
             <button
-                class=""
+                class="mt-50 btn btn-block bg-red transition-opacity duration-200"
+                :class="{ 'hover:opacity-80': formText.length !== 0 }"
                 @click="updateSettings"
                 :disabled="formText.length == 0"
             >Update</button>
+      
         </div>
     </dialog>
 
