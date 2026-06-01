@@ -192,7 +192,6 @@ function cancelGrab() {
 
     <!-- settings modal -->
     <dialog
-        id="settingsModal"
         class="modal"
         :class="{ 'modal-open': settingsModal }"
     >
@@ -268,60 +267,89 @@ function cancelGrab() {
                     ></textarea>
                 </div>
             </div>
+
             <!-- button to update changes to settings -->
             <button
                 class="mt-5 btn btn-block bg-red transition-opacity duration-200"
-                :class="{ 'hover:opacity-80': formText.length !== 0 }"
+                :class="{
+                    'hover:opacity-80': formText.length !== 0,
+                    'opacity-50 cursor-not-allowed': formText.length == 0
+                }"
                 @click="updateSettings"
                 :disabled="formText.length == 0"
             >Update</button>
+      
         </div>
     </dialog>
 
     <!-- grabber modal -->
-    <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-body modal-content h-75">
-            <!-- modal header -->
-            <div class="modal-header border-0">
-                <!-- Close button in top left corner -->
-                <button
-                    class="btn-close position-absolute start-0 top-0 ms-2 mt-2"
-                    @click="cancelGrab"
-                ></button>
-                <!-- Centered settings text -->
-                <div class="col text-center">
-                    <span class="fs-2">Grabbing Articles</span>
-                </div>
+    <dialog
+        class="modal"
+        :class="{ 'modal-open': grabberModal }"
+    >
+        <div class="modal-box bg-deepblue h-7/8 flex flex-col overflow-hidden">
+            <!-- Close button in top left corner -->
+            <button
+                class="btn btn-circle btn-ghost absolute top-6 left-6"
+                @click="cancelGrab"
+                style="background: transparent; box-shadow: none; border: none;"
+            >
+                <svg
+                    version="1.1"
+                    id="Layer_1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    x="0px"
+                    y="0px"
+                    width="16px"
+                    height="16px"
+                    viewBox="0 0 122.878 122.88"
+                    fill="white"
+                >
+                    <g>
+                        <path
+                            d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
+                            l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
+                            l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
+                            c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
+                        />
+                    </g>
+                </svg>
+            </button>
+
+            <!-- Centered settings text -->
+            <div class="text-center mt-1 text-2xl font-bold align-top">
+                <span>Grabbing Articles</span>
             </div>
 
             <!-- modal body -->
-            <div class="modal-body d-flex flex-column">
-                <div>
-                    <p class="fs-5">
-                        Use the Fast Lit Grabber extension in your browser.
-                    </p>
-                </div>
-                <div class="flex-grow-1">
+            <div class="flex-1 overflow-y-auto">
+                <p class="mt-10">
+                    Use the Fast Lit Grabber extension in your browser.
+                </p>
+                <div class="p-1 mt-10">
                     <textarea
-                        class="form-control h-100"
+                        class="textarea w-full bg-deepblue"
+                        style="height: 600px;"
                         :value="grabberExtractedText"
                         readonly
                     ></textarea>
                 </div>
             </div>
 
-            <!-- modal footer -->
-            <div class="modal-footer w-100 border-0">
-                <div class="d-grid w-100">
-                    <button
-                        class="btn btn-primary"
-                        @click="updateGrab"
-                        :disabled="grabberExtractedText.length == 0"
-                    >Update</button>
-                </div>
-            </div>
+            <!-- update button -->
+            <button
+                class="mt-5 btn btn-block bg-red transition-opacity duration-200"
+                :class="{
+                    'hover:opacity-80': grabberExtractedText.length != 0,
+                    'opacity-50': grabberExtractedText.length == 0
+                }"
+                @click="updateGrab"
+                :disabled="grabberExtractedText.length == 0"
+            >Update</button>
+      
         </div>
-    </div>
+    </dialog>
 </template>
 
 <style scoped>
