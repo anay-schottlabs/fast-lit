@@ -273,25 +273,27 @@ function end() {
 
 
     <!-- Controls to manually move through word list -->
-    <div class="row" v-if="playState != PlayState.PLAYING">
+    <div class="flex gap-5" v-if="playState != PlayState.PLAYING">
         <!-- button to move to previous word -->
-        <div class="col d-grid">
-            <button
-                class="btn btn-warning"
-                :disabled="wordIndex == 0"
-                @click="wordIndex--"
-            >Previous</button>
-        </div>
-        <!-- spacer -->
-        <div class="col"></div>
+        <button
+            class="btn !text-red bg-white transition-opacity duration-200 grow"
+            :class="{
+                'opacity-50': wordIndex == 0,
+                'opacity-100 hover:opacity-80': wordIndex !== 0
+            }"
+            :disabled="wordIndex == 0"
+            @click="wordIndex--"
+        >Previous</button>
         <!-- button to move to next word -->
-        <div class="col d-grid">
-            <button
-                class="btn btn-warning"
-                :disabled="wordIndex == wordList.length - 1"
-                @click="wordIndex++"
-            >Next</button>
-        </div>
+        <button
+            class="btn !text-red bg-white transition-opacity duration-200 grow"
+            :class="{
+                'opacity-50': wordIndex == wordList.length - 1,
+                'opacity-100 hover:opacity-80': wordIndex !== wordList.length - 1
+            }"
+            :disabled="wordIndex == wordList.length - 1"
+            @click="wordIndex++"
+        >Next</button>
     </div>
 
     <!-- progress bar for visual representation of reading progress -->
