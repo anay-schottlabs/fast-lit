@@ -217,11 +217,16 @@ function end() {
         -->
         <button
             v-if="(playState == PlayState.STOPPED && !isOnLastWord) || playState == PlayState.PAUSED"
-            class="btn bg-red grow"
+            class="btn bg-red grow transition-opacity duration-200"
+            :class="{
+                'opacity-100 hover:opacity-80': playState == PlayState.STOPPED || playState == PlayState.PAUSED
+            }"
             @click="start"
         >
             {{ playState == PlayState.PAUSED ? "Continue Reader" : "Start Reader" }}
         </button>
+ 
+ 
 
         <!-- 
             Pause Button:
@@ -230,9 +235,12 @@ function end() {
         -->
         <button
             v-if="playState == PlayState.PLAYING"
-            class="btn bg-red grow"
+            class="btn bg-red grow transition-opacity duration-200"
+            :class="{'opacity-100 hover:opacity-80': playState == PlayState.PLAYING}"
             @click="pause"
         >
+  
+  
             Pause Reader
         </button>
 
@@ -243,11 +251,15 @@ function end() {
         -->
         <button
             v-if="playState != PlayState.STOPPED || isOnLastWord"
-            class="btn bg-red grow"
+            class="btn bg-red grow transition-opacity duration-200"
+            :class="{
+                'opacity-100 hover:opacity-80': playState != PlayState.STOPPED || isOnLastWord
+            }"
             @click="end"
         >
             {{ isOnLastWord ? "Restart Reader" : "End Reader" }}
         </button>
+ 
     </div>
 
     <!-- display words per minute -->
