@@ -3,7 +3,6 @@ import { ref, onMounted } from 'vue';
 import { Readability } from '@mozilla/readability';
 
 import Reader from './Reader.vue';
-import LinedHeader from './LinedHeader.vue';
 
 const toastMessage = ref("");
 var toastElement;
@@ -129,26 +128,19 @@ function loadFromGrabber(html) {
 }
 window.loadFromGrabber = loadFromGrabber;
 
-var settingsModal;
-var grabberModal;
-
-onMounted(() => {
-    const settingsModalElement = document.querySelector("#settingsModal");
-    const grabberModalElement = document.querySelector("#grabberModal");
-    settingsModal = Modal.getOrCreateInstance(settingsModalElement);
-    grabberModal = Modal.getOrCreateInstance(grabberModalElement);
-});
+const settingsModal = ref(false);
+const grabberModal = ref(false);
 
 function openGrabber() {
-    settingsModal.hide();
-    grabberModal.show();
+    settingsModal.value = false;
+    grabberModal.value = true;
     updateSettings(false);
     grabberModalActive.value = true;
 }
 
 function updateGrab() {
-    grabberModal.hide();
-    settingsModal.show();
+    grabberModal.value = false;
+    settingsModal.value = true;
     grabberModalActive.value = false;
     formText.value = grabberExtractedText.value;
     grabberExtractedText.value = "";
@@ -156,8 +148,8 @@ function updateGrab() {
 }
 
 function cancelGrab() {
-    grabberModal.hide();
-    settingsModal.show();
+    grabberModal.value = false;
+    settingsModal.value = true;
     grabberModalActive.value = false;
     grabberExtractedText.value = "";
     triggerToast("Canceled grab, returning to settings");
@@ -172,8 +164,9 @@ function cancelGrab() {
             <p class="text-center text-4xl font-bold">Fast Lit</p>
             <button
                 class="btn btn-circle btn-ghost absolute top-5 right-5"
+                @click="settingsModal = true"
                 style="background: transparent; box-shadow: none; border: none;"
-            >      
+            >
                 <!-- svg for a gear icon for the settings button -->
                 <svg
                     version="1.1"
@@ -220,74 +213,91 @@ function cancelGrab() {
     </div>
 
     <!-- settings modal -->
-    <div id="settingsModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false">
-        <div class="modal-dialog modal-dialog-scrollable modal-body modal-content h-75">
-            <!-- modal header -->
-            <div class="modal-header border-0">
-                <!-- Close button in top left corner -->
+    <dialog
+        id="settingsModal"
+        class="modal"
+        :class="{ 'modal-open': settingsModal }"
+    >
+        <div class="modal-box bg-deepblue">
+            <!-- Close button in top left corner -->
+            <button
+                class="btn btn-circle btn-ghost absolute top-6 left-6"
+                @click="cancelSettings"
+                style="background: transparent; box-shadow: none; border: none;"
+            >
+                <svg
+                    version="1.1"
+                    id="Layer_1"
+                    xmlns="http://www.w3.org/2000/svg"
+                    xmlns:xlink="http://www.w3.org/1999/xlink"
+                    x="0px"
+                    y="0px"
+                    width="16px"
+                    height="16px"
+                    viewBox="0 0 122.878 122.88"
+                    fill="white"
+                >
+                    <g>
+                        <path
+                            d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
+                                l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
+                                l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
+                                c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
+                        />
+                    </g>
+                </svg>
+            </button>
+        
+            <!-- Centered header -->
+            <div class="text-center mt-1 text-2xl font-bold align-top">
+                <span class="">Settings</span>
+            </div>
+
+            <!-- section to choose words per minute of reader -->
+            <p>Choose WPM</p>
+            <div>
+                <input
+                    type="range"
+                    class="form-range"
+                    min="60"
+                    max="600"
+                    step="10"
+                    v-model="formWpm"
+                >
+                <p class="">{{ formWpm }} words per minute</p>
+            </div>
+
+            <!-- section to open grabber modal to interact with extension -->
+            <p>Grab Text</p>
+            <div>
                 <button
-                    class="btn-close position-absolute start-0 top-0 ms-2 mt-2"
-                    @click="cancelSettings"
-                    data-bs-dismiss="modal"
-                ></button>
-          
-                <!-- Centered settings text -->
-                <div class="col text-center">
-                    <span class="fs-2">Settings</span>
-                </div>
+                    class=""
+                    @click="openGrabber"
+                >Use Grabber</button>
             </div>
 
-            <!-- modal body -->
-            <div class="modal-body">
-                <!-- section to choose words per minute of reader -->
-                <LinedHeader text="Choose WPM" />
-                <div>
-                    <input
-                        type="range"
-                        class="form-range"
-                        min="60"
-                            max="600"
-                        step="10"
-                        v-model="formWpm"
-                    >
-                    <p class="fs-5">{{ formWpm }} words per minute</p>
-                </div>
-                <!-- section to open grabber modal to interact with extension -->
-                <LinedHeader text="Grab Text" />
-                <div>
-                    <button
-                        class="btn btn-secondary"
-                        @click="openGrabber"
-                    >Use Grabber</button>
-                </div>
-                <!-- section to manually paste text in -->
-                <LinedHeader text="Paste Text" />
-                <div>
-                    <textarea
-                        class="form-control"
-                        style="height: 300px;"
-                        placeholder="Paste some text to start reading..."
-                        v-model="formText"
-                    ></textarea>
-                </div>
+            <!-- section to manually paste text in -->
+            <p>Paste Text</p>
+            <div>
+                <textarea
+                    class=""
+                    style="height: 300px;"
+                    placeholder="Paste some text to start reading..."
+                    v-model="formText"
+                ></textarea>
             </div>
 
-            <!-- modal footer -->
-            <div class="modal-footer w-100 border-0">
-                <div class="d-grid w-100">
-                    <button
-                        class="btn btn-primary"
-                        @click="updateSettings"
-                        data-bs-dismiss="modal"
-                        :disabled="formText.length == 0"
-                    >Update</button>
-                </div>
-            </div>
+            <!-- button to update settings changes -->
+            <button
+                class=""
+                @click="updateSettings"
+                :disabled="formText.length == 0"
+            >Update</button>
         </div>
-    </div>
+    </dialog>
 
     <!-- grabber modal -->
-    <div id="grabberModal" class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false">
+    <div class="modal fade" data-bs-backdrop="static" data-bs-keyboard="false">
         <div class="modal-dialog modal-body modal-content h-75">
             <!-- modal header -->
             <div class="modal-header border-0">
