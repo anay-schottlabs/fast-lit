@@ -3,5 +3,9 @@
 
 @theme {
     --color-deepblue: #120A3D;
-    --color-brightred: #E43247;
+    --color-red: #E43247;
+}
+
+html {
+    background-color: var(--color-deepblue);
 }

@@ -166,17 +166,10 @@ function cancelGrab() {
 
 <template>
     <!-- main page content -->
-    <div class="bg-deepblue min-h-screen p-5">
+    <div class="p-5">
         <!-- page header -->
-        <div class="">
-            <p class="text-white text-center text-4xl font-bold">Fast Lit</p>
-            <!-- <i
-                class="ms-3 bi bi-gear fs-4 align-middle btn position-absolute"
-                style="right: 0; vertical-align: middle;"
-                role="img"
-                data-bs-toggle="modal"
-                data-bs-target="#settingsModal"
-            ></i> -->
+        <div class="mb-5">
+            <p class="text-center text-4xl font-bold">Fast Lit</p>
             <button
                 class="btn btn-circle btn-ghost absolute top-5 right-5"
                 style="background: transparent; box-shadow: none; border: none;"
@@ -220,14 +213,10 @@ function cancelGrab() {
                     </g>
                 </svg>
             </button>
-
-
         </div>
 
         <!-- page body -->
-        <div class="">
-            <Reader :text="text" :wpm="Number(wpm)" />
-        </div>
+        <Reader :text="text" :wpm="Number(wpm)" />
     </div>
 
     <!-- settings modal -->
