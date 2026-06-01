@@ -9,3 +9,7 @@
 html {
     background-color: var(--color-deepblue);
 }
+
+p, button {
+    color: white;
+}
