@@ -1,6 +1,8 @@
 <script setup>
-import { ref, onMounted } from 'vue';
+import { ref } from 'vue';
 import { Readability } from '@mozilla/readability';
+import { toast } from 'vue3-toastify';
+import 'vue3-toastify/dist/index.css';
 
 import Reader from './Reader.vue';
 
@@ -38,10 +40,42 @@ const formWpm = ref(300);
 const text = ref(formText.value);
 const wpm = ref(formWpm.value);
 
-function updateSettings() {
+// toasts
+const ToastType = Object.freeze({
+    SUCCESS: "success",
+    WARN: "warn",
+    ERROR: "error"
+});
+
+const toastSettings = {
+    position: toast.POSITION.BOTTOM_RIGHT,
+    theme: "colored"
+}
+
+function showToast(message, toastType) {
+    if (toastType == ToastType.SUCCESS) {
+        toast.success(message, toastSettings);
+    }
+    else if (toastType == ToastType.WARN) {
+        toast.warn(message, toastSettings);
+    }
+    else if (toastType == ToastType.ERROR) {
+        toast.error(message, toastSettings);
+    }
+}
+
+// handling settings modal
+
+function updateSettings(showMessage=true) {
     text.value = formText.value;
     wpm.value = formWpm.value;
     settingsModal.value = false;
+    // by default, showMessage is true
+    // when moving into the grabber modal, updateSettings() is also called
+    // in that case, showMessage is set to false because this message doesn't need to be shown
+    if (showMessage) {
+        showToast("Changed settings", ToastType.SUCCESS);
+    }
 }
 
 function cancelSettings() {
@@ -49,6 +83,7 @@ function cancelSettings() {
     formWpm.value = wpm.value;
     grabberExtractedText.value = "";
     settingsModal.value = false;
+    showToast("Did not change settings", ToastType.WARN);
 }
 
 // handling grabber extension
@@ -125,12 +160,14 @@ function updateGrab() {
     settingsModal.value = true;
     formText.value = grabberExtractedText.value;
     grabberExtractedText.value = "";
+    showToast("Grabbed article", ToastType.SUCCESS);
 }
 
 function cancelGrab() {
     grabberModal.value = false;
     settingsModal.value = true;
     grabberExtractedText.value = "";
+    showToast("Canceled grab", ToastType.WARN);
 }
 </script>
 
