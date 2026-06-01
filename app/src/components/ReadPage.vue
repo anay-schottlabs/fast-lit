@@ -1,7 +1,6 @@
 <script setup>
 import { ref, onMounted } from 'vue';
 import { Readability } from '@mozilla/readability';
-import { Toast, Modal } from 'bootstrap';
 
 import Reader from './Reader.vue';
 import LinedHeader from './LinedHeader.vue';
