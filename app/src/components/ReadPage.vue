@@ -176,7 +176,7 @@ function cancelGrab() {
     <div class="p-5">
         <!-- page header -->
         <div class="mb-5">
-            <p class="text-center text-4xl font-bold">Fast Lit</p>
+            <p class="text-4xl font-bold">Fast Lit</p>
             <button
                 class="btn btn-circle btn-ghost absolute top-5 right-5"
                 @click="settingsModal = true"
