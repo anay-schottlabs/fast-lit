@@ -4,20 +4,6 @@ import { Readability } from '@mozilla/readability';
 
 import Reader from './Reader.vue';
 
-const toastMessage = ref("");
-var toastElement;
-var toast;
-
-onMounted(() => {
-    toastElement = document.querySelector("#toast");
-    toast = Toast.getOrCreateInstance(toastElement);
-});
-
-function triggerToast(message) {
-    toastMessage.value = message;
-    toast.show();
-}
-
 // form values
 const formText = ref(
     "Welcome to Fast Lit!" +
@@ -52,28 +38,25 @@ const formWpm = ref(300);
 const text = ref(formText.value);
 const wpm = ref(formWpm.value);
 
-function updateSettings(showMessage=true) {
+function updateSettings() {
     text.value = formText.value;
     wpm.value = formWpm.value;
-    if (showMessage) {
-        triggerToast("Updated, settings changed");
-    }
+    settingsModal.value = false;
 }
 
 function cancelSettings() {
     formText.value = text.value;
     formWpm.value = wpm.value;
     grabberExtractedText.value = "";
-    triggerToast("Canceled, did not update settings");
+    settingsModal.value = false;
 }
 
 // handling grabber extension
 
 const grabberExtractedText = ref("");
-const grabberModalActive = ref(false);
 
 function loadFromGrabber(html) {
-    if (grabberModalActive.value) {
+    if (grabberModal.value) {
         console.log("Received data from extension (Fast Lit Grabber):")
         console.log(html);
         const domParser = new DOMParser();
@@ -135,24 +118,19 @@ function openGrabber() {
     settingsModal.value = false;
     grabberModal.value = true;
     updateSettings(false);
-    grabberModalActive.value = true;
 }
 
 function updateGrab() {
     grabberModal.value = false;
     settingsModal.value = true;
-    grabberModalActive.value = false;
     formText.value = grabberExtractedText.value;
     grabberExtractedText.value = "";
-    triggerToast("Grabbed article, placed in settings");
 }
 
 function cancelGrab() {
     grabberModal.value = false;
     settingsModal.value = true;
-    grabberModalActive.value = false;
     grabberExtractedText.value = "";
-    triggerToast("Canceled grab, returning to settings");
 }
 </script>
 
@@ -218,7 +196,7 @@ function cancelGrab() {
         class="modal"
         :class="{ 'modal-open': settingsModal }"
     >
-        <div class="modal-box bg-deepblue">
+        <div class="modal-box bg-deepblue h-7/8 flex flex-col overflow-hidden">
             <!-- Close button in top left corner -->
             <button
                 class="btn btn-circle btn-ghost absolute top-6 left-6"
@@ -240,9 +218,9 @@ function cancelGrab() {
                     <g>
                         <path
                             d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
-                                l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
-                                l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
-                                c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
+                            l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
+                            l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
+                            c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
                         />
                     </g>
                 </svg>
@@ -253,49 +231,50 @@ function cancelGrab() {
                 <span>Settings</span>
             </div>
 
-            <!-- section to choose words per minute of reader -->
-            <p class="divider mt-10">Speed</p>
-            <div>
-                <input
-                    type="range"
-                    class="range w-full"
-                    min="60"
-                    max="600"
-                    step="10"
-                    v-model="formWpm"
-                >
-                <p class="text-center text-sm mt-5">{{ formWpm }} words per minute</p>
+            <!-- settings menu -->
+            <div class="flex-1 overflow-y-auto">
+                <!-- section to choose words per minute of reader -->
+                <p class="divider mt-10">Speed</p>
+                <div>
+                    <input
+                        type="range"
+                        class="range w-full"
+                        min="60"
+                        max="600"
+                        step="10"
+                        v-model="formWpm"
+                    >
+                    <p class="text-center text-sm mt-5">{{ formWpm }} words per minute</p>
+                </div>
+    
+                <!-- section to open grabber modal to interact with extension -->
+                <p class="divider mt-10">Grab Text</p>
+                <div>
+                    <button
+                        class="btn !text-red bg-white transition-opacity duration-200 btn-block"
+                        :class="{ 'hover:opacity-80': true }"
+                        @click="openGrabber"
+                    >Use Grabber</button>
+                </div>
+    
+                <!-- section to manually paste text in -->
+                <p class="divider mt-10">Paste Text</p>
+                <div class="p-1">
+                    <textarea
+                        class="textarea w-full bg-deepblue"
+                        style="height: 300px;"
+                        placeholder="Paste some text to start reading..."
+                        v-model="formText"
+                    ></textarea>
+                </div>
             </div>
-
-            <!-- section to open grabber modal to interact with extension -->
-            <p class="divider mt-10">Grab Text</p>
-            <div>
-                <button
-                    class="btn !text-red bg-white transition-opacity duration-200 btn-block"
-                    :class="{ 'hover:opacity-80': true }"
-                    @click="openGrabber"
-                >Use Grabber</button>
-            </div>
-
-            <!-- section to manually paste text in -->
-            <p class="divider mt-10">Paste Text</p>
-            <div>
-                <textarea
-                    class="textarea w-full bg-deepblue"
-                    style="height: 300px;"
-                    placeholder="Paste some text to start reading..."
-                    v-model="formText"
-                ></textarea>
-            </div>
-
-            <!-- button to update settings changes -->
+            <!-- button to update changes to settings -->
             <button
-                class="mt-50 btn btn-block bg-red transition-opacity duration-200"
+                class="mt-5 btn btn-block bg-red transition-opacity duration-200"
                 :class="{ 'hover:opacity-80': formText.length !== 0 }"
                 @click="updateSettings"
                 :disabled="formText.length == 0"
             >Update</button>
-      
         </div>
     </dialog>
 
@@ -340,22 +319,6 @@ function cancelGrab() {
                         :disabled="grabberExtractedText.length == 0"
                     >Update</button>
                 </div>
-            </div>
-        </div>
-    </div>
-
-    <!-- toast -->
-    <!-- only one toast used for all alerts -->
-    <div class="toast-container position-fixed bottom-0 end-0 p-3">
-        <div id="toast" class="toast" role="alert">
-            <div class="d-flex">
-                <div class="toast-body">{{ toastMessage }}</div>
-                <button
-                    class="btn-close me-2 align-self-center"
-                    style="margin-left: auto; margin-right: 0.1rem;"
-                    data-bs-dismiss="toast"
-                ></button>
-          
             </div>
         </div>
     </div>
