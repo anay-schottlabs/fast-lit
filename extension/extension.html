@@ -3,19 +3,173 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="popup.css">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.8/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-sRIl4kxILFvY47J16cr9ZwB07vP4J8+LH7qKQnuqkuIAvNWLzeN8tE5YBujZqJLB" crossorigin="anonymous">
 </head>
-<body style="width: 400px; height: 300px">
-    <div class="p-3">
-        <p class="fs-1 fw-bold text-center mb-0">
+<body style="width: 400px;">
+    <div class="px-4 pt-4 pb-3">
+        <p class="fs-1 fw-bold text-center mb-3" style="letter-spacing: 0.03em;">
             Fast Lit Grabber
         </p>
-        <div class="row">
-            <button id="getData" class="col btn btn-primary">Grab Text</button>
-            <button id="injectData" class="col btn btn-secondary">Toss Text</button>
+
+        <!-- button to grab text -->
+
+        <!-- header -->
+        <div class="d-flex align-items-center text-center my-3">
+            <div class="flex-grow-1 border-bottom"></div>
+            <span class="mx-3">Grab an article</span>
+            <div class="flex-grow-1 border-bottom"></div>
         </div>
+
+        <!-- textarea for displaying status -->
+        <textarea
+            class="form-control mb-3 rounded-3"
+            id="grabTextarea"
+            disabled
+            style="overflow: hidden; font-size: 0.9rem;"
+        ></textarea>
+
+        <!-- accordion for more info -->
+        <div
+            class="accordion accordion-dark mb-3"
+            style="
+                background-color: var(--color-deepblue);
+                border-radius: 0.6rem;
+                overflow: hidden;
+                border: 1.5px solid var(--color-red);
+            "
+        >
+            <div
+                class="accordion-item"
+                style="background-color: var(--color-deepblue); border-radius: 0.6rem; overflow: hidden; border: none;"
+            >
+                <h2
+                    class="accordion-header"
+                    style="border-top-left-radius: 0.6rem; border-top-right-radius: 0.6rem;"
+                >
+                    <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#grabberInfo"
+                        style="
+                            background-color: var(--color-deepblue);
+                            outline: none;
+                            box-shadow: none;
+                            border-top-left-radius: 0.6rem;
+                            border-top-right-radius: 0.6rem;
+                            border: none;
+                        "
+                        id="grabberInfoMoreBtn"
+                    >
+                        More Info
+                    </button>
+                </h2>
+                <div id="grabberInfo" class="accordion-collapse collapse">
+                    <div
+                        id="grabAccordion"
+                        class="accordion-body"
+                        style="
+                            background-color: var(--color-deepblue);
+                            border-bottom-left-radius: 0.6rem;
+                            border-bottom-right-radius: 0.6rem;
+                            border-top: 1.5px solid var(--color-red);
+                        "
+                    ></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- button -->
+        <button
+            id="getData"
+            class="btn btn-white-custom w-100 mb-3 py-2"
+            type="button"
+            style="font-size: 1.15rem; border-radius: 0.6rem;"
+        >
+            Grab
+        </button>
+
+        <!-- button to inject text -->
+
+        <!-- header -->
+        <div class="d-flex align-items-center text-center my-3">
+            <div class="flex-grow-1 border-bottom"></div>
+            <span class="mx-3">Send the article</span>
+            <div class="flex-grow-1 border-bottom"></div>
+        </div>
+
+        <!-- textarea to display status -->
+        <textarea
+            class="form-control mb-3 rounded-3"
+            id="injectTextarea"
+            disabled
+            style="overflow: hidden; font-size: 0.9rem;"
+        ></textarea>
+
+        <!-- accordion for more info -->
+        <div
+            class="accordion accordion-dark mb-3"
+            style="
+                background-color: var(--color-deepblue);
+                border-radius: 0.6rem;
+                overflow: hidden;
+                border: 1.5px solid var(--color-red);
+            "
+        >
+            <div
+                class="accordion-item"
+                style="background-color: var(--color-deepblue); border-radius: 0.6rem; overflow: hidden; border: none;"
+            >
+                <h2
+                    class="accordion-header"
+                    style="border-top-left-radius: 0.6rem; border-top-right-radius: 0.6rem;"
+                >
+                    <button
+                        class="accordion-button collapsed"
+                        type="button"
+                        data-bs-toggle="collapse"
+                        data-bs-target="#injectInfo"
+                        style="
+                            background-color: var(--color-deepblue);
+                            outline: none;
+                            box-shadow: none;
+                            border-top-left-radius: 0.6rem;
+                            border-top-right-radius: 0.6rem;
+                            border: none;
+                        "
+                        id="injectInfoMoreBtn"
+                    >
+                        More Info
+                    </button>
+                </h2>
+                <div id="injectInfo" class="accordion-collapse collapse">
+                    <div
+                        id="injectAccordion"
+                        class="accordion-body"
+                        style="
+                            background-color: var(--color-deepblue);
+                            border-bottom-left-radius: 0.6rem;
+                            border-bottom-right-radius: 0.6rem;
+                            border-top: 1.5px solid var(--color-red);
+                        "
+                    ></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- button -->
+        <button
+            id="injectData"
+            class="btn btn-red-custom w-100 py-2 mb-2"
+            type="button"
+            style="font-size: 1.15rem; border-radius: 0.6rem;"
+        >
+            Send to Reader
+        </button>
     </div>
 
+    <script src="bootstrap.bundle.js"></script>
     <script src="popup.js"></script>
 </body>
 </html>

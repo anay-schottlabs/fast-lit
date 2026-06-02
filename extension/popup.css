@@ -1,0 +1,39 @@
+:root {
+    --color-deepblue: #120A3D;
+    --color-red: #E43247;
+}
+
+body {
+    background-color: var(--color-deepblue) !important;
+}
+
+div, p, span, textarea, button {
+    color: white !important;
+}
+
+.btn-red-custom {
+    background-color: var(--color-red) !important;
+    color: white !important;
+    border-color: var(--color-red) !important;
+}
+
+.btn-white-custom {
+    background-color: white !important;
+    color: var(--color-red) !important;
+}
+
+.btn-red-custom:hover, .btn-white-custom:hover {
+    opacity: 80%;
+}
+
+textarea {
+    resize: none !important;
+    background-color: var(--color-deepblue) !important;
+    border-radius: 0.6rem !important;
+}
+
+/* Make the chevron (the ::after arrow) white in all states */
+.accordion-button::after {
+    /* Bootstrap uses an inline SVG as background-image for the chevron */
+    filter: brightness(0) invert(1) !important;
+}
