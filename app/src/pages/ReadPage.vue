@@ -2,6 +2,7 @@
 import { ref } from 'vue';
 import { Readability } from '@mozilla/readability';
 import { toast } from 'vue3-toastify';
+import Header from '../components/Header.vue';
 import 'vue3-toastify/dist/index.css';
 
 import Reader from '../components/Reader.vue';
@@ -172,11 +173,11 @@ function cancelGrab() {
 </script>
 
 <template>
+    <Header pageName="Read" />
+    
     <!-- main page content -->
     <div class="p-5">
-        <!-- page header -->
         <div class="mb-5">
-            <p class="text-4xl font-bold">Fast Lit</p>
             <button
                 class="btn btn-circle btn-ghost absolute top-5 right-5"
                 @click="settingsModal = true"

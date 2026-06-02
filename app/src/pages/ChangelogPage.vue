@@ -1,10 +1,10 @@
 <script setup>
-
+import Header from '../components/Header.vue';
 </script>
 
 <template>
     <div>
-        <h1>Blank Page</h1>
+        <Header pageName="Changelog" />
     </div>
 </template>
 
