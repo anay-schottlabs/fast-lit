@@ -1,6 +1,7 @@
 <script setup>
 import Header from '../components/Header.vue';
 import { useRouter } from 'vue-router';
+import { HomeScripts } from '@/assets/textScripts.js';
 
 const router = useRouter();
 
@@ -15,17 +16,18 @@ function navigateTo(path) {
         <div class="hero min-h-screen">
             <div class="hero-content text-center">
                 <div class="max-w-3xl mx-auto px-4">
-                    <h1 class="text-7xl font-bold text-red whitespace-normal">Unlock your potential.</h1>
+                    <h1 class="text-7xl font-bold text-red whitespace-normal">
+                        {{ HomeScripts.heroTitle }}
+                    </h1>
                     <p class="py-6">
-                        Provident cupiditate voluptatem et in. Quaerat fugiat ut assumenda excepturi exercitationem
-                        quasi. In deleniti eaque aut repudiandae et a id nisi.
+                        {{ HomeScripts.heroContent }}
                     </p>
                     <button
                         class="btn btn-wide bg-red hover:opacity-80 relative"
                         @click="navigateTo('/read')"
                     >
                         <span class="w-full text-center">
-                            Start Reading
+                            {{ HomeScripts.heroButton }}
                         </span>
                         <svg
                             xmlns="http://www.w3.org/2000/svg"
