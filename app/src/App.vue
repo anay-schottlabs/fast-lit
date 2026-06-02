@@ -1,9 +1,7 @@
-<script setup>
-import ReadPage from './components/ReadPage.vue';
-</script>
+<script setup></script>
 
 <template>
-    <ReadPage />
+    <router-view></router-view>
 </template>
 
 <style scoped></style>
