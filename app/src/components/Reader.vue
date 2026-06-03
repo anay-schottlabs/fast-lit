@@ -1,6 +1,60 @@
 <script setup>
-import { ref, computed, watch } from 'vue';
+import { ref, onMounted, computed, watch } from 'vue';
 import { useRoute } from 'vue-router';
+import { db } from '@/firebase/index.js';
+import {
+    collection,
+    getDocs,
+    doc,
+    updateDoc,
+    increment
+} from "firebase/firestore";
+
+const totalWordsRead = ref(0);
+var docId;
+var wordsInSession = 0;
+
+// the list that will be used to play text
+// starts out empty, will be filled up by the parse method
+const wordList = ref([]);
+
+// the index of the current word in the word list
+const wordIndex = ref(0);
+
+// when the value of word index changes, this means the user has read a word
+// increment wordsInSession every time a word has been read
+watch(wordIndex, (newValue) => {
+    // however, if the newValue is zero, this means that the user has reset the reader
+    // this happens when the end() method is called
+    // the end method, however, is what resets wordsInSession and updates the database
+    // therefore, when newValue is reset, we should not increment wordsInSession
+    if (newValue != 0) {
+        wordsInSession++;
+    }
+});
+
+async function updateTotalWordsRead() {
+    if (wordsInSession > 0) {
+        // update counter for total words read
+        // this is stored using firebase
+        const statsRef = doc(db, "stats", docId);
+        await updateDoc(statsRef, {
+            totalWordsRead: increment(wordsInSession)
+        })
+    
+        // reset word counter to start next session
+        wordsInSession = 0;
+    }
+}
+
+// get stats from firestore
+onMounted(async () => {
+    const querySnapshot = await getDocs(collection(db, "stats"));
+    querySnapshot.forEach((doc) => {
+        docId = doc.id;
+        totalWordsRead.value = doc.data().totalWordsRead;
+    });
+});
 
 const route = useRoute();
 
@@ -19,13 +73,6 @@ const props = defineProps({
 const emit = defineEmits([
     "setWpm"
 ]);
-
-// the list that will be used to play text
-// starts out empty, will be filled up by the parse method
-const wordList = ref([]);
-
-// the index of the current word in the word list
-const wordIndex = ref(0);
 
 const word = computed(() => {
     return wordList.value[wordIndex.value];
@@ -219,6 +266,7 @@ function end() {
     clearInterval(readerLoop);
     wordIndex.value = 0;
     delayState.value = DelayState.NONE;
+    updateTotalWordsRead();
 }
 
 // event listener for keyboard shortcuts
