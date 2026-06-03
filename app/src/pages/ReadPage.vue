@@ -225,7 +225,12 @@ function cancelGrab() {
         </div>
 
         <!-- page body -->
-        <Reader :text="text" :wpm="Number(wpm)" />
+        <Reader
+            :text="text"
+            :wpm="Number(wpm)"
+            :settings-modal="settingsModal"
+            :grabber-modal="grabberModal"
+        />
     </div>
 
     <!-- settings modal -->

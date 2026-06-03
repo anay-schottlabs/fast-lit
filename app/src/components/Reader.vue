@@ -1,10 +1,15 @@
 <script setup>
 import { ref, computed, watch } from 'vue';
+import { useRoute } from 'vue-router';
+
+const route = useRoute();
 
 // text in the textarea is passed down from App.vue
 const props = defineProps({
     text: String,
-    wpm: Number
+    wpm: Number,
+    settingsModal: Boolean,
+    grabberModal: Boolean
 });
 
 // the list that will be used to play text
@@ -205,6 +210,35 @@ function end() {
     wordIndex.value = 0;
     delayState.value = DelayState.NONE;
 }
+
+// event listener for keyboard shortcuts
+window.addEventListener('keyup', (event) => {
+    if (!props.settingsModal && !props.grabberModal && route.path == "/read") {
+        if (event.code == "Space") {
+            if (playState.value == PlayState.PLAYING) {
+                pause();
+            }
+            else {
+                start();
+            }
+        }
+        else if (event.key == "r") {
+            end();
+        }
+        else if (playState.value != PlayState.PLAYING) {
+            if (event.code == "ArrowLeft") {
+                if (wordIndex.value != 0) {
+                    wordIndex.value--;
+                }
+            }
+            else if (event.code == "ArrowRight") {
+                if (wordIndex.value != wordList.value.length - 1) {
+                    wordIndex.value++;
+                }
+            }
+        }
+    }
+});
 </script>
 
 <template>
@@ -247,6 +281,7 @@ function end() {
             class="btn btn-square !text-red bg-white transition-opacity duration-200 opacity-100 hover:opacity-80 disabled:opacity-50"
             :disabled="wordIndex == 0 || playState == PlayState.PLAYING"
             @click="wordIndex--"
+            id="previousButton"
             style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
         >
             <svg
@@ -283,6 +318,7 @@ function end() {
             class="btn btn-square bg-red transition-opacity duration-200 hover:opacity-80"
             style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
             @click="start"
+            id="playButton"
             v-if="playState != PlayState.PLAYING"
         >
   
@@ -312,6 +348,7 @@ function end() {
             class="btn btn-square bg-red transition-opacity duration-200 hover:opacity-80"
             style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
             @click="pause"
+            id="pauseButton"
             v-if="playState == PlayState.PLAYING"
         >
             <svg
@@ -330,11 +367,12 @@ function end() {
             </svg>
         </button>
 
-        <!-- stop/reset button -->
+        <!-- stop/reset button (referred to as "end button") -->
         <button
             class="btn btn-square bg-red transition-opacity duration-200 hover:opacity-80"
             style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
             @click="end"
+            id="endButton"
         >
             <svg
                 viewBox="0 0 64 64"
@@ -361,6 +399,7 @@ function end() {
             class="btn btn-square !text-red bg-white transition-opacity duration-200 hover:opacity-80 disabled:opacity-50"
             :disabled="wordIndex == wordList.length - 1 || playState == PlayState.PLAYING"
             @click="wordIndex++"
+            id="nextButton"
             style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
         >
             <svg
