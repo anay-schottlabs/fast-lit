@@ -4,13 +4,19 @@ import { useRoute } from 'vue-router';
 
 const route = useRoute();
 
-// text in the textarea is passed down from App.vue
+// values passed down from ReadPage.vue
 const props = defineProps({
     text: String,
     wpm: Number,
     settingsModal: Boolean,
-    grabberModal: Boolean
+    grabberModal: Boolean,
+    minWpm: Number,
+    maxWpm: Number,
+    wpmStep: Number
 });
+
+// events sent by Reader.vue to its parent (ReadPage.vue)
+const emit = defineEmits(["setWpm"]);
 
 // the list that will be used to play text
 // starts out empty, will be filled up by the parse method
@@ -34,8 +40,6 @@ const redLetter = computed(() => {
 const afterRedLetter = computed(() => {
     return word.value.slice(Math.floor(word.value.length / 2) + 1, word.value.length);
 });
-
-const isOnLastWord = computed(() => wordIndex.value == wordList.value.length - 1);
 
 const interval = computed(() => {
     // Delay (ms) between words, based on wpm passed from App.vue.
@@ -212,7 +216,7 @@ function end() {
 }
 
 // event listener for keyboard shortcuts
-window.addEventListener('keyup', (event) => {
+window.addEventListener('keydown', (event) => {
     if (!props.settingsModal && !props.grabberModal && route.path == "/read") {
         if (event.code == "Space") {
             if (playState.value == PlayState.PLAYING) {
@@ -234,6 +238,16 @@ window.addEventListener('keyup', (event) => {
             else if (event.code == "ArrowRight") {
                 if (wordIndex.value != wordList.value.length - 1) {
                     wordIndex.value++;
+                }
+            }
+            else if (event.code == "ArrowDown") {
+                if (props.wpm != props.minWpm) {
+                    emit("setWpm", props.wpm - props.wpmStep);
+                }
+            }
+            else if (event.code == "ArrowUp") {
+                if (props.wpm != props.maxWpm) {
+                    emit("setWpm", props.wpm + props.wpmStep);
                 }
             }
         }

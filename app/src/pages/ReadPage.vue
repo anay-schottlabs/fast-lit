@@ -7,6 +7,10 @@ import 'vue3-toastify/dist/index.css';
 
 import Reader from '../components/Reader.vue';
 
+const minWpm = 60;
+const maxWpm = 600;
+const wpmStep = 10;
+
 // form values
 const formText = ref(
     "Welcome to Fast Lit!" +
@@ -218,7 +222,6 @@ function cancelGrab() {
                                 c-13.539,0-24.519-10.98-24.519-24.519C36.921,47.9,47.901,36.92,61.44,36.92L61.44,36.92z
                             "
                         />
-                  
                     </g>
                 </svg>
             </button>
@@ -230,6 +233,10 @@ function cancelGrab() {
             :wpm="Number(wpm)"
             :settings-modal="settingsModal"
             :grabber-modal="grabberModal"
+            :min-wpm="minWpm"
+            :max-wpm="maxWpm"
+            :wpm-step="wpmStep"
+            @set-wpm="(newWpm) => wpm = newWpm"
         />
     </div>
 
@@ -281,9 +288,9 @@ function cancelGrab() {
                     <input
                         type="range"
                         class="range w-full"
-                        min="60"
-                        max="600"
-                        step="10"
+                        :min="minWpm"
+                        :max="maxWpm"
+                        :step="wpmStep"
                         v-model="formWpm"
                     >
                     <p class="text-center text-sm mt-5">{{ formWpm }} words per minute</p>
