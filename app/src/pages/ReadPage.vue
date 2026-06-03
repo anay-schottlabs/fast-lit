@@ -1,5 +1,5 @@
 <script setup>
-import { ref } from 'vue';
+import { ref, useTemplateRef } from 'vue';
 import { Readability } from '@mozilla/readability';
 import { toast } from 'vue3-toastify';
 import Header from '../components/Header.vue';
@@ -10,6 +10,8 @@ import Reader from '../components/Reader.vue';
 const minWpm = 60;
 const maxWpm = 600;
 const wpmStep = 10;
+
+const reader = useTemplateRef("reader");
 
 // form values
 const formText = ref(
@@ -70,6 +72,11 @@ function showToast(message, toastType) {
 }
 
 // handling settings modal
+
+function openSettings() {
+    settingsModal.value = true;
+    reader.value.pause();
+}
 
 function updateSettings(showMessage=true) {
     text.value = formText.value;
@@ -184,7 +191,7 @@ function cancelGrab() {
         <div class="mb-5">
             <button
                 class="btn btn-circle btn-ghost absolute top-5 right-5"
-                @click="settingsModal = true"
+                @click="openSettings"
                 style="background: transparent; box-shadow: none; border: none;"
             >
                 <!-- svg for a gear icon for the settings button -->
@@ -229,6 +236,7 @@ function cancelGrab() {
 
         <!-- page body -->
         <Reader
+            ref="reader"
             :text="text"
             :wpm="Number(wpm)"
             :settings-modal="settingsModal"

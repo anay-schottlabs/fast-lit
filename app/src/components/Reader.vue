@@ -16,7 +16,9 @@ const props = defineProps({
 });
 
 // events sent by Reader.vue to its parent (ReadPage.vue)
-const emit = defineEmits(["setWpm"]);
+const emit = defineEmits([
+    "setWpm"
+]);
 
 // the list that will be used to play text
 // starts out empty, will be filled up by the parse method
@@ -207,6 +209,10 @@ function pause() {
     playState.value = PlayState.PAUSED;
     clearInterval(readerLoop);
 }
+
+defineExpose({
+    pause
+});
 
 function end() {
     playState.value = PlayState.STOPPED;
