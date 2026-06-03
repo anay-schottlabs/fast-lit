@@ -4,10 +4,6 @@ import { useRouter } from 'vue-router';
 // Use one consistent SVG size for all icons
 const svgSize = '2rem';
 
-// drawer sidebar widths
-const drawerCloseWidth = "w-18";
-const drawerOpenWidth = "w-64";
-
 const router = useRouter();
 
 function navigateTo(path) {
@@ -25,22 +21,13 @@ function navigateTo(path) {
             </div>
         </div>
 
-        <!-- <div
-            class="min-h-screen drawer-side"
-            :class="[
-                    'is-drawer-close:' + drawerCloseWidth,
-                    'is-drawer-open:' + drawerOpenWidth
-                ]"
-        ></div> -->
+        <div
+            class="min-h-screen drawer-side is-drawer-close:w-18 is-drawer-open:w-64"
+        ></div>
 
-        <div class="drawer-side is-drawer-close:overflow-visible">
-            <!-- Make the sidebar white by using bg-white instead of bg-base-200 -->
+        <div class="drawer-side is-drawer-close:overflow-visible fixed">
             <div
-                class="flex min-h-full flex-col items-start bg-white"
-                :class="[
-                    'is-drawer-close:' + drawerCloseWidth,
-                    'is-drawer-open:' + drawerOpenWidth
-                ]"
+                class="flex min-h-full flex-col items-start bg-white is-drawer-close:w-18 is-drawer-open:w-64"
             >
                 <!-- Sidebar content here -->
                 <ul
