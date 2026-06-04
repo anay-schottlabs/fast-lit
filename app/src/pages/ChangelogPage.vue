@@ -12,12 +12,12 @@ import { ChangelogScripts } from '@/assets/textScripts.js';
         <ul class="list mt-10">
             <li
                 class="list-row"
-                v-for="(entry, idx) in ChangelogScripts.changelog"
+                v-for="(entry, idx) in [...ChangelogScripts.changelog].reverse()"
                 :key="entry.version"
             >
-                <!-- Display the entry index as a two-digit number (e.g., 01, 02) -->
+                <!-- Display the entry index in descending order as a two-digit number (e.g., 02, 01) -->
                 <div class="text-4xl font-thin opacity-30 tabular-nums">
-                    {{ String(idx + 1).padStart(2, '0') }}
+                    {{ String(ChangelogScripts.changelog.length - idx).padStart(2, '0') }}
                 </div>
                 <div class="list-col-grow flex flex-col justify-center">
                     <!-- Date of the release -->
