@@ -84,29 +84,18 @@ function openSettings() {
     reader.value.pause();
 }
 
-function updateSettings(showMessage=true) {
+function updateSettings() {
     text.value = formText.value;
     wpm.value = formWpm.value;
     settingsModal.value = false;
-    // by default, showMessage is true
-    // when moving into the grabber modal, updateSettings() is also called
-    // in that case, showMessage is set to false because this message doesn't need to be shown
-    if (showMessage) {
-        showToast("Changed settings", ToastType.SUCCESS);
-    }
 }
 
 function cancelSettings() {
     formText.value = text.value;
     formWpm.value = wpm.value;
-    grabberExtractedText.value = "";
     settingsModal.value = false;
     showToast("Did not change settings", ToastType.WARN);
 }
-
-// handling grabber extension
-
-const grabberExtractedText = ref("");
 
 function loadFromGrabber(html) {
     openSettings();
@@ -167,28 +156,6 @@ function loadFromGrabber(html) {
 window.loadFromGrabber = loadFromGrabber;
 
 const settingsModal = ref(false);
-const grabberModal = ref(false);
-
-function openGrabber() {
-    settingsModal.value = false;
-    grabberModal.value = true;
-    updateSettings(false);
-}
-
-function updateGrab() {
-    grabberModal.value = false;
-    settingsModal.value = true;
-    formText.value = grabberExtractedText.value;
-    grabberExtractedText.value = "";
-    showToast("Grabbed article", ToastType.SUCCESS);
-}
-
-function cancelGrab() {
-    grabberModal.value = false;
-    settingsModal.value = true;
-    grabberExtractedText.value = "";
-    showToast("Canceled grab", ToastType.WARN);
-}
 </script>
 
 <template>
@@ -248,7 +215,6 @@ function cancelGrab() {
             :text="text"
             :wpm="Number(wpm)"
             :settings-modal="settingsModal"
-            :grabber-modal="grabberModal"
             :min-wpm="minWpm"
             :max-wpm="maxWpm"
             :wpm-step="wpmStep"
@@ -312,16 +278,6 @@ function cancelGrab() {
                     <p class="text-center text-sm mt-5">{{ formWpm }} words per minute</p>
                 </div>
     
-                <!-- section to open grabber modal to interact with extension -->
-                <p class="divider mt-10">Grab Text</p>
-                <div>
-                    <button
-                        class="btn !text-red bg-white transition-opacity duration-200 btn-block"
-                        :class="{ 'hover:opacity-80': true }"
-                        @click="openGrabber"
-                    >Use Grabber</button>
-                </div>
-    
                 <!-- section to manually paste text in -->
                 <p class="divider mt-10">Paste Text</p>
                 <div class="p-1">
@@ -343,75 +299,6 @@ function cancelGrab() {
                 }"
                 @click="updateSettings"
                 :disabled="formText.length == 0"
-            >Update</button>
-      
-        </div>
-    </dialog>
-
-    <!-- grabber modal -->
-    <dialog
-        class="modal"
-        :class="{ 'modal-open': grabberModal }"
-    >
-        <div class="modal-box bg-deepblue h-7/8 flex flex-col overflow-hidden">
-            <!-- Close button in top left corner -->
-            <button
-                class="btn btn-circle btn-ghost absolute top-6 left-6"
-                @click="cancelGrab"
-                style="background: transparent; box-shadow: none; border: none;"
-            >
-                <svg
-                    version="1.1"
-                    id="Layer_1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    x="0px"
-                    y="0px"
-                    width="16px"
-                    height="16px"
-                    viewBox="0 0 122.878 122.88"
-                    fill="white"
-                >
-                    <g>
-                        <path
-                            d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
-                            l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
-                            l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
-                            c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
-                        />
-                    </g>
-                </svg>
-            </button>
-
-            <!-- Centered settings text -->
-            <div class="text-center mt-1 text-2xl font-bold align-top">
-                <span>Grabbing Articles</span>
-            </div>
-
-            <!-- modal body -->
-            <div class="flex-1 overflow-y-auto">
-                <p class="mt-10">
-                    Use the Fast Lit Grabber extension in your browser.
-                </p>
-                <div class="p-1 mt-10">
-                    <textarea
-                        class="textarea w-full bg-deepblue"
-                        style="height: 600px;"
-                        :value="grabberExtractedText"
-                        readonly
-                    ></textarea>
-                </div>
-            </div>
-
-            <!-- update button -->
-            <button
-                class="mt-5 btn btn-block bg-red transition-opacity duration-200"
-                :class="{
-                    'hover:opacity-80': grabberExtractedText.length != 0,
-                    'opacity-50': grabberExtractedText.length == 0
-                }"
-                @click="updateGrab"
-                :disabled="grabberExtractedText.length == 0"
             >Update</button>
       
         </div>

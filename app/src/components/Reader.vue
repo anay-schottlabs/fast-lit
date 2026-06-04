@@ -63,7 +63,6 @@ const props = defineProps({
     text: String,
     wpm: Number,
     settingsModal: Boolean,
-    grabberModal: Boolean,
     minWpm: Number,
     maxWpm: Number,
     wpmStep: Number
@@ -271,7 +270,7 @@ function end() {
 
 // event listener for keyboard shortcuts
 window.addEventListener('keydown', (event) => {
-    if (!props.settingsModal && !props.grabberModal && route.path == "/read") {
+    if (!props.settingsModal && route.path == "/read") {
         if (event.code == "Space") {
             if (playState.value == PlayState.PLAYING) {
                 pause();
