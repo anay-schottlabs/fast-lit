@@ -1,5 +1,10 @@
 <script setup>
 import { useRouter } from 'vue-router';
+import { ChangelogScripts } from './assets/textScripts';
+
+const changelog = ChangelogScripts.changelog;
+const newestEntry = changelog[changelog.length - 1];
+const currentVersion = newestEntry.version;
 
 // Use one consistent SVG size for all icons
 const svgSize = '2rem';
@@ -38,7 +43,13 @@ function navigateTo(path) {
                         <label
                             for="sidebar-drawer-toggle"
                             class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-                            style="background: none; box-shadow: none; border: none; transition: none; color: inherit;"
+                            style="
+                                background: none;
+                                box-shadow: none;
+                                border: none;
+                                transition: none;
+                                color: inherit;
+                            "
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -64,7 +75,13 @@ function navigateTo(path) {
                         <button
                             class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
                             @click="navigateTo('/')"
-                            style="background: none; box-shadow: none; border: none; transition: none; color: inherit;"
+                            style="
+                                background: none;
+                                box-shadow: none;
+                                border: none;
+                                transition: none;
+                                color: inherit;
+                            "
                         >
                             <!-- Home icon -->
                             <svg
@@ -94,7 +111,13 @@ function navigateTo(path) {
                         <button
                             class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
                             @click="navigateTo('/read')"
-                            style="background: none; box-shadow: none; border: none; transition: none; color: inherit;"
+                            style="
+                                background: none;
+                                box-shadow: none;
+                                border: none;
+                                transition: none;
+                                color: inherit;
+                            "
                         >
                             <!-- Read icon -->
                             <svg
@@ -112,7 +135,7 @@ function navigateTo(path) {
                                 <path d="M15 4L14 4C12.8954 4 12 4.89543 12 6L12 18C12 19.1046 12.8954 20 14 20L15 20"/>
                                 <path d="M10 12H14"/>
                             </svg>
-                            <span class="is-drawer-close:hidden text-deepblue text-xl ms-3">Read</span>             
+                            <span class="is-drawer-close:hidden text-deepblue text-xl ms-3">Read</span>
                         </button>
                     </li>
 
@@ -121,7 +144,13 @@ function navigateTo(path) {
                         <button
                             class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
                             @click="navigateTo('/feedback')"
-                            style="background: none; box-shadow: none; border: none; transition: none; color: inherit;"
+                            style="
+                                background: none;
+                                box-shadow: none;
+                                border: none;
+                                transition: none;
+                                color: inherit;
+                            "
                         >
                             <!-- Feedback icon -->
                             <svg
@@ -159,7 +188,13 @@ function navigateTo(path) {
                         <button
                             class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
                             @click="navigateTo('/changelog')"
-                            style="background: none; box-shadow: none; border: none; transition: none; color: inherit;"
+                            style="
+                                background: none;
+                                box-shadow: none;
+                                border: none;
+                                transition: none;
+                                color: inherit;
+                            "                       
                         >
                             <!-- Changelog icon -->
                             <svg
@@ -181,6 +216,35 @@ function navigateTo(path) {
                             <span class="is-drawer-close:hidden text-deepblue text-xl ms-3">Changelog</span>             
                         </button>
                     </li>
+
+                    <!-- current version, linked to changelog page -->
+                    <li class="fixed bottom-6">              
+                        <button
+                            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            @click="navigateTo('/changelog')"
+                            style="
+                                background: none;
+                                box-shadow: none;
+                                border: none;
+                                transition: none;
+                                color: inherit;
+                            "
+                        >
+                            <span
+                                class="
+                                    is-drawer-close:hidden
+                                    text-red
+                                    font-mono
+                                    font-bold
+                                    text-3xl
+                                    ms-3
+                                "
+                            >
+                                v{{ currentVersion }}
+                            </span>
+                        </button>
+                    </li>
+           
                 </ul>
             </div>
         </div>
