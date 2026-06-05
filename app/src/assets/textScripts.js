@@ -82,6 +82,14 @@ export class ReadScripts {
 export class FeedbackScripts {
     static formUrl =
         "https://docs.google.com/forms/d/e/1FAIpQLSdaEN4WwLu2AzdmdHN8mrzijrTXoN-K_JK5rBbj5dCeXVxqdA/viewform?usp=publish-editor";
+    static heroTitle = "Tell Us What You Think";
+    static heroContent = text([
+        "Fast Lit is built to help people read faster and stay focused.",
+        "If you've found a bug, have an idea for a new feature,",
+        "or want to share your experience using the app, we'd love to hear from you.",
+        "Every suggestion helps make Fast Lit better for everyone."
+    ]);
+    static heroButton = "Share Your Feedback";
 }
 
 export class ChangelogScripts {

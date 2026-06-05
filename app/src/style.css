@@ -10,7 +10,7 @@ html {
     background-color: var(--color-deepblue);
 }
 
-div, p, button {
+h1, div, p, button {
     color: white;
 }
 
