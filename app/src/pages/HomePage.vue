@@ -29,7 +29,7 @@ function navigateTo(path) {
         <Header pageName="" />
 
         <!-- page hero -->
-        <div class="hero my-20">
+        <div class="hero mb-20 mt-30">
             <div class="hero-content text-center">
                 <div class="max-w-3xl mx-auto px-4">
                     <h1 class="text-7xl font-bold !text-red whitespace-normal">
