@@ -23,8 +23,8 @@ async function grab() {
     const results = await chrome.scripting.executeScript({
         target: { tabId: grabTab.id },
         func: () => {
-            // Use XMLSerializer for HTML serialization
-            return new XMLSerializer().serializeToString(document.documentElement);
+            const documentClone = document.cloneNode(true);
+            return new XMLSerializer().serializeToString(documentClone);
         }
     });
 
