@@ -4,9 +4,7 @@ grabButton.addEventListener("click", grab);
 const infoText = document.querySelector("#infoText");
 infoText.innerHTML = [
     "Go to the page of an article you want to read, and then open this extension.",
-    "Pressing the 'grab' button automatically finds readable content on the page,",
-    "opens the Fast Lit website, and sets up all the content inside so you can start reading right away.",
-    "In Fast Lit, just hit the 'update' button to get started."
+    "Then, hit 'grab' to start reading instantly."
 ].join(" ");
 
 async function grab() {
