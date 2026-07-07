@@ -5,6 +5,7 @@ import Vue3Toastify from 'vue3-toastify';
 import 'vue3-toastify/dist/index.css';
 import HomePage from './pages/HomePage.vue';
 import ReadPage from './pages/ReadPage.vue';
+import WritePage from './pages/WritePage.vue';
 import ChangelogPage from './pages/ChangelogPage.vue';
 import FeedbackPage from './pages/FeedbackPage.vue';
 
@@ -13,6 +14,7 @@ const router = createRouter({
     routes: [
         { path: '/', component: HomePage },
         { path: '/read', component: ReadPage },
+        { path: '/write', component: WritePage },
         { path: '/changelog', component: ChangelogPage },
         { path: '/feedback', component: FeedbackPage }
     ],
