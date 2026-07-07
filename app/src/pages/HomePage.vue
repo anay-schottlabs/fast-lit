@@ -71,18 +71,19 @@ const statCards = computed(() => [
 
 <template>
     <div>
-        <!-- page header -->
-        <Header pageName="" />
-
-        <!-- hero -->
+        <!-- header + hero share this wrapper so the decorative glow bleeds behind both -->
         <div class="relative overflow-hidden">
             <!-- decorative glow -->
             <div
-                class="pointer-events-none absolute -top-32 left-1/2 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red/25 blur-3xl"
+                class="pointer-events-none absolute -top-32 left-1/2 -z-10 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red/25 blur-3xl"
                 aria-hidden="true"
             ></div>
 
-            <div class="relative z-10 mx-auto grid max-w-6xl gap-16 px-4 pb-20 pt-16 lg:grid-cols-2 lg:items-center">
+            <!-- page header -->
+            <Header pageName="" />
+
+            <!-- hero -->
+            <div class="mx-auto grid max-w-6xl gap-16 px-4 pb-20 pt-16 lg:grid-cols-2 lg:items-center">
                 <!-- copy + CTA -->
                 <div class="text-center lg:text-left">
                     <span class="inline-block rounded-full border border-red/40 bg-red/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-red">

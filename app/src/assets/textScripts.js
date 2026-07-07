@@ -146,6 +146,7 @@ export class ChangelogScripts {
             [
                 "Redesigned the Fast Lit Grabber extension popup with a clearer step-by-step layout and a grab progress indicator.",
                 "Redesigned the changelog page for a more modern look.",
+                "Redesigned the home page to make a better first impression.",
                 "Closing the settings modal now saves your changes instead of discarding them."
             ]
         )
