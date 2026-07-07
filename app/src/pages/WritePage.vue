@@ -9,14 +9,17 @@ const colorCellOff = '#1A124D';                       // slightly lighter for gr
 const colorCellOn = '#F3EFFE';                        // very light for on-cells; warm off-white
 const colorWritingLineOff = '#38297A';                // dark purple for sub-lines/guide lines
 
-const gridGap = 0.01;
-const innerCornerRadius = 0.4;
-const dimension = 20;
-const writingLineDivisions = 4;
+const gridGap = 0.01;               // gap between cells, as a fraction of the canvas size
+const innerCornerRadius = 0.4;      // corner rounding for non-edge cells, as a fraction of the gap
+const dimension = 20;                // grid is dimension x dimension cells
+const writingLineDivisions = 4;      // N: writing line sits (N-1)/N of the way down the grid
 const writingLineFraction = (writingLineDivisions - 1) / writingLineDivisions;
 const writingLineRow = Math.round(writingLineFraction * dimension);
 const grid = ref(Array.from({ length: dimension }, () => Array(dimension).fill(0)));
 
+// Converts the canvas's on-screen pixel size into the measurements needed to
+// place cells: how big each cell is, how much space separates them, and how
+// far the grid is inset from the canvas edge.
 function getGridLayout(size) {
     const gap = size * gridGap;
     const padding = gap;
@@ -25,11 +28,16 @@ function getGridLayout(size) {
     return { gap, padding, cellSize };
 }
 
+// Finds the closest cell index along one axis for a given pixel offset,
+// clamped to stay within the grid, so clicks near the edges/gaps still land
+// on a cell instead of missing.
 function getNearestCellIndex(local, pitch, cellSize) {
     const index = Math.round((local - cellSize / 2) / pitch);
     return Math.min(dimension - 1, Math.max(0, index));
 }
 
+// Maps a click point in canvas-local pixel coordinates to the {row, col} of
+// the nearest grid cell.
 function getCellsFromPoint(x, y, layout) {
     const { padding, cellSize } = layout;
     const pitch = cellSize + layout.gap;
@@ -43,10 +51,14 @@ function getCellsFromPoint(x, y, layout) {
     return [{ row, col }];
 }
 
+// Corner radii can't exceed half a cell's size, or the rounded rect would
+// self-intersect and render incorrectly.
 function clampRadius(radius, cellSize) {
     return Math.min(radius, cellSize / 2);
 }
 
+// Returns the four corner radii (in roundRect's [top-left, top-right,
+// bottom-right, bottom-left] order) for a single cell.
 function getCellCornerRadii(row, col, gap, cellSize, canvasCornerRadius) {
     const inner = clampRadius(gap * innerCornerRadius, cellSize);
     const corner = clampRadius(canvasCornerRadius, cellSize);
@@ -61,33 +73,56 @@ function getCellCornerRadii(row, col, gap, cellSize, canvasCornerRadius) {
     ];
 }
 
+// Renders the whole grid from scratch onto the canvas. Called on mount and
+// whenever `grid` changes (see the `watch` below) — there's no incremental
+// redraw, the canvas is cleared and every cell is repainted each time.
 function drawGrid() {
     const el = canvas.value;
     if (!el) return;
 
     const ctx = el.getContext('2d');
+
+    // The canvas element has a CSS size (rect.width/height, in CSS pixels)
+    // but its drawing buffer is a separate pixel grid. On high-DPI screens
+    // (dpr > 1) we size that buffer up and scale the context to match, so
+    // shapes are drawn at native resolution instead of looking blurry.
     const dpr = window.devicePixelRatio || 1;
     const rect = el.getBoundingClientRect();
-    const size = rect.width;
+    const size = rect.width; // canvas is styled aspect-square, so width == height
 
     el.width = size * dpr;
     el.height = size * dpr;
     ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
 
+    // Layout math (cell size/gap/padding) is derived once per draw from the
+    // current on-screen size, since the canvas can resize with the viewport.
     const { gap, padding, cellSize } = getGridLayout(size);
+    // Reuse the canvas's own CSS border radius so the grid's outer corners
+    // visually match the rounded canvas container.
     const canvasCornerRadius = parseFloat(getComputedStyle(el).borderTopLeftRadius) || 16;
 
+    // Paint the background first; this also fills the thin gaps between
+    // cells, since cells are drawn smaller than their (cellSize + gap) pitch.
     ctx.fillStyle = colorCanvasBackground;
     ctx.fillRect(0, 0, size, size);
 
     for (let row = 0; row < dimension; row++) {
         for (let col = 0; col < dimension; col++) {
+            // Each cell's top-left corner sits one (cellSize + gap) "pitch"
+            // step from the previous one, offset by the outer padding.
             const x = padding + col * (cellSize + gap);
             const y = padding + row * (cellSize + gap);
 
+            // Color priority: lit cells are always colorCellOn. Otherwise,
+            // cells on the writing-line row get a lighter "off" shade so the
+            // line is visible even where nothing has been drawn.
             const isOn = grid.value[row][col] === 1;
             const isWritingLine = row === writingLineRow;
             ctx.fillStyle = isOn ? colorCellOn : isWritingLine ? colorWritingLineOff : colorCellOff;
+
+            // Corners are rounded per-cell (with special-cased larger radii
+            // on the grid's four outer corners) rather than clipping the
+            // whole canvas, so each cell reads as a distinct rounded square.
             ctx.beginPath();
             ctx.roundRect(
                 x,
@@ -101,6 +136,7 @@ function drawGrid() {
     }
 }
 
+// Lights up the cell (or nearest cell) at a given canvas-local point.
 function handleCanvasClick(x, y) {
     const el = canvas.value;
     if (!el) return;
@@ -113,8 +149,12 @@ function handleCanvasClick(x, y) {
     }
 }
 
+// Tracks whether the pointer is currently held down, so drag movement is
+// only treated as drawing between a pointerdown and the matching pointerup.
 let isDrawing = false;
 
+// Converts a pointer event's page coordinates into canvas-local coordinates,
+// returning null if the point falls outside the canvas.
 function getCanvasPoint(event) {
     const el = canvas.value;
     if (!el) return null;
@@ -130,6 +170,8 @@ function getCanvasPoint(event) {
     return { x, y };
 }
 
+// Pointer events (rather than mouse-only events) so this works for both
+// mouse and touch input.
 function onPointerDown(event) {
     isDrawing = true;
 
@@ -139,6 +181,8 @@ function onPointerDown(event) {
     }
 }
 
+// Listens on window (not just the canvas) so dragging keeps drawing even if
+// the pointer briefly leaves the canvas bounds mid-drag.
 function onPointerMove(event) {
     if (!isDrawing) return;
 
@@ -148,11 +192,13 @@ function onPointerMove(event) {
     }
 }
 
+// Releasing the pointer ends the current drag and clears the grid.
 function onPointerUp() {
     isDrawing = false;
     resetGrid();
 }
 
+// Redraw any time the grid data changes.
 watch(grid, drawGrid, { deep: true });
 
 function resetGrid() {
