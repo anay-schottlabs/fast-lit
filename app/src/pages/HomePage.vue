@@ -32,12 +32,47 @@ const demoBefore = computed(() => demoWord.value.slice(0, Math.floor(demoWord.va
 const demoRedLetter = computed(() => demoWord.value[Math.floor(demoWord.value.length / 2)]);
 const demoAfter = computed(() => demoWord.value.slice(Math.floor(demoWord.value.length / 2) + 1));
 
+// same punctuation-pause technique as Reader.vue, restricted to the two marks
+// that actually appear in HomeScripts.demoText: commas get one extra tick,
+// periods get three, before the demo advances to the next word.
+const DemoDelayState = Object.freeze({
+    NONE: "none",
+    SHORT_PAUSE: "shortPause",
+    MEDIUM_PAUSE: "mediumPause",
+    LONG_PAUSE: "longPause"
+});
+
+const demoDelayState = ref(DemoDelayState.NONE);
+
 let demoInterval;
 
 onMounted(() => {
     const intervalMs = Math.floor(60000 / HomeScripts.demoWpm);
     demoInterval = setInterval(() => {
-        demoIndex.value = (demoIndex.value + 1) % HomeScripts.demoWords.length;
+        if (demoDelayState.value == DemoDelayState.LONG_PAUSE) {
+            demoDelayState.value = DemoDelayState.MEDIUM_PAUSE;
+            return;
+        }
+        else if (demoDelayState.value == DemoDelayState.MEDIUM_PAUSE) {
+            demoDelayState.value = DemoDelayState.SHORT_PAUSE;
+            return;
+        }
+        else if (demoDelayState.value == DemoDelayState.SHORT_PAUSE) {
+            demoDelayState.value = DemoDelayState.NONE;
+            demoIndex.value = (demoIndex.value + 1) % HomeScripts.demoWords.length;
+            return;
+        }
+
+        const lastChar = demoWord.value[demoWord.value.length - 1];
+        if (lastChar == ".") {
+            demoDelayState.value = DemoDelayState.LONG_PAUSE;
+        }
+        else if (lastChar == ",") {
+            demoDelayState.value = DemoDelayState.SHORT_PAUSE;
+        }
+        else {
+            demoIndex.value = (demoIndex.value + 1) % HomeScripts.demoWords.length;
+        }
     }, intervalMs);
 });
 
