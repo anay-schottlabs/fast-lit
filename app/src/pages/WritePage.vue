@@ -208,6 +208,7 @@ function resetGrid() {
             grid.value[row][col] = 0;
         }
     }
+    recognizeCharacter();
 }
 
 onMounted(() => {
@@ -223,13 +224,39 @@ onUnmounted(() => {
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
 });
+
+// character recognition
+
+const characters = ref([]);
+
+function recognizeCharacter() {
+    // Check if all entries in the grid are zeroes
+    if (
+        grid.value &&
+        Array.isArray(grid.value) &&
+        grid.value.every(row =>
+            Array.isArray(row) && row.every(cell => cell === 0)
+        )
+    ) {
+        // Push a random lowercase alphabet character
+        const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
+        characters.value.push(randomChar);
+    }
+}
 </script>
 
 <template>
     <Header pageName="Write" />
     
     <!-- main page content -->
-    <div class="mt-5">
+    <div>
+        <div class="my-5">
+            <kbd
+                class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow"
+                v-for="char in characters"
+            >{{ char }}</kbd>
+        </div>
+
         <canvas
             id="drawCanvas"
             class="aspect-square w-full touch-none rounded-2xl"       
