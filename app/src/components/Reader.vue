@@ -21,6 +21,31 @@ const wordList = ref([]);
 // the index of the current word in the word list
 const wordIndex = ref(0);
 
+// Persists how far into the text the user has read, so reloading the page
+// resumes at the same word instead of starting over. Same try/catch pattern
+// as the text/wpm persistence in ReadPage.vue — degrades to in-session-only
+// if localStorage is unavailable.
+const READ_PROGRESS_STORAGE_KEY = "fastlit:readProgress";
+
+function loadSavedWordIndex() {
+    try {
+        return Number(localStorage.getItem(READ_PROGRESS_STORAGE_KEY));
+    } catch {
+        return 0;
+    }
+}
+
+function saveWordIndex(value) {
+    try {
+        localStorage.setItem(READ_PROGRESS_STORAGE_KEY, String(value));
+    } catch {
+        // localStorage unavailable (e.g. private browsing) — reading still
+        // works for this session, it just won't persist across reloads.
+    }
+}
+
+watch(wordIndex, saveWordIndex);
+
 // when the value of word index changes, this means the user has read a word
 // increment wordsInSession every time a word has been read
 watch(wordIndex, (newValue) => {
@@ -143,8 +168,22 @@ function parse() {
 
     // Split the resulting string at each single space to create an array of words
     wordList.value = cleanText.split(" ");
-    wordIndex.value = 0;
+
+    // Resume saved progress only on the very first parse (component mount,
+    // loading the persisted text) — a later text change (the user pasting
+    // something new) should still start at the beginning, not some stale
+    // index left over from different text.
+    if (!hasRestoredProgress) {
+        hasRestoredProgress = true;
+        const saved = loadSavedWordIndex();
+        wordIndex.value = (saved > 0 && saved < wordList.value.length) ? saved : 0;
+    }
+    else {
+        wordIndex.value = 0;
+    }
 }
+
+let hasRestoredProgress = false;
 
 watch(() => props.text, parse, { immediate: true });
 
