@@ -1,5 +1,5 @@
 <script setup>
-import { useRouter } from 'vue-router';
+import { useRoute, useRouter } from 'vue-router';
 import { ChangelogScripts } from './assets/textScripts';
 
 const changelog = ChangelogScripts.changelog;
@@ -9,10 +9,23 @@ const currentVersion = newestEntry.version;
 // Use one consistent SVG size for all icons
 const svgSize = '2rem';
 
+const route = useRoute();
 const router = useRouter();
 
 function navigateTo(path) {
     router.push(path);
+}
+
+// shared classes for every sidebar nav item: rounded hover highlight, and a
+// smooth color/background transition instead of the old hard-coded "none"
+const navItemClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-colors duration-150 hover:bg-white/10";
+
+// active page gets the brand red; everything else is a soft white that
+// brightens on hover — icons/labels below inherit this via currentColor.
+// Forced !important because style.css's unlayered "button { color: white }"
+// rule otherwise beats these (layered) utility classes regardless of specificity.
+function navTextClass(path) {
+    return route.path === path ? "!text-red" : "!text-white/70 hover:!text-white";
 }
 </script>
 
@@ -32,7 +45,7 @@ function navigateTo(path) {
 
         <div class="drawer-side is-drawer-close:overflow-visible fixed">
             <div
-                class="flex min-h-full flex-col items-start bg-white is-drawer-close:w-18 is-drawer-open:w-64"
+                class="flex min-h-full flex-col items-start border-r border-white/10 bg-white/5 is-drawer-close:w-18 is-drawer-open:w-64"
             >
                 <!-- Sidebar content here -->
                 <ul
@@ -42,14 +55,7 @@ function navigateTo(path) {
                     <li>
                         <label
                             for="sidebar-drawer-toggle"
-                            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
-                            style="
-                                background: none;
-                                box-shadow: none;
-                                border: none;
-                                transition: none;
-                                color: inherit;
-                            "
+                            :class="navItemClass"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -60,7 +66,7 @@ function navigateTo(path) {
                                 stroke-width="2"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                class="my-1.5 inline-block text-deepblue"
+                                class="my-1.5 inline-block text-white/70 hover:text-white"
                             >
                                 <rect x="3" y="3" width="18" height="18" rx="2" />
                                 <line x1="9" y1="4" x2="9" y2="20" />
@@ -68,20 +74,13 @@ function navigateTo(path) {
                             </svg>
                         </label>
                     </li>
-     
+
 
                     <!-- button to navigate to the home page -->
                     <li>
                         <button
-                            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            :class="[navItemClass, navTextClass('/')]"
                             @click="navigateTo('/')"
-                            style="
-                                background: none;
-                                box-shadow: none;
-                                border: none;
-                                transition: none;
-                                color: inherit;
-                            "
                         >
                             <!-- Home icon -->
                             <svg
@@ -92,7 +91,7 @@ function navigateTo(path) {
                                 stroke-width="2.5"
                                 fill="none"
                                 stroke="currentColor"
-                                class="my-1.5 inline-block text-deepblue"
+                                class="my-1.5 inline-block"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
                                 <path
@@ -102,22 +101,15 @@ function navigateTo(path) {
                                     d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
                                 />
                             </svg>
-                            <span class="is-drawer-close:hidden text-deepblue text-xl ms-3">Home</span>
+                            <span class="is-drawer-close:hidden text-xl ms-3">Home</span>
                         </button>
                     </li>
 
                     <!-- button to navigate to the read page -->
                     <li>
                         <button
-                            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            :class="[navItemClass, navTextClass('/read')]"
                             @click="navigateTo('/read')"
-                            style="
-                                background: none;
-                                box-shadow: none;
-                                border: none;
-                                transition: none;
-                                color: inherit;
-                            "
                         >
                             <!-- Read icon -->
                             <svg
@@ -128,29 +120,22 @@ function navigateTo(path) {
                                 stroke-width="2"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                class="my-1.5 inline-block text-deepblue"
+                                class="my-1.5 inline-block"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
                                 <path d="M9 4L10 4C11.1046 4 12 4.89543 12 6L12 18C12 19.1046 11.1046 20 10 20L9 20"/>
                                 <path d="M15 4L14 4C12.8954 4 12 4.89543 12 6L12 18C12 19.1046 12.8954 20 14 20L15 20"/>
                                 <path d="M10 12H14"/>
                             </svg>
-                            <span class="is-drawer-close:hidden text-deepblue text-xl ms-3">Read</span>
+                            <span class="is-drawer-close:hidden text-xl ms-3">Read</span>
                         </button>
                     </li>
 
                     <!-- button to navigate to the feedback page -->
                     <li>
                         <button
-                            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            :class="[navItemClass, navTextClass('/feedback')]"
                             @click="navigateTo('/feedback')"
-                            style="
-                                background: none;
-                                box-shadow: none;
-                                border: none;
-                                transition: none;
-                                color: inherit;
-                            "
                         >
                             <!-- Feedback icon -->
                             <svg
@@ -161,7 +146,7 @@ function navigateTo(path) {
                                 stroke-width="2"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                class="my-1.5 inline-block text-deepblue"
+                                class="my-1.5 inline-block"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
                                 <path
@@ -179,22 +164,15 @@ function navigateTo(path) {
                                     fill="currentColor"
                                 />
                             </svg>
-                            <span class="is-drawer-close:hidden text-deepblue text-xl ms-3">Feedback</span>             
+                            <span class="is-drawer-close:hidden text-xl ms-3">Feedback</span>
                         </button>
                     </li>
 
                     <!-- button to navigate to the changelog page -->
                     <li>
                         <button
-                            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            :class="[navItemClass, navTextClass('/changelog')]"
                             @click="navigateTo('/changelog')"
-                            style="
-                                background: none;
-                                box-shadow: none;
-                                border: none;
-                                transition: none;
-                                color: inherit;
-                            "                       
                         >
                             <!-- Changelog icon -->
                             <svg
@@ -206,29 +184,22 @@ function navigateTo(path) {
                                 fill="none"
                                 stroke="currentColor"
                                 :style="{ width: svgSize, height: svgSize }"
-                                class="my-1.5 inline-block text-deepblue"
+                                class="my-1.5 inline-block"
                             >
                                 <path d="M20 7h-9" />
                                 <path d="M14 17H5" />
                                 <circle cx="17" cy="17" r="3" />
                                 <circle cx="7" cy="7" r="3" />
                             </svg>
-                            <span class="is-drawer-close:hidden text-deepblue text-xl ms-3">Changelog</span>             
+                            <span class="is-drawer-close:hidden text-xl ms-3">Changelog</span>
                         </button>
                     </li>
 
                     <!-- current version, linked to changelog page -->
-                    <li class="fixed bottom-6">              
+                    <li class="fixed bottom-6">
                         <button
-                            class="is-drawer-close:tooltip is-drawer-close:tooltip-right"
+                            :class="navItemClass"
                             @click="navigateTo('/changelog')"
-                            style="
-                                background: none;
-                                box-shadow: none;
-                                border: none;
-                                transition: none;
-                                color: inherit;
-                            "
                         >
                             <span
                                 class="
@@ -244,7 +215,7 @@ function navigateTo(path) {
                             </span>
                         </button>
                     </li>
-           
+
                 </ul>
             </div>
         </div>
