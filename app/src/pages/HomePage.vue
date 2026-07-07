@@ -71,11 +71,16 @@ const statCards = computed(() => [
 
 <template>
     <div>
-        <!-- header + hero share this wrapper so the decorative glow bleeds behind both -->
+        <!--
+            header + hero share this wrapper so the decorative glow bleeds behind both.
+            The glow only pokes -top-10 above this box (not further), so at y=0 we're
+            still inside its blurred fringe rather than its solid pre-blur core — that
+            keeps the tint behind the header soft instead of reading as a solid bar.
+        -->
         <div class="relative overflow-hidden">
             <!-- decorative glow -->
             <div
-                class="pointer-events-none absolute -top-32 left-1/2 -z-10 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red/25 blur-3xl"
+                class="pointer-events-none absolute -top-10 left-1/2 -z-10 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red/25 blur-3xl"
                 aria-hidden="true"
             ></div>
 
