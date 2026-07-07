@@ -16,16 +16,20 @@ function navigateTo(path) {
     router.push(path);
 }
 
-// shared classes for every sidebar nav item: rounded hover highlight, and a
-// smooth color/background transition instead of the old hard-coded "none"
-const navItemClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-colors duration-150 hover:bg-white/10";
+// shared classes for every sidebar nav item: rounded hover highlight, a
+// smooth color/background transition instead of the old hard-coded "none",
+// and a focus-visible ring for keyboard navigation
+const navItemClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-colors duration-150 hover:bg-white/10 focus-ring";
 
 // active page gets the brand red; everything else is a soft white that
 // brightens on hover — icons/labels below inherit this via currentColor.
 // Forced !important because style.css's unlayered "button { color: white }"
 // rule otherwise beats these (layered) utility classes regardless of specificity.
+// Uses --color-red-light (not the base brand red) since this label is
+// text-xl and not bold, too small/light for the base red's ~4.3:1 contrast
+// to clear WCAG AA's 4.5:1 normal-text threshold.
 function navTextClass(path) {
-    return route.path === path ? "!text-red" : "!text-white/70 hover:!text-white";
+    return route.path === path ? "!text-red-light" : "!text-white/70 hover:!text-white";
 }
 </script>
 
@@ -56,6 +60,7 @@ function navTextClass(path) {
                         <label
                             for="sidebar-drawer-toggle"
                             :class="navItemClass"
+                            data-tip="Toggle sidebar"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
@@ -81,6 +86,7 @@ function navTextClass(path) {
                         <button
                             :class="[navItemClass, navTextClass('/')]"
                             @click="navigateTo('/')"
+                            data-tip="Home"
                         >
                             <!-- Home icon -->
                             <svg
@@ -110,6 +116,7 @@ function navTextClass(path) {
                         <button
                             :class="[navItemClass, navTextClass('/read')]"
                             @click="navigateTo('/read')"
+                            data-tip="Read"
                         >
                             <!-- Read icon -->
                             <svg
@@ -136,6 +143,7 @@ function navTextClass(path) {
                         <button
                             :class="[navItemClass, navTextClass('/feedback')]"
                             @click="navigateTo('/feedback')"
+                            data-tip="Feedback"
                         >
                             <!-- Feedback icon -->
                             <svg
@@ -173,6 +181,7 @@ function navTextClass(path) {
                         <button
                             :class="[navItemClass, navTextClass('/changelog')]"
                             @click="navigateTo('/changelog')"
+                            data-tip="Changelog"
                         >
                             <!-- Changelog icon -->
                             <svg

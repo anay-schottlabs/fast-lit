@@ -34,7 +34,10 @@ watch(wordIndex, (newValue) => {
 });
 
 async function updateTotalWordsRead() {
-    if (wordsInSession > 0) {
+    // docId is only set once the Firestore stats doc has loaded (onMounted
+    // below); guard against it still being undefined (e.g. a slow/failed
+    // fetch), which would otherwise throw trying to build a doc reference.
+    if (wordsInSession > 0 && docId) {
         // update counter for total words read
         // this is stored using firebase
         const statsRef = doc(db, "stats", docId);
@@ -88,6 +91,10 @@ const redLetter = computed(() => {
 const afterRedLetter = computed(() => {
     return word.value.slice(Math.floor(word.value.length / 2) + 1, word.value.length);
 });
+
+// parse() on empty/whitespace-only text produces wordList = [""], so the
+// reading stage would otherwise render completely blank with no explanation.
+const hasContent = computed(() => word.value.length > 0);
 
 const interval = computed(() => {
     // Delay (ms) between words, based on wpm passed from App.vue.
@@ -329,33 +336,40 @@ window.addEventListener('keydown', (event) => {
 <template>
     <!-- display words per minute -->
     <p class="mt-5 text-center text-xs font-semibold uppercase tracking-widest text-white/50">
-        Reading Speed
+        Speed
     </p>
     <p class="mb-2 text-center">
-        <span class="font-mono text-2xl font-bold !text-red">{{ wpm }}</span>
+        <span class="font-mono text-3xl font-bold !text-red">{{ wpm }}</span>
         <span class="text-sm text-white/60"> words per minute</span>
     </p>
 
     <!-- main word reader display, framed as a distinct "reading stage" -->
     <div class="relative my-8 rounded-3xl border border-white/10 bg-white/5 px-6 py-16 shadow-2xl shadow-black/40">
-        <!-- focal-point guide ticks, reinforcing the red-letter alignment above/below the word -->
-        <div class="absolute left-1/2 top-6 h-3 w-0.5 -translate-x-1/2 rounded-full bg-red/50" aria-hidden="true"></div>
-        <div class="absolute bottom-6 left-1/2 h-3 w-0.5 -translate-x-1/2 rounded-full bg-red/50" aria-hidden="true"></div>
+        <template v-if="hasContent">
+            <!-- focal-point guide ticks, reinforcing the red-letter alignment above/below the word -->
+            <div class="absolute left-1/2 top-6 h-3 w-0.5 -translate-x-1/2 rounded-full bg-red/50" aria-hidden="true"></div>
+            <div class="absolute bottom-6 left-1/2 h-3 w-0.5 -translate-x-1/2 rounded-full bg-red/50" aria-hidden="true"></div>
 
-        <div class="text-7xl font-bold text-center flex">
-            <!-- Shows the part of the word before the highlighted letter, right-aligned within its flex space -->
-            <span class="flex-1 text-right">
-                {{ beforeRedLetter }}
-            </span>
-            <!-- Displays the single red-highlighted letter for optimal reading focus -->
-            <span class="text-red">
-                {{ redLetter }}
-            </span>
-            <!-- Shows the part of the word after the highlighted letter, left-aligned within its flex space -->
-            <span class="flex-1 text-left">
-                {{ afterRedLetter }}
-            </span>
-        </div>
+            <div class="text-5xl font-bold text-center flex sm:text-6xl lg:text-7xl">
+                <!-- Shows the part of the word before the highlighted letter, right-aligned within its flex space -->
+                <span class="flex-1 text-right">
+                    {{ beforeRedLetter }}
+                </span>
+                <!-- Displays the single red-highlighted letter for optimal reading focus -->
+                <span class="text-red">
+                    {{ redLetter }}
+                </span>
+                <!-- Shows the part of the word after the highlighted letter, left-aligned within its flex space -->
+                <span class="flex-1 text-left">
+                    {{ afterRedLetter }}
+                </span>
+            </div>
+        </template>
+        <!-- empty-text state: parse() on blank input still produces one empty
+             "word", which would otherwise render this stage completely blank -->
+        <p v-else class="text-center text-lg text-white/50">
+            Add some text in Settings to get started.
+        </p>
     </div>
 
     <!-- progress bar for visual representation of reading progress -->
@@ -364,7 +378,7 @@ window.addEventListener('keydown', (event) => {
         min="0"
         :max="wordList.length - 1"
         v-model="wordIndex"
-        class="range w-full mb-10"
+        class="range text-red w-full mb-10 focus-ring"
         :disabled="playState == PlayState.PLAYING"
         :style="playState == PlayState.PLAYING ? 'opacity: 1; pointer-events: none;' : ''"
     />
@@ -373,11 +387,10 @@ window.addEventListener('keydown', (event) => {
     <div class="flex gap-5 justify-center items-center">
         <!-- button to move to previous word -->
         <button
-            class="btn btn-square !text-red bg-white rounded-2xl transition-all duration-200 opacity-100 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+            class="btn btn-square !text-red bg-white rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 opacity-100 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
             :disabled="wordIndex == 0 || playState == PlayState.PLAYING"
             @click="wordIndex--"
             id="previousButton"
-            style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
         >
             <svg
                 viewBox="0 0 64 64"
@@ -410,8 +423,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- play button -->
         <button
-            class="btn-red !btn-square transition-transform duration-200 hover:-translate-y-0.5"
-            style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
+            class="btn-red !btn-square w-14 h-14 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
             @click="start"
             id="playButton"
             v-if="playState != PlayState.PLAYING"
@@ -440,8 +452,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- pause button -->
         <button
-            class="btn-red !btn-square transition-transform duration-200 hover:-translate-y-0.5"
-            style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
+            class="btn-red !btn-square w-14 h-14 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
             @click="pause"
             id="pauseButton"
             v-if="playState == PlayState.PLAYING"
@@ -464,8 +475,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- stop/reset button (referred to as "end button") -->
         <button
-            class="btn-red !btn-square transition-transform duration-200 hover:-translate-y-0.5"
-            style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
+            class="btn-red !btn-square w-14 h-14 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
             @click="end"
             id="endButton"
         >
@@ -491,11 +501,10 @@ window.addEventListener('keydown', (event) => {
 
         <!-- button to move to next word -->
         <button
-            class="btn btn-square !text-red bg-white rounded-2xl transition-all duration-200 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
+            class="btn btn-square !text-red bg-white rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
             :disabled="wordIndex == wordList.length - 1 || playState == PlayState.PLAYING"
             @click="wordIndex++"
             id="nextButton"
-            style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
         >
             <svg
                 viewBox="0 0 64 64"

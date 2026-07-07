@@ -16,8 +16,8 @@ const props = defineProps({
 
 <template>
     <button
-        class="btn btn-ghost p-0"
-        style="background: none; box-shadow: none; border: none; transition: none; color: inherit;"
+        class="btn btn-ghost p-0 focus-ring transition-opacity duration-150 hover:opacity-80"
+        style="background: none; box-shadow: none; border: none; color: inherit;"
         @click="navigateTo('/')"
     >
         <div class="text-4xl font-bold flex items-center space-x-3">

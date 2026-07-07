@@ -11,7 +11,7 @@ import { ChangelogScripts } from '@/assets/textScripts.js';
         <!-- a list of version cards, styled to match the Fast Lit Grabber extension popup -->
         <div class="max-w-2xl mx-auto px-4 mt-10 mb-20 flex flex-col gap-6">
             <div
-                class="rounded-2xl border border-white/10 bg-white/5 p-6"
+                class="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40"
                 v-for="(entry, idx) in [...ChangelogScripts.changelog].reverse()"
                 :key="entry.version"
             >
@@ -49,7 +49,6 @@ import { ChangelogScripts } from '@/assets/textScripts.js';
                                 font-bold
                             "
                         >
-                  
                             {{ changeIdx + 1 }}
                         </span>
                         <p class="mb-0 leading-snug">{{ change }}</p>

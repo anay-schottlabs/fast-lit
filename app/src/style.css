@@ -4,6 +4,12 @@
 @theme {
     --color-deepblue: #120A3D;
     --color-red: #E43247;
+    /* Lightened red for small/non-bold text on --color-deepblue: the base
+       --color-red only computes to ~4.3:1 contrast there, under WCAG AA's
+       4.5:1 for normal text (it's fine at large/bold sizes, e.g. big WPM
+       numbers and headings, which is what it's used for elsewhere). Use
+       this instead of --color-red for small red text specifically. */
+    --color-red-light: #FF5C74;
 }
 
 html {
@@ -16,4 +22,11 @@ h1, div, p, button {
 
 .btn-red {
     @apply btn bg-red disabled:opacity-50 hover:opacity-80 rounded-2xl;
+}
+
+/* Shared focus-visible ring for interactive elements outside daisyUI's
+   .btn family (which already ships its own focus ring) — sidebar nav,
+   playback controls, the header logo, etc. */
+.focus-ring {
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-light focus-visible:ring-offset-deepblue;
 }

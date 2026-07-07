@@ -160,7 +160,18 @@ export class ChangelogScripts {
                 "Redesigned the read page's settings modal with card sections and a more prominent speed display, fixed the close button's hover feedback, and matched the Update button's width and corner rounding to the sections above it.",
                 "Rounded corners are now consistent across every red and white button on the site, including the reader's playback controls.",
                 "Gave the read page a fresh look: a framed reading stage with focal-point guide marks, a clearer speed display, and a bit of hover polish on the controls — kept free of the ambient glow used elsewhere so it stays distraction-free for reading.",
-                "Fixed a tiny blank button showing up at the bottom of the collapsed sidebar."
+                "Fixed a tiny blank button showing up at the bottom of the collapsed sidebar.",
+                "Fixed the sidebar's tooltips, which weren't showing any label when collapsed.",
+                "The speed sliders on the read page now show a red accent to match the rest of the site.",
+                "Added shadows to cards that were missing them (home page stats, How It Works, and every changelog entry) for visual consistency.",
+                "Improved color contrast on small red text and labels across the site for better readability.",
+                "Home page stats now show a loading placeholder instead of a misleading zero while they load.",
+                "Added visible keyboard focus outlines to the sidebar, playback controls, and other interactive elements that were missing them.",
+                "The reader now shows a friendly message instead of a blank screen when there's no text to read.",
+                "Fixed a rare crash when saving your reading stats if they hadn't finished loading yet.",
+                "Restructured the settings modal's header and keyboard shortcuts list for cleaner alignment, and closing it with unsaved blank text no longer wipes out your current article.",
+                "Gave the (currently hidden) write page the same card styling and layout as the rest of the site.",
+                "Fixed the Start Reading and Share Your Feedback buttons rendering narrower than intended — a longstanding sizing bug across the site."
             ]
         )
     ]

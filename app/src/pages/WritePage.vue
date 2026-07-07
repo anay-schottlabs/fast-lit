@@ -247,19 +247,22 @@ function recognizeCharacter() {
 
 <template>
     <Header pageName="Write" />
-    
-    <!-- main page content -->
-    <div>
-        <div class="my-5">
+
+    <!-- main page content, constrained/centered like every other page so the
+         character row and canvas share one column instead of drifting apart
+         (the row was previously flush-left while the canvas centered itself) -->
+    <div class="mx-auto max-w-2xl p-5">
+        <div class="my-5 min-h-16 rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-wrap items-center justify-center gap-2">
             <kbd
-                class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow"
-                v-for="char in characters"
+                class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
+                v-for="(char, idx) in characters"
+                :key="idx"
             >{{ char }}</kbd>
         </div>
 
         <canvas
             id="drawCanvas"
-            class="aspect-square touch-none rounded-2xl mx-auto w-[min(90vw,65vh,32rem)]"
+            class="aspect-square touch-none rounded-2xl mx-auto w-[min(90vw,65vh,32rem)] border border-white/10 shadow-2xl shadow-black/40"
         ></canvas>
     </div>
 </template>

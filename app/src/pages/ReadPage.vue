@@ -33,7 +33,19 @@ function openSettings() {
 }
 
 function updateSettings() {
-    text.value = formText.value;
+    // Only commit the pasted text if it isn't blank — otherwise closing via
+    // the X button (which calls this unconditionally, unlike the Update
+    // button which disables itself on blank text) would silently wipe out
+    // valid existing text. WPM always commits either way.
+    if (formText.value.trim().length > 0) {
+        text.value = formText.value;
+    }
+    else {
+        // Reset the abandoned blank draft back to the text that's still
+        // actually active, so reopening Settings doesn't show a blank
+        // textarea for text that's still being read.
+        formText.value = text.value;
+    }
     wpm.value = formWpm.value;
     settingsModal.value = false;
 }
@@ -170,37 +182,41 @@ const settingsModal = ref(false);
         :class="{ 'modal-open': settingsModal }"
     >
         <div class="modal-box bg-deepblue h-7/8 flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
-            <!-- Close button in top left corner -->
-            <button
-                class="btn btn-circle btn-ghost absolute top-6 left-6 transition-colors hover:bg-white/10"
-                @click="updateSettings"
-            >
-                <svg
-                    version="1.1"
-                    id="Layer_1"
-                    xmlns="http://www.w3.org/2000/svg"
-                    xmlns:xlink="http://www.w3.org/1999/xlink"
-                    x="0px"
-                    y="0px"
-                    width="16px"
-                    height="16px"
-                    viewBox="0 0 122.878 122.88"
-                    fill="white"
+            <!-- Header: close button + title share one relative row, so their
+                 alignment is structural rather than two independently
+                 absolutely-positioned elements coincidentally lining up.
+                 The border-b also gives the title the same disciplined
+                 "section" treatment as Speed/Paste Text/Keyboard Shortcuts
+                 below, instead of floating above them as a bare heading. -->
+            <div class="relative flex items-center justify-center border-b border-white/10 pb-4">
+                <button
+                    class="btn btn-circle btn-ghost absolute left-0 top-1/2 -translate-y-1/2 transition-colors hover:bg-white/10 focus-ring"
+                    @click="updateSettings"
                 >
-                    <g>
-                        <path
-                            d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
-                            l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
-                            l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
-                            c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
-                        />
-                    </g>
-                </svg>
-            </button>
+                    <svg
+                        version="1.1"
+                        id="Layer_1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        x="0px"
+                        y="0px"
+                        width="16px"
+                        height="16px"
+                        viewBox="0 0 122.878 122.88"
+                        fill="white"
+                    >
+                        <g>
+                            <path
+                                d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
+                                l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
+                                l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
+                                c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
+                            />
+                        </g>
+                    </svg>
+                </button>
 
-            <!-- Centered header -->
-            <div class="text-center mt-1 text-2xl font-bold align-top !text-red">
-                <span>Settings</span>
+                <span class="text-2xl font-bold !text-red">Settings</span>
             </div>
 
             <!-- settings menu -->
@@ -210,7 +226,7 @@ const settingsModal = ref(false);
                 <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
                     <input
                         type="range"
-                        class="range w-full"
+                        class="range text-red w-full focus-ring"
                         :min="minWpm"
                         :max="maxWpm"
                         :step="wpmStep"
@@ -226,8 +242,7 @@ const settingsModal = ref(false);
                 <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest text-white/50">Paste Text</p>
                 <div class="p-1">
                     <textarea
-                        class="textarea w-full rounded-2xl border border-white/10 bg-white/5 transition-colors focus:border-red/60 focus:outline-none"
-                        style="height: 300px;"
+                        class="textarea h-[300px] w-full rounded-2xl border border-white/10 bg-white/5 transition-colors focus:border-red/60 focus:outline-none"
                         placeholder="Paste some text to start reading..."
                         v-model="formText"
                     ></textarea>
@@ -236,10 +251,16 @@ const settingsModal = ref(false);
                 <!-- keyboard shortcuts display -->
                 <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest text-white/50">Keyboard Shortcuts</p>
                 <ul class="list overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                    <!-- Each row's key column is a fixed w-20, so rows self-align
+                         without needing an invisible spacer kbd (list-row is an
+                         independent grid per <li>, so column widths don't sync
+                         across rows on their own). kbd corners are rounded-lg to
+                         match the app's rounding scale instead of daisyUI's default. -->
+
                     <!-- play/pause button -->
                     <li class="list-row">
-                        <div>
-                            <kbd class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow">space</kbd>
+                        <div class="w-20">
+                            <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">space</kbd>
                         </div>
                         <div class="list-col-grow flex items-center">
                             <div>Play / Pause</div>
@@ -248,15 +269,8 @@ const settingsModal = ref(false);
 
                     <!-- reset button -->
                     <li class="list-row">
-                        <div>
-                            <span class="inline-flex gap-2">
-                                <kbd class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow">r</kbd>
-                                <!-- invisible kbd element to take up space so that all text is aligned properly -->
-                                <kbd
-                                    class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow"
-                                    style="visibility: hidden;"
-                                ></kbd>
-                            </span>
+                        <div class="w-20">
+                            <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">r</kbd>
                         </div>
                         <div class="list-col-grow flex items-center">
                             <div>Restart Player</div>
@@ -265,10 +279,10 @@ const settingsModal = ref(false);
 
                     <!-- word index controls -->
                     <li class="list-row">
-                        <div>
+                        <div class="w-20">
                             <span class="inline-flex gap-2">
-                                <kbd class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow">◀︎</kbd>
-                                <kbd class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow">▶︎</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">◀︎</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">▶︎</kbd>
                             </span>
                         </div>
                         <div class="list-col-grow flex items-center">
@@ -278,10 +292,10 @@ const settingsModal = ref(false);
 
                     <!-- words per minute controls -->
                     <li class="list-row">
-                        <div>
+                        <div class="w-20">
                             <span class="inline-flex gap-2">
-                                <kbd class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow">▲</kbd>
-                                <kbd class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow">▼</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">▲</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">▼</kbd>
                             </span>
                         </div>
                         <div class="list-col-grow flex items-center">
@@ -291,12 +305,16 @@ const settingsModal = ref(false);
                 </ul>
             </div>
 
-            <!-- button to update changes to settings -->
-            <button
-                class="mt-5 mx-1 btn-red btn-block"
-                @click="updateSettings"
-                :disabled="formText.length == 0"
-            >Update</button>
+            <!-- button to update changes to settings, separated from the
+                 scrollable content above so it reads as a pinned footer
+                 action rather than floating below the fold -->
+            <div class="mt-5 border-t border-white/10 pt-5">
+                <button
+                    class="mx-1 !w-full btn-red"
+                    @click="updateSettings"
+                    :disabled="formText.trim().length == 0"
+                >Update</button>
+            </div>
         </div>
     </dialog>
 </template>

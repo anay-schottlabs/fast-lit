@@ -7,6 +7,9 @@ import { db } from '@/firebase/index.js';
 import { collection, getDocs } from "firebase/firestore";
 
 const totalWordsRead = ref(0);
+// distinguishes "still loading" from "genuinely zero" so the stat cards
+// don't flash a real-looking 0 while the Firestore read is in flight
+const statsLoading = ref(true);
 
 // get stats from firestore
 onMounted(async () => {
@@ -14,6 +17,7 @@ onMounted(async () => {
     querySnapshot.forEach((doc) => {
         totalWordsRead.value = doc.data().totalWordsRead;
     });
+    statsLoading.value = false;
 });
 
 const router = useRouter();
@@ -129,7 +133,7 @@ const statCards = computed(() => [
             <div class="mx-auto grid max-w-6xl gap-16 px-4 pb-20 pt-16 lg:grid-cols-2 lg:items-center">
                 <!-- copy + CTA -->
                 <div class="text-center lg:text-left">
-                    <span class="inline-block rounded-full border border-red/40 bg-red/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-red">
+                    <span class="inline-block rounded-full border border-red/40 bg-red/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-red-light">
                         {{ HomeScripts.heroBadge }}
                     </span>
 
@@ -140,7 +144,7 @@ const statCards = computed(() => [
                         {{ HomeScripts.heroContent }}
                     </p>
                     <button
-                        class="btn-red btn-wide"
+                        class="btn-red !w-full max-w-64"
                         @click="navigateTo('/read')"
                     >
                         <span class="w-full flex items-center justify-center gap-2 ms-2">
@@ -185,7 +189,7 @@ const statCards = computed(() => [
         <!-- stats -->
         <div class="mx-auto mb-24 grid max-w-5xl gap-6 px-4 sm:grid-cols-3">
             <div
-                class="rounded-2xl border border-white/10 bg-white/5 p-6 text-center"
+                class="rounded-2xl border border-white/10 bg-white/5 p-6 text-center shadow-2xl shadow-black/40"
                 v-for="stat in statCards"
                 :key="stat.label"
             >
@@ -204,7 +208,10 @@ const statCards = computed(() => [
                         ></path>
                     </svg>
                 </div>
-                <div class="text-4xl font-bold">{{ stat.value }}</div>
+                <div class="text-4xl font-bold">
+                    <span v-if="statsLoading" class="inline-block h-9 w-16 animate-pulse rounded-lg bg-white/10" aria-hidden="true"></span>
+                    <span v-else>{{ stat.value }}</span>
+                </div>
                 <div class="mt-1 text-sm text-white/55">{{ stat.label }}</div>
             </div>
         </div>
@@ -214,7 +221,7 @@ const statCards = computed(() => [
             <h2 class="mb-10 text-center text-3xl font-bold">How It Works</h2>
             <div class="grid gap-6 sm:grid-cols-3">
                 <div
-                    class="rounded-2xl border border-white/10 bg-white/5 p-6"
+                    class="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40"
                     v-for="(step, idx) in HomeScripts.steps"
                     :key="step.title"
                 >
@@ -229,11 +236,11 @@ const statCards = computed(() => [
 
         <!-- closing call to action -->
         <div class="mx-auto mb-24 max-w-3xl px-4 text-center">
-            <div class="rounded-3xl border border-white/10 bg-white/5 px-6 py-12">
+            <div class="rounded-3xl border border-white/10 bg-white/5 px-6 py-12 shadow-2xl shadow-black/40">
                 <h2 class="mb-3 text-3xl font-bold">{{ HomeScripts.ctaTitle }}</h2>
                 <p class="mb-6 text-white/70">{{ HomeScripts.ctaContent }}</p>
                 <button
-                    class="btn-red btn-wide"
+                    class="btn-red !w-full max-w-64"
                     @click="navigateTo('/read')"
                 >
                     {{ HomeScripts.heroButton }}

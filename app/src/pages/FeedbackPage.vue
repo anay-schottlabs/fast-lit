@@ -61,14 +61,14 @@ function openForm() {
                     <span
                         v-for="category in FeedbackScripts.categories"
                         :key="category"
-                        class="rounded-full border border-red/40 bg-red/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-red"
+                        class="rounded-full border border-red/40 bg-red/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-red-light"
                     >
                         {{ category }}
                     </span>
                 </div>
 
                 <button
-                    class="btn-red btn-wide"
+                    class="btn-red !w-full max-w-64"
                     @click="openForm"
                 >
                     <span class="w-full flex items-center justify-center gap-2 ms-2">
