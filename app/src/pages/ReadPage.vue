@@ -292,7 +292,7 @@ const settingsModal = ref(false);
 
             <!-- button to update changes to settings -->
             <button
-                class="mt-5 btn-red btn-block"
+                class="mt-5 mx-1 btn-red btn-block !rounded-2xl"
                 @click="updateSettings"
                 :disabled="formText.length == 0"
             >Update</button>
