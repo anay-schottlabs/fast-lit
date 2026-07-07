@@ -1,5 +1,5 @@
 <script setup>
-import { ref, useTemplateRef } from 'vue';
+import { ref, watch, useTemplateRef } from 'vue';
 import { Readability } from '@mozilla/readability';
 import Header from '../components/Header.vue';
 import Reader from '../components/Reader.vue';
@@ -34,13 +34,44 @@ function saveText(value) {
     }
 }
 
+// Same idea for reading speed. Stored as a string (localStorage only holds
+// strings) and validated against the min/max bounds on read, in case of
+// stale data from a previous version with a different range.
+const READ_WPM_STORAGE_KEY = "fastlit:readWpm";
+
+function loadSavedWpm() {
+    try {
+        const saved = Number(localStorage.getItem(READ_WPM_STORAGE_KEY));
+        if (Number.isFinite(saved) && saved >= minWpm && saved <= maxWpm) {
+            return saved;
+        }
+    } catch {
+        // localStorage unavailable — fall through to the default below
+    }
+    return 300;
+}
+
+function saveWpm(value) {
+    try {
+        localStorage.setItem(READ_WPM_STORAGE_KEY, String(value));
+    } catch {
+        // localStorage unavailable (e.g. private browsing) — reading still
+        // works for this session, it just won't persist across reloads.
+    }
+}
+
 // form values
 const formText = ref(loadSavedText());
-const formWpm = ref(300);
+const formWpm = ref(loadSavedWpm());
 
 // persistent values
 const text = ref(formText.value);
 const wpm = ref(formWpm.value);
+
+// wpm can change via the settings modal (updateSettings) or arrow-key
+// shortcuts while reading (setWpm) — watching it directly covers both
+// sources from one place instead of duplicating the save call at each.
+watch(wpm, saveWpm);
 
 // function accessed by Reader.vue to change WPM with arrow keys
 function setWpm(newWpm) {
