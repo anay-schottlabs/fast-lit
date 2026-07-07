@@ -100,15 +100,25 @@ const settingsModal = ref(false);
 </script>
 
 <template>
-    <Header pageName="Read" />
-    
+    <!--
+        header sits in its own glow wrapper, same technique as Home/Feedback:
+        -mt-4 cancels App.vue's p-4 top padding, pt-4 restores it, and the
+        glow (-z-10) bleeds through both instead of stopping at a hard edge.
+    -->
+    <div class="relative -mt-4 overflow-hidden pt-4">
+        <div
+            class="pointer-events-none absolute -top-10 left-1/2 -z-10 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red/25 blur-3xl"
+            aria-hidden="true"
+        ></div>
+        <Header pageName="Read" />
+    </div>
+
     <!-- main page content -->
-    <div class="p-5">
+    <div class="mx-auto max-w-4xl p-5">
         <div class="mb-5">
             <button
-                class="btn btn-circle btn-ghost absolute top-5 right-5"
+                class="btn btn-circle btn-ghost absolute top-5 right-5 transition-colors hover:bg-white/10"
                 @click="openSettings"
-                style="background: transparent; box-shadow: none; border: none;"
             >
                 <!-- svg for a gear icon for the settings button -->
                 <svg

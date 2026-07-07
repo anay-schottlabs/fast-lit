@@ -328,24 +328,34 @@ window.addEventListener('keydown', (event) => {
 
 <template>
     <!-- display words per minute -->
-    <p class="mt-5 text-center text-lg">
-        {{ wpm }} words per minute
+    <p class="mt-5 text-center text-xs font-semibold uppercase tracking-widest text-white/50">
+        Reading Speed
     </p>
-    
-    <!-- main word reader display -->
-    <div class="text-7xl font-bold text-center my-30 flex">
-        <!-- Shows the part of the word before the highlighted letter, right-aligned within its flex space -->
-        <span class="flex-1 text-right">
-            {{ beforeRedLetter }}
-        </span>
-        <!-- Displays the single red-highlighted letter for optimal reading focus -->
-        <span class="text-red">
-            {{ redLetter }}
-        </span>
-        <!-- Shows the part of the word after the highlighted letter, left-aligned within its flex space -->
-        <span class="flex-1 text-left">
-            {{ afterRedLetter }}
-        </span>
+    <p class="mb-2 text-center">
+        <span class="font-mono text-2xl font-bold !text-red">{{ wpm }}</span>
+        <span class="text-sm text-white/60"> words per minute</span>
+    </p>
+
+    <!-- main word reader display, framed as a distinct "reading stage" -->
+    <div class="relative my-8 rounded-3xl border border-white/10 bg-white/5 px-6 py-16 shadow-2xl shadow-black/40">
+        <!-- focal-point guide ticks, reinforcing the red-letter alignment above/below the word -->
+        <div class="absolute left-1/2 top-6 h-3 w-0.5 -translate-x-1/2 rounded-full bg-red/50" aria-hidden="true"></div>
+        <div class="absolute bottom-6 left-1/2 h-3 w-0.5 -translate-x-1/2 rounded-full bg-red/50" aria-hidden="true"></div>
+
+        <div class="text-7xl font-bold text-center flex">
+            <!-- Shows the part of the word before the highlighted letter, right-aligned within its flex space -->
+            <span class="flex-1 text-right">
+                {{ beforeRedLetter }}
+            </span>
+            <!-- Displays the single red-highlighted letter for optimal reading focus -->
+            <span class="text-red">
+                {{ redLetter }}
+            </span>
+            <!-- Shows the part of the word after the highlighted letter, left-aligned within its flex space -->
+            <span class="flex-1 text-left">
+                {{ afterRedLetter }}
+            </span>
+        </div>
     </div>
 
     <!-- progress bar for visual representation of reading progress -->
@@ -363,7 +373,7 @@ window.addEventListener('keydown', (event) => {
     <div class="flex gap-5 justify-center items-center">
         <!-- button to move to previous word -->
         <button
-            class="btn btn-square !text-red bg-white rounded-2xl transition-opacity duration-200 opacity-100 hover:opacity-80 disabled:opacity-50"
+            class="btn btn-square !text-red bg-white rounded-2xl transition-all duration-200 opacity-100 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
             :disabled="wordIndex == 0 || playState == PlayState.PLAYING"
             @click="wordIndex--"
             id="previousButton"
@@ -400,7 +410,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- play button -->
         <button
-            class="btn-red !btn-square"
+            class="btn-red !btn-square transition-transform duration-200 hover:-translate-y-0.5"
             style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
             @click="start"
             id="playButton"
@@ -430,7 +440,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- pause button -->
         <button
-            class="btn-red !btn-square"
+            class="btn-red !btn-square transition-transform duration-200 hover:-translate-y-0.5"
             style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
             @click="pause"
             id="pauseButton"
@@ -454,7 +464,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- stop/reset button (referred to as "end button") -->
         <button
-            class="btn-red !btn-square"
+            class="btn-red !btn-square transition-transform duration-200 hover:-translate-y-0.5"
             style="width: 3.5rem; height: 3.5rem; min-width: 3.5rem; min-height: 3.5rem;"
             @click="end"
             id="endButton"
@@ -481,7 +491,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- button to move to next word -->
         <button
-            class="btn btn-square !text-red bg-white rounded-2xl transition-opacity duration-200 hover:opacity-80 disabled:opacity-50"
+            class="btn btn-square !text-red bg-white rounded-2xl transition-all duration-200 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0"
             :disabled="wordIndex == wordList.length - 1 || playState == PlayState.PLAYING"
             @click="wordIndex++"
             id="nextButton"

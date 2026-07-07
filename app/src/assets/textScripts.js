@@ -158,7 +158,8 @@ export class ChangelogScripts {
                 "The up and down arrow keys can now change your reading speed while the reader is playing, not just while paused.",
                 "Redesigned the feedback page to match the rest of the app, with a clearer card layout and categories for the kind of feedback you can share.",
                 "Redesigned the read page's settings modal with card sections and a more prominent speed display, fixed the close button's hover feedback, and matched the Update button's width and corner rounding to the sections above it.",
-                "Rounded corners are now consistent across every red and white button on the site, including the reader's playback controls."
+                "Rounded corners are now consistent across every red and white button on the site, including the reader's playback controls.",
+                "Gave the read page a fresh look: a framed reading stage with focal-point guide marks, a clearer speed display, a glow behind the header, and a bit of hover polish on the controls."
             ]
         )
     ]
