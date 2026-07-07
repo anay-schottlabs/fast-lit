@@ -378,7 +378,7 @@ window.addEventListener('keydown', (event) => {
         min="0"
         :max="wordList.length - 1"
         v-model="wordIndex"
-        class="range text-red w-full mb-10 focus-ring"
+        class="range w-full mb-10 focus-ring"
         :disabled="playState == PlayState.PLAYING"
         :style="playState == PlayState.PLAYING ? 'opacity: 1; pointer-events: none;' : ''"
     />

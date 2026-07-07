@@ -162,7 +162,6 @@ export class ChangelogScripts {
                 "Gave the read page a fresh look: a framed reading stage with focal-point guide marks, a clearer speed display, and a bit of hover polish on the controls — kept free of the ambient glow used elsewhere so it stays distraction-free for reading.",
                 "Fixed a tiny blank button showing up at the bottom of the collapsed sidebar.",
                 "Fixed the sidebar's tooltips, which weren't showing any label when collapsed.",
-                "The speed sliders on the read page now show a red accent to match the rest of the site.",
                 "Added shadows to cards that were missing them (home page stats, How It Works, and every changelog entry) for visual consistency.",
                 "Improved color contrast on small red text and labels across the site for better readability.",
                 "Home page stats now show a loading placeholder instead of a misleading zero while they load.",

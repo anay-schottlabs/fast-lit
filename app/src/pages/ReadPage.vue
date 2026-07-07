@@ -281,7 +281,7 @@ const settingsModal = ref(false);
                 <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
                     <input
                         type="range"
-                        class="range text-red w-full focus-ring"
+                        class="range w-full focus-ring"
                         :min="minWpm"
                         :max="maxWpm"
                         :step="wpmStep"
