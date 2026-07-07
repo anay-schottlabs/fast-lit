@@ -22,6 +22,10 @@ div, p, span, textarea, button {
     color: var(--color-red) !important;
 }
 
+.text-red-custom {
+    color: var(--color-red) !important;
+}
+
 .btn-red-custom:hover, .btn-white-custom:hover {
     opacity: 80%;
 }
