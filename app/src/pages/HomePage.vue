@@ -73,11 +73,14 @@ const statCards = computed(() => [
     <div>
         <!--
             header + hero share this wrapper so the decorative glow bleeds behind both.
-            The glow only pokes -top-10 above this box (not further), so at y=0 we're
-            still inside its blurred fringe rather than its solid pre-blur core — that
-            keeps the tint behind the header soft instead of reading as a solid bar.
+            App.vue wraps <router-view> in a p-4 box, which reserves 16px above this
+            page that this wrapper can't paint into on its own — so -mt-4 cancels that
+            reserved space (a standard negative-margin "full bleed inside a padded
+            layout" trick) and pt-4 adds the same amount back as internal padding,
+            keeping the header's on-screen position unchanged while letting the glow's
+            background extend all the way up behind it.
         -->
-        <div class="relative overflow-hidden">
+        <div class="relative -mt-4 overflow-hidden pt-4">
             <!-- decorative glow -->
             <div
                 class="pointer-events-none absolute -top-10 left-1/2 -z-10 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red/25 blur-3xl"
