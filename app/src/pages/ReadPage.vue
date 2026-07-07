@@ -11,8 +11,31 @@ const wpmStep = 20;
 
 const reader = useTemplateRef("reader");
 
+// Persists the active reading text (typed/pasted, or loaded via the Fast Lit
+// Grabber extension) across page reloads. Falls back to the sample text if
+// nothing's been saved yet, or if localStorage is unavailable (e.g. private
+// browsing in some browsers throws on read/write).
+const READ_TEXT_STORAGE_KEY = "fastlit:readText";
+
+function loadSavedText() {
+    try {
+        return localStorage.getItem(READ_TEXT_STORAGE_KEY) ?? ReadScripts.sampleText;
+    } catch {
+        return ReadScripts.sampleText;
+    }
+}
+
+function saveText(value) {
+    try {
+        localStorage.setItem(READ_TEXT_STORAGE_KEY, value);
+    } catch {
+        // localStorage unavailable (e.g. private browsing) — reading still
+        // works for this session, it just won't persist across reloads.
+    }
+}
+
 // form values
-const formText = ref(ReadScripts.sampleText);
+const formText = ref(loadSavedText());
 const formWpm = ref(300);
 
 // persistent values
@@ -39,6 +62,7 @@ function updateSettings() {
     // valid existing text. WPM always commits either way.
     if (formText.value.trim().length > 0) {
         text.value = formText.value;
+        saveText(text.value);
     }
     else {
         // Reset the abandoned blank draft back to the text that's still
