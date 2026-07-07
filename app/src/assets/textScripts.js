@@ -3,6 +3,7 @@ function text(stringList) {
 }
 
 export class HomeScripts {
+    static heroBadge = "Rapid Serial Visual Presentation";
     static heroTitle = "Unlock your potential.";
     static heroContent = text([
         "Read faster, stay focused, and absorb more from every article.",
@@ -12,6 +13,30 @@ export class HomeScripts {
         "designed to help you get through more content in less time."
     ]);
     static heroButton = "Start Reading";
+
+    // words cycled through by the live preview widget in the hero section
+    static demoWords = [
+        "Reading", "at", "the", "speed", "of", "thought."
+    ];
+    static demoWpm = 380;
+
+    static steps = [
+        {
+            title: "Paste or Grab",
+            description: "Paste any text, or use the Fast Lit Grabber browser extension to pull in an article from the web."
+        },
+        {
+            title: "Set Your Pace",
+            description: "Choose a comfortable words-per-minute speed, and adjust it on the fly with the arrow keys."
+        },
+        {
+            title: "Read & Focus",
+            description: "Follow the red focal point as words stream by, cutting out eye movement and distraction."
+        }
+    ];
+
+    static ctaTitle = "Ready to read faster?";
+    static ctaContent = "Jump in with the sample text, or paste your own in Settings.";
 }
 
 export class ReadScripts {
@@ -120,7 +145,8 @@ export class ChangelogScripts {
             "1.2.0",
             [
                 "Redesigned the Fast Lit Grabber extension popup with a clearer step-by-step layout and a grab progress indicator.",
-                "Closing the Settings modal now saves your changes instead of discarding them."
+                "Redesigned the changelog page for a more modern look.",
+                "Closing the settings modal now saves your changes instead of discarding them."
             ]
         )
     ]
