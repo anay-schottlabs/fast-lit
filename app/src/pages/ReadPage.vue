@@ -100,18 +100,9 @@ const settingsModal = ref(false);
 </script>
 
 <template>
-    <!--
-        header sits in its own glow wrapper, same technique as Home/Feedback:
-        -mt-4 cancels App.vue's p-4 top padding, pt-4 restores it, and the
-        glow (-z-10) bleeds through both instead of stopping at a hard edge.
-    -->
-    <div class="relative -mt-4 overflow-hidden pt-4">
-        <div
-            class="pointer-events-none absolute -top-10 left-1/2 -z-10 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red/25 blur-3xl"
-            aria-hidden="true"
-        ></div>
-        <Header pageName="Read" />
-    </div>
+    <!-- no ambient glow on this page (unlike Home/Feedback) — it's meant for
+         focused reading, and the glow was a bit distracting -->
+    <Header pageName="Read" />
 
     <!-- main page content -->
     <div class="mx-auto max-w-4xl p-5">
