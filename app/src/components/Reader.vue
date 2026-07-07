@@ -27,6 +27,15 @@ const wordIndex = ref(0);
 // if localStorage is unavailable.
 const READ_PROGRESS_STORAGE_KEY = "fastlit:readProgress";
 
+// Guards saveWordIndex from persisting anything before parse() has actually
+// restored the saved index (see parse() below). Without this, any wordIndex
+// write that happens before that restore — e.g. wordIndex's own ref(0)
+// initialization being observed, or v-model syncing against the range
+// input's default max before wordList is populated — would overwrite the
+// saved progress with 0 before it's ever read back, which is exactly the
+// bug reported: localStorage showed 0 before restoration got a chance to run.
+let hasRestoredProgress = false;
+
 function loadSavedWordIndex() {
     try {
         return Number(localStorage.getItem(READ_PROGRESS_STORAGE_KEY));
@@ -36,6 +45,9 @@ function loadSavedWordIndex() {
 }
 
 function saveWordIndex(value) {
+    if (!hasRestoredProgress) {
+        return;
+    }
     try {
         localStorage.setItem(READ_PROGRESS_STORAGE_KEY, String(value));
     } catch {
@@ -182,8 +194,6 @@ function parse() {
         wordIndex.value = 0;
     }
 }
-
-let hasRestoredProgress = false;
 
 watch(() => props.text, parse, { immediate: true });
 
