@@ -34,7 +34,22 @@ import { ChangelogScripts } from '@/assets/textScripts.js';
                         v-for="(change, changeIdx) in entry.changes"
                         :key="changeIdx"
                     >
-                        <span class="flex h-6 w-6 flex-shrink-0 items-center justify-center rounded-full bg-red text-xs font-bold">
+                        <span
+                            class="
+                                flex
+                                h-6
+                                w-6
+                                flex-shrink-0
+                                items-center
+                                justify-center
+                                rounded-full
+                                bg-white/15
+                                text-white/80
+                                text-xs
+                                font-bold
+                            "
+                        >
+                  
                             {{ changeIdx + 1 }}
                         </span>
                         <p class="mb-0 leading-snug">{{ change }}</p>
