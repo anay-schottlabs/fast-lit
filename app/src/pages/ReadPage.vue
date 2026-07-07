@@ -1,9 +1,7 @@
 <script setup>
 import { ref, useTemplateRef } from 'vue';
 import { Readability } from '@mozilla/readability';
-import { toast } from 'vue3-toastify';
 import Header from '../components/Header.vue';
-import 'vue3-toastify/dist/index.css';
 import Reader from '../components/Reader.vue';
 import { ReadScripts } from '@/assets/textScripts.js';
 
@@ -27,30 +25,6 @@ function setWpm(newWpm) {
     formWpm.value = newWpm;
 }
 
-// toasts
-const ToastType = Object.freeze({
-    SUCCESS: "success",
-    WARN: "warn",
-    ERROR: "error"
-});
-
-const toastSettings = {
-    position: toast.POSITION.BOTTOM_RIGHT,
-    theme: "colored"
-}
-
-function showToast(message, toastType) {
-    if (toastType == ToastType.SUCCESS) {
-        toast.success(message, toastSettings);
-    }
-    else if (toastType == ToastType.WARN) {
-        toast.warn(message, toastSettings);
-    }
-    else if (toastType == ToastType.ERROR) {
-        toast.error(message, toastSettings);
-    }
-}
-
 // handling settings modal
 
 function openSettings() {
@@ -62,14 +36,6 @@ function updateSettings() {
     text.value = formText.value;
     wpm.value = formWpm.value;
     settingsModal.value = false;
-    showToast("Changed settings", ToastType.SUCCESS);
-}
-
-function cancelSettings() {
-    formText.value = text.value;
-    formWpm.value = wpm.value;
-    settingsModal.value = false;
-    showToast("Did not change settings", ToastType.WARN);
 }
 
 function loadFromGrabber(html) {
@@ -206,7 +172,7 @@ const settingsModal = ref(false);
             <!-- Close button in top left corner -->
             <button
                 class="btn btn-circle btn-ghost absolute top-6 left-6"
-                @click="cancelSettings"
+                @click="updateSettings"
                 style="background: transparent; box-shadow: none; border: none;"
             >
                 <svg
