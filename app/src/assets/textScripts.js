@@ -114,6 +114,14 @@ export class ChangelogScripts {
             text([
                 "Simplified usage for Fast Lit Grabber extension and removed grabber modal in settings."
             ])
+        ),
+        new this.Entry(
+            "July 6, 2026",
+            "1.2.0",
+            text([
+                "Redesigned the Fast Lit Grabber extension popup with a clearer step-by-step layout and a grab progress indicator.",
+                "Closing the Settings modal now saves your changes instead of discarding them."
+            ])
         )
     ]
 }
