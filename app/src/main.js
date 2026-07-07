@@ -1,8 +1,6 @@
 import { createApp } from 'vue'
 import App from './App.vue'
 import { createRouter, createWebHistory } from 'vue-router'
-import Vue3Toastify from 'vue3-toastify';
-import 'vue3-toastify/dist/index.css';
 import HomePage from './pages/HomePage.vue';
 import ReadPage from './pages/ReadPage.vue';
 import WritePage from './pages/WritePage.vue';
@@ -20,9 +18,4 @@ const router = createRouter({
     ],
 });
 
-createApp(App).use(
-    Vue3Toastify,
-    {
-        autoClose: 3000,
-    },
-).use(router).mount('#app');
+createApp(App).use(router).mount('#app');
