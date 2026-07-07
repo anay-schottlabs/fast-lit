@@ -172,7 +172,8 @@ export class ChangelogScripts {
                 "Restructured the settings modal's header and keyboard shortcuts list for cleaner alignment, and closing it with unsaved blank text no longer wipes out your current article.",
                 "Gave the (currently hidden) write page the same card styling and layout as the rest of the site.",
                 "Fixed the Start Reading and Share Your Feedback buttons rendering narrower than intended — a longstanding sizing bug across the site.",
-                "Text you paste or send over from the Fast Lit Grabber extension, and your reading speed, are now saved on your device, so they're still there the next time you open the read page."
+                "Text you paste or send over from the Fast Lit Grabber extension, and your reading speed, are now saved on your device, so they're still there the next time you open the read page.",
+                "Fixed the play/pause and stop buttons rendering noticeably smaller than the previous/next word buttons next to them."
             ]
         )
     ]

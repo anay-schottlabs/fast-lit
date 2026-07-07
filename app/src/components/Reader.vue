@@ -423,7 +423,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- play button -->
         <button
-            class="btn-red !btn-square w-14 h-14 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
+            class="btn-red !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
             @click="start"
             id="playButton"
             v-if="playState != PlayState.PLAYING"
@@ -452,7 +452,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- pause button -->
         <button
-            class="btn-red !btn-square w-14 h-14 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
+            class="btn-red !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
             @click="pause"
             id="pauseButton"
             v-if="playState == PlayState.PLAYING"
@@ -475,7 +475,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- stop/reset button (referred to as "end button") -->
         <button
-            class="btn-red !btn-square w-14 h-14 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
+            class="btn-red !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
             @click="end"
             id="endButton"
         >
