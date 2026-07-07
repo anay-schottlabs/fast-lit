@@ -156,100 +156,116 @@ const DelayState = Object.freeze({
 
 const delayState = ref(DelayState.NONE);
 
-function start() {
-    playState.value = PlayState.PLAYING;
-    readerLoop = setInterval(() => {
-        // Punctuation pauses keep the current word on screen for extra ticks before advancing.
-        // Periods use three extra ticks (LONG → MEDIUM → SHORT); commas, em dashes, semicolons, and colons use one (SHORT).
+// A single tick of the reader loop, extracted out of start() so it can be
+// reused when restarting the interval after a mid-playback WPM change (see
+// the interval watcher below) without duplicating this logic.
+function tick() {
+    // Punctuation pauses keep the current word on screen for extra ticks before advancing.
+    // Periods use three extra ticks (LONG → MEDIUM → SHORT); commas, em dashes, semicolons, and colons use one (SHORT).
 
-        if (delayState.value == DelayState.LONG_PAUSE) {
-            // First extra tick after a period — stay on the same word.
-            delayState.value = DelayState.MEDIUM_PAUSE;
+    if (delayState.value == DelayState.LONG_PAUSE) {
+        // First extra tick after a period — stay on the same word.
+        delayState.value = DelayState.MEDIUM_PAUSE;
+        return;
+    }
+    else if (delayState.value == DelayState.MEDIUM_PAUSE) {
+        // Second extra tick after a period — stay on the same word.
+        delayState.value = DelayState.SHORT_PAUSE;
+        return;
+    }
+    else if (delayState.value == DelayState.SHORT_PAUSE) {
+        // Pause finished — resume normal reading and move to the next word.
+        delayState.value = DelayState.NONE;
+        if (wordIndex.value >= wordList.value.length - 1) {
+            clearInterval(readerLoop);
+            playState.value = PlayState.STOPPED;
             return;
         }
-        else if (delayState.value == DelayState.MEDIUM_PAUSE) {
-            // Second extra tick after a period — stay on the same word.
+        wordIndex.value++;
+        return;
+    }
+    else if (delayState.value == DelayState.NONE) {
+        const lastChar = word.value[word.value.length - 1];
+
+        const shortPauseChars = [
+            // single short-pause punctuation
+            ",",      // comma
+            "—",      // em dash
+            ";",      // semicolon
+            ":",      // colon
+
+            // punctuation followed by closing parenthesis
+            ",)",     // comma before closing parenthesis
+            ";)",     // semicolon before closing parenthesis
+            ":)",     // colon before closing parenthesis
+
+            // punctuation followed by single or double quote
+            ",'",     // comma followed by single quote
+            ",\"",    // comma followed by double quote
+            "—'",     // em dash followed by single quote
+            "—\"",    // em dash followed by double quote
+            ";'",     // semicolon followed by single quote
+            ";\"",    // semicolon followed by double quote
+            ":'",     // colon followed by single quote
+            ":\"",    // colon followed by double quote
+        ];
+        const longPauseChars = [
+            // single long-pause punctuation
+            ".",      // period
+            "!",      // exclamation mark
+            "?",      // question mark
+
+            // punctuation followed by closing parenthesis
+            ".)",     // period before closing parenthesis
+            "!)",     // exclamation mark before closing parenthesis
+            "?)",     // question mark before closing parenthesis
+
+            // punctuation followed by single or double quote
+            ".'",     // period followed by single quote
+            ".\"",    // period followed by double quote
+            "!'",     // exclamation mark followed by single quote
+            "!\"",    // exclamation mark followed by double quote
+            "?'",     // question mark followed by single quote
+            "?\"",    // question mark followed by double quote
+        ];
+
+
+        if (longPauseChars.includes(lastChar)) {
+            // Sentence end — start a long pause without advancing yet.
+            delayState.value = DelayState.LONG_PAUSE;
+            return;
+        }
+        else if (shortPauseChars.includes(lastChar)) {
+            // Clause break — start a short pause without advancing yet.
             delayState.value = DelayState.SHORT_PAUSE;
             return;
         }
-        else if (delayState.value == DelayState.SHORT_PAUSE) {
-            // Pause finished — resume normal reading and move to the next word.
-            delayState.value = DelayState.NONE;
-            if (wordIndex.value >= wordList.value.length - 1) {
-                clearInterval(readerLoop);
-                playState.value = PlayState.STOPPED;
-                return;
-            }
-            wordIndex.value++;
+
+        // No trailing punctuation — advance immediately, or stop at the last word.
+        if (wordIndex.value >= wordList.value.length - 1) {
+            clearInterval(readerLoop);
+            playState.value = PlayState.STOPPED;
             return;
         }
-        else if (delayState.value == DelayState.NONE) {
-            const lastChar = word.value[word.value.length - 1];
-
-            const shortPauseChars = [
-                // single short-pause punctuation
-                ",",      // comma
-                "—",      // em dash
-                ";",      // semicolon
-                ":",      // colon
-
-                // punctuation followed by closing parenthesis
-                ",)",     // comma before closing parenthesis
-                ";)",     // semicolon before closing parenthesis
-                ":)",     // colon before closing parenthesis
-
-                // punctuation followed by single or double quote
-                ",'",     // comma followed by single quote
-                ",\"",    // comma followed by double quote
-                "—'",     // em dash followed by single quote
-                "—\"",    // em dash followed by double quote
-                ";'",     // semicolon followed by single quote
-                ";\"",    // semicolon followed by double quote
-                ":'",     // colon followed by single quote
-                ":\"",    // colon followed by double quote
-            ];
-            const longPauseChars = [
-                // single long-pause punctuation
-                ".",      // period
-                "!",      // exclamation mark
-                "?",      // question mark
-
-                // punctuation followed by closing parenthesis
-                ".)",     // period before closing parenthesis
-                "!)",     // exclamation mark before closing parenthesis
-                "?)",     // question mark before closing parenthesis
-
-                // punctuation followed by single or double quote
-                ".'",     // period followed by single quote
-                ".\"",    // period followed by double quote
-                "!'",     // exclamation mark followed by single quote
-                "!\"",    // exclamation mark followed by double quote
-                "?'",     // question mark followed by single quote
-                "?\"",    // question mark followed by double quote
-            ];
-       
-       
-            if (longPauseChars.includes(lastChar)) {
-                // Sentence end — start a long pause without advancing yet.
-                delayState.value = DelayState.LONG_PAUSE;
-                return;
-            }
-            else if (shortPauseChars.includes(lastChar)) {
-                // Clause break — start a short pause without advancing yet.
-                delayState.value = DelayState.SHORT_PAUSE;
-                return;
-            }
-
-            // No trailing punctuation — advance immediately, or stop at the last word.
-            if (wordIndex.value >= wordList.value.length - 1) {
-                clearInterval(readerLoop);
-                playState.value = PlayState.STOPPED;
-                return;
-            }
-            wordIndex.value++;
-        }
-    }, interval.value);
+        wordIndex.value++;
+    }
 }
+
+function start() {
+    playState.value = PlayState.PLAYING;
+    readerLoop = setInterval(tick, interval.value);
+}
+
+// setInterval captures its delay once, so changing wpm mid-playback (e.g. via
+// the arrow-key shortcuts) wouldn't otherwise re-pace an already-running
+// loop. Restart the interval at the new delay whenever it changes while
+// playing, picking up right where wordIndex/delayState left off.
+watch(interval, (newInterval) => {
+    if (playState.value == PlayState.PLAYING) {
+        clearInterval(readerLoop);
+        readerLoop = setInterval(tick, newInterval);
+    }
+});
 
 function pause() {
     playState.value = PlayState.PAUSED;
@@ -282,6 +298,18 @@ window.addEventListener('keydown', (event) => {
         else if (event.key == "r") {
             end();
         }
+        // WPM can be adjusted regardless of play state — the interval watcher
+        // above re-paces an already-running loop, so this works while playing too.
+        else if (event.code == "ArrowDown") {
+            if (props.wpm != props.minWpm) {
+                emit("setWpm", props.wpm - props.wpmStep);
+            }
+        }
+        else if (event.code == "ArrowUp") {
+            if (props.wpm != props.maxWpm) {
+                emit("setWpm", props.wpm + props.wpmStep);
+            }
+        }
         else if (playState.value != PlayState.PLAYING) {
             if (event.code == "ArrowLeft") {
                 if (wordIndex.value != 0) {
@@ -291,16 +319,6 @@ window.addEventListener('keydown', (event) => {
             else if (event.code == "ArrowRight") {
                 if (wordIndex.value != wordList.value.length - 1) {
                     wordIndex.value++;
-                }
-            }
-            else if (event.code == "ArrowDown") {
-                if (props.wpm != props.minWpm) {
-                    emit("setWpm", props.wpm - props.wpmStep);
-                }
-            }
-            else if (event.code == "ArrowUp") {
-                if (props.wpm != props.maxWpm) {
-                    emit("setWpm", props.wpm + props.wpmStep);
                 }
             }
         }
