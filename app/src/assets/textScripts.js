@@ -112,6 +112,7 @@ export class FeedbackScripts {
         "Every suggestion helps make Fast Lit better for everyone."
     ]);
     static heroButton = "Share Your Feedback";
+    static categories = ["Bug Reports", "Feature Ideas", "General Thoughts"];
 }
 
 export class ChangelogScripts {
@@ -154,7 +155,8 @@ export class ChangelogScripts {
                 "Rebuilt the home page with more info, an improved look, and a live demo of RSVP with some sample text to make the point of the site a little less mysterious.",
                 "Capped the size of the write page's grid to work on both phone and laptop screens.",
                 "Restyled the sidebar to match the rest of the app, with a highlight showing which page you're on.",
-                "The up and down arrow keys can now change your reading speed while the reader is playing, not just while paused."
+                "The up and down arrow keys can now change your reading speed while the reader is playing, not just while paused.",
+                "Redesigned the feedback page to match the rest of the app, with a clearer card layout and categories for the kind of feedback you can share."
             ]
         )
     ]
