@@ -196,14 +196,16 @@ function navTextClass(path) {
                     </li>
 
                     <!-- current version, linked to changelog page -->
-                    <li class="fixed bottom-6">
+                    <!-- hidden (not just its text) while collapsed, since the
+                         button alone had no icon and rendered as a tiny blank
+                         hit target -->
+                    <li class="is-drawer-close:hidden fixed bottom-6">
                         <button
                             :class="navItemClass"
                             @click="navigateTo('/changelog')"
                         >
                             <span
                                 class="
-                                    is-drawer-close:hidden
                                     text-red
                                     font-mono
                                     font-bold
