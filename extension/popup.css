@@ -4,6 +4,8 @@
 }
 
 body {
+    width: 380px;
+    margin: 0;
     background-color: var(--color-deepblue) !important;
 }
 
@@ -11,10 +13,44 @@ div, p, span, textarea, button {
     color: white !important;
 }
 
+.header-divider {
+    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.text-red-custom {
+    color: var(--color-red) !important;
+}
+
+.text-muted-custom {
+    color: rgba(255, 255, 255, 0.55) !important;
+}
+
+.steps-card {
+    background-color: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.08);
+    border-radius: 0.75rem;
+    padding: 0.85rem 1rem;
+}
+
+.step-number {
+    width: 22px;
+    height: 22px;
+    min-width: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    font-size: 0.7rem;
+    font-weight: 700;
+    border-radius: 50%;
+    background-color: var(--color-red);
+}
+
 .btn-red-custom {
     background-color: var(--color-red) !important;
     color: white !important;
     border-color: var(--color-red) !important;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
 }
 
 .btn-white-custom {
@@ -22,12 +58,25 @@ div, p, span, textarea, button {
     color: var(--color-red) !important;
 }
 
-.text-red-custom {
-    color: var(--color-red) !important;
+.btn-red-custom:hover, .btn-white-custom:hover {
+    opacity: 90%;
+    transform: translateY(-1px);
 }
 
-.btn-red-custom:hover, .btn-white-custom:hover {
-    opacity: 80%;
+.btn-red-custom:hover {
+    box-shadow: 0 8px 18px rgba(228, 50, 71, 0.35);
+}
+
+.btn-red-custom:active {
+    transform: translateY(0);
+    box-shadow: none;
+}
+
+.btn-red-custom:disabled {
+    opacity: 70% !important;
+    transform: none;
+    box-shadow: none;
+    cursor: wait;
 }
 
 textarea {
