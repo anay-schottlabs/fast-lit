@@ -156,7 +156,8 @@ export class ChangelogScripts {
                 "Capped the size of the write page's grid to work on both phone and laptop screens.",
                 "Restyled the sidebar to match the rest of the app, with a highlight showing which page you're on.",
                 "The up and down arrow keys can now change your reading speed while the reader is playing, not just while paused.",
-                "Redesigned the feedback page to match the rest of the app, with a clearer card layout and categories for the kind of feedback you can share."
+                "Redesigned the feedback page to match the rest of the app, with a clearer card layout and categories for the kind of feedback you can share.",
+                "Redesigned the read page's settings modal with card sections and a more prominent speed display, and fixed the close button's hover feedback."
             ]
         )
     ]

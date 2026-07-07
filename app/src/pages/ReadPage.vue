@@ -168,12 +168,11 @@ const settingsModal = ref(false);
         class="modal"
         :class="{ 'modal-open': settingsModal }"
     >
-        <div class="modal-box bg-deepblue h-7/8 flex flex-col overflow-hidden">
+        <div class="modal-box bg-deepblue h-7/8 flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
             <!-- Close button in top left corner -->
             <button
-                class="btn btn-circle btn-ghost absolute top-6 left-6"
+                class="btn btn-circle btn-ghost absolute top-6 left-6 transition-colors hover:bg-white/10"
                 @click="updateSettings"
-                style="background: transparent; box-shadow: none; border: none;"
             >
                 <svg
                     version="1.1"
@@ -197,17 +196,17 @@ const settingsModal = ref(false);
                     </g>
                 </svg>
             </button>
-        
+
             <!-- Centered header -->
-            <div class="text-center mt-1 text-2xl font-bold align-top">
+            <div class="text-center mt-1 text-2xl font-bold align-top !text-red">
                 <span>Settings</span>
             </div>
 
             <!-- settings menu -->
-            <div class="flex-1 overflow-y-auto">
+            <div class="flex-1 overflow-y-auto px-1">
                 <!-- section to choose words per minute of reader -->
-                <p class="divider mt-10">Speed</p>
-                <div>
+                <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest text-white/50">Speed</p>
+                <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
                     <input
                         type="range"
                         class="range w-full"
@@ -216,14 +215,17 @@ const settingsModal = ref(false);
                         :step="wpmStep"
                         v-model="formWpm"
                     >
-                    <p class="text-center text-sm mt-5">{{ formWpm }} words per minute</p>
+                    <p class="mt-4 text-center">
+                        <span class="font-mono text-3xl font-bold !text-red">{{ formWpm }}</span>
+                        <span class="text-sm text-white/60"> words per minute</span>
+                    </p>
                 </div>
-    
+
                 <!-- section to manually paste text in -->
-                <p class="divider mt-10">Paste Text</p>
+                <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest text-white/50">Paste Text</p>
                 <div class="p-1">
                     <textarea
-                        class="textarea w-full bg-deepblue"
+                        class="textarea w-full rounded-2xl border border-white/10 bg-white/5 transition-colors focus:border-red/60 focus:outline-none"
                         style="height: 300px;"
                         placeholder="Paste some text to start reading..."
                         v-model="formText"
@@ -231,12 +233,12 @@ const settingsModal = ref(false);
                 </div>
 
                 <!-- keyboard shortcuts display -->
-                <p class="divider mt-10">Keyboard Shortcuts</p>
-                <ul class="list">
+                <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest text-white/50">Keyboard Shortcuts</p>
+                <ul class="list overflow-hidden rounded-2xl border border-white/10 bg-white/5">
                     <!-- play/pause button -->
                     <li class="list-row">
                         <div>
-                            <kbd class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow">space</kbd>                      
+                            <kbd class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow">space</kbd>
                         </div>
                         <div class="list-col-grow flex items-center">
                             <div>Play / Pause</div>
@@ -252,8 +254,8 @@ const settingsModal = ref(false);
                                 <kbd
                                     class="kbd kbd-xl bg-white text-gray-800 border border-gray-300 shadow"
                                     style="visibility: hidden;"
-                                ></kbd>                          
-                            </span>          
+                                ></kbd>
+                            </span>
                         </div>
                         <div class="list-col-grow flex items-center">
                             <div>Restart Player</div>
