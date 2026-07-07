@@ -6,18 +6,15 @@ export class HomeScripts {
     static heroBadge = "Rapid Serial Visual Presentation";
     static heroTitle = "Unlock your potential.";
     static heroContent = text([
-        "Read faster, stay focused, and absorb more from every article.",
-        "Fast Lit uses Rapid Serial Visual Presentation and a focal point system",
-        "to reduce eye movement, eliminate distractions, and help you concentrate on the words that matter.",
-        "No ads, no subscriptions, and no limits—just a clean reading experience",
-        "designed to help you get through more content in less time."
+        "Read faster, stay focused, and absorb more.",
+        "Fast Lit uses RSVP and a focal point system to help you concentrate and cut out distractions.",
+        "No ads—just a clean, efficient reading experience."
     ]);
     static heroButton = "Start Reading";
 
     // words cycled through by the live preview widget in the hero section
-    static demoWords = [
-        "Reading", "at", "the", "speed", "of", "thought."
-    ];
+    static demoText = "Read at the speed of thought, and get through text faster than you ever have.";
+    static demoWords = HomeScripts.demoText.split(" ");
     static demoWpm = 380;
 
     static steps = [
@@ -145,9 +142,19 @@ export class ChangelogScripts {
             "1.2.0",
             [
                 "Redesigned the Fast Lit Grabber extension popup with a clearer step-by-step layout and a grab progress indicator.",
+                "Closing the settings modal now saves your changes instead of discarding them.",
+                "Created a basic page for Fast Lit Write, with functionality for drawing characters on a grid. At the time of this release, this page is 'secret' and can't be navigated to from the sidebar like other pages."
+            ]
+        ),
+        new this.Entry(
+            "July 7, 2026",
+            "1.3.0",
+            [
                 "Redesigned the changelog page for a more modern look.",
-                "Redesigned the home page to make a better first impression.",
-                "Closing the settings modal now saves your changes instead of discarding them."
+                "Rebuilt the home page with more info, an improved look, and a live demo of RSVP with some sample text to make the point of the site a little less mysterious.",
+                "Capped the size of the write page's grid to work on both phone and laptop screens.",
+                "Restyled the sidebar to match the rest of the app, with a highlight showing which page you're on.",
+                "The up and down arrow keys can now change your reading speed while the reader is playing, not just while paused."
             ]
         )
     ]
