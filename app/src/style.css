@@ -15,5 +15,5 @@ h1, div, p, button {
 }
 
 .btn-red {
-    @apply btn bg-red disabled:opacity-50 hover:opacity-80;
+    @apply btn bg-red disabled:opacity-50 hover:opacity-80 rounded-2xl;
 }

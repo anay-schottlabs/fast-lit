@@ -363,7 +363,7 @@ window.addEventListener('keydown', (event) => {
     <div class="flex gap-5 justify-center items-center">
         <!-- button to move to previous word -->
         <button
-            class="btn btn-square !text-red bg-white transition-opacity duration-200 opacity-100 hover:opacity-80 disabled:opacity-50"
+            class="btn btn-square !text-red bg-white rounded-2xl transition-opacity duration-200 opacity-100 hover:opacity-80 disabled:opacity-50"
             :disabled="wordIndex == 0 || playState == PlayState.PLAYING"
             @click="wordIndex--"
             id="previousButton"
@@ -481,7 +481,7 @@ window.addEventListener('keydown', (event) => {
 
         <!-- button to move to next word -->
         <button
-            class="btn btn-square !text-red bg-white transition-opacity duration-200 hover:opacity-80 disabled:opacity-50"
+            class="btn btn-square !text-red bg-white rounded-2xl transition-opacity duration-200 hover:opacity-80 disabled:opacity-50"
             :disabled="wordIndex == wordList.length - 1 || playState == PlayState.PLAYING"
             @click="wordIndex++"
             id="nextButton"
