@@ -259,7 +259,7 @@ function recognizeCharacter() {
 
         <canvas
             id="drawCanvas"
-            class="aspect-square w-full touch-none rounded-2xl"       
+            class="aspect-square touch-none rounded-2xl mx-auto w-[min(90vw,65vh,32rem)]"
         ></canvas>
     </div>
 </template>
