@@ -1,6 +1,6 @@
 <script setup>
 import Header from '../components/Header.vue';
-import { ref, watch, onMounted, onUnmounted, render } from 'vue';
+import { ref, watch, onMounted, onUnmounted, nextTick, render } from 'vue';
 import { WriteScripts } from '@/assets/textScripts.js';
 
 const canvas = ref(null);
@@ -74,11 +74,13 @@ function getCellCornerRadii(row, col, gap, cellSize, canvasCornerRadius) {
     ];
 }
 
-// Renders the whole grid from scratch onto the canvas. Called on mount and
-// whenever `grid` changes (see the `watch` below) — there's no incremental
-// redraw, the canvas is cleared and every cell is repainted each time.
-function drawGrid() {
-    const el = canvas.value;
+// Renders a dimension x dimension 0/1 grid from scratch onto a given canvas
+// element — there's no incremental redraw, the canvas is cleared and every
+// cell is repainted each time. Shared by the main writing canvas (drawGrid,
+// below) and the grid-view mini previews in the show-data modal, so both
+// stay visually consistent (including the writing-line guide row) without
+// duplicating the drawing logic.
+function drawGridOnCanvas(el, gridData) {
     if (!el) return;
 
     const ctx = el.getContext('2d');
@@ -117,7 +119,7 @@ function drawGrid() {
             // Color priority: lit cells are always colorCellOn. Otherwise,
             // cells on the writing-line row get a lighter "off" shade so the
             // line is visible even where nothing has been drawn.
-            const isOn = grid.value[row][col] === 1;
+            const isOn = gridData[row][col] === 1;
             const isWritingLine = row === writingLineRow;
             ctx.fillStyle = isOn ? colorCellOn : isWritingLine ? colorWritingLineOff : colorCellOff;
 
@@ -135,6 +137,27 @@ function drawGrid() {
             ctx.fill();
         }
     }
+}
+
+// Renders the shared reactive `grid` (the writing canvas the user draws on)
+// onto the main canvas. Called on mount and whenever `grid` changes (see the
+// `watch` below).
+function drawGrid() {
+    drawGridOnCanvas(canvas.value, grid.value);
+}
+
+// Renders one character's saved (static, non-reactive) grid onto its mini
+// preview canvas in the show-data modal's grid view. Used as a :ref callback
+// so each canvas draws itself as soon as it's mounted — v-if/v-for only keep
+// these canvases in the DOM while the modal is open and grid view is active.
+// The actual draw is deferred with nextTick: the ref callback fires
+// synchronously mid-patch, before the browser has settled layout for the
+// newly inserted canvas (particularly since the modal-box is sized with
+// width:fit-content around this very content), so measuring the canvas's
+// size immediately can read 0 and bake that into the canvas permanently.
+function drawCharacterCanvas(el, char) {
+    if (!el) return;
+    nextTick(() => drawGridOnCanvas(el, char.grid));
 }
 
 // Lights up the cell (or nearest cell) at a given canvas-local point.
@@ -467,67 +490,62 @@ function exportJson() {
                      much thinner than the left side's line-number gutter, so this adds
                      extra right padding on the container itself to balance them out. -->
                 <div class="mockup-code w-full pe-10">
-                <!-- Very basic syntax highlighting: punctuation/brackets are dimmed
-                     (text-white/40), JSON keys use the brand red-light accent, string
-                     values are full white, and grid numbers use a soft violet — same
-                     three-tone treatment as the accordion's code view below. -->
+                    <!-- Very basic syntax highlighting: punctuation/brackets are dimmed
+                        (text-white/40), JSON keys use the brand red-light accent, string
+                        values are full white, and grid numbers use a soft violet — same
+                        three-tone treatment as the accordion's code view below. -->
 
-                <!-- 1: Opening [ of the array -->
-                <pre data-prefix="1"><code><span class="text-white/40">[</span></code></pre>
+                    <!-- 1: Opening [ of the array -->
+                    <pre data-prefix="1"><code><span class="text-white/40">[</span></code></pre>
 
-                <!-- For each character (object) in the data array -->
-                <div v-for="(char, idx1) in data">
-                    <!-- 2 + (idx1 * 26): Opening { of the object; each character starts on a unique base for its block,
-                    spaced by 26 lines to leave room for its grid rows -->
+                    <!-- For each character (object) in the data array -->
+                    <div v-for="(char, idx1) in data">
+                        <!-- 2 + (idx1 * 26): Opening { of the object; each character starts on a unique base for its block,
+                        spaced by 26 lines to leave room for its grid rows -->
+                        <pre
+                            :data-prefix="2 + (idx1 * 26)"
+                        ><code><span class="text-white/40">{{ indent }}{{ "{" }}</span></code></pre>
+
+                        <!-- 3 + (idx1 * 26): "id" field line -->
+                        <pre
+                            :data-prefix="3 + (idx1 * 26)"
+                        ><code><span class="text-white/40">{{ indent + indent }}</span><span class="text-red-light">"id"</span><span class="text-white/40">: </span><span class="text-white">"{{ char["id"] }}"</span><span class="text-white/40">,</span></code></pre>
+
+                        <!-- 4 + (idx1 * 26): "label" field line -->
+                        <pre
+                            :data-prefix="4 + (idx1 * 26)"
+                        ><code><span class="text-white/40">{{ indent + indent }}</span><span class="text-red-light">"label"</span><span class="text-white/40">: </span><span class="text-white">"{{ char["label"] }}"</span><span class="text-white/40">,</span></code></pre>
+
+                        <!-- 5 + (idx1 * 26): "grid": [ line, starting of grid array -->
+                        <pre
+                            :data-prefix="5 + (idx1 * 26)"
+                        ><code><span class="text-white/40">{{ indent + indent }}</span><span class="text-red-light">"grid"</span><span class="text-white/40">: [</span></code></pre>
+
+                        <!-- 6 + (idx1 * 26) + idx2: Each row of the grid, where idx2 is the row index. -->
+                        <!-- This ensures grid lines are numbered sequentially, starting right after the object metadata -->
+                        <pre
+                            v-for="(row, idx2) in char['grid']"
+                            :data-prefix="6 + (idx1 * 26) + idx2"
+                        ><code><span class="text-white/40">{{ indent + indent + indent }}[ </span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40"> ]{{ idx2 + 1 != dimension ? "," : "" }}</span></code></pre>
+
+                        <!-- 26 + (idx1 * 26): Closing ] for the grid array, at a fixed offset regardless of grid length
+                        (assumes grid is up to 20 rows, fills lines accordingly) -->
+                        <pre
+                            :data-prefix="26 + (idx1 * 26)"
+                        ><code><span class="text-white/40">{{ indent + indent }}]</span></code></pre>
+
+                        <!-- 27 + (idx1 * 26): Closing } for the object -->
+                        <pre
+                            :data-prefix="27 + (idx1 * 26)"
+                        ><code><span class="text-white/40">{{ indent + "}" + (idx1 != data.length - 1 ? "," : "") }}</span></code></pre>
+                    </div>
+
+                    <!-- 28 + ((data.length - 1) * 26): Closing ] for the array.
+                    This appears AFTER all objects, using the same offset math as above to place it after the last character's block.
+                    -->
                     <pre
-                        :data-prefix="2 + (idx1 * 26)"
-                    ><code><span class="text-white/40">{{ indent }}{{ "{" }}</span></code></pre>
-
-                    <!-- 3 + (idx1 * 26): "id" field line -->
-                    <pre
-                        :data-prefix="3 + (idx1 * 26)"
-                    ><code><span class="text-white/40">{{ indent + indent }}</span><span class="text-red-light">"id"</span><span class="text-white/40">: </span><span class="text-white">"{{ char["id"] }}"</span><span class="text-white/40">,</span></code></pre>
-
-                    <!-- 4 + (idx1 * 26): "label" field line -->
-                    <pre
-                        :data-prefix="4 + (idx1 * 26)"
-                    ><code><span class="text-white/40">{{ indent + indent }}</span><span class="text-red-light">"label"</span><span class="text-white/40">: </span><span class="text-white">"{{ char["label"] }}"</span><span class="text-white/40">,</span></code></pre>
-
-                    <!-- 5 + (idx1 * 26): "grid": [ line, starting of grid array -->
-                    <pre
-                        :data-prefix="5 + (idx1 * 26)"
-                    ><code><span class="text-white/40">{{ indent + indent }}</span><span class="text-red-light">"grid"</span><span class="text-white/40">: [</span></code></pre>
-
-                    <!-- 6 + (idx1 * 26) + idx2: Each row of the grid, where idx2 is the row index. -->
-                    <!-- This ensures grid lines are numbered sequentially, starting right after the object metadata -->
-                    <pre
-                        v-for="(row, idx2) in char['grid']"
-                        :data-prefix="6 + (idx1 * 26) + idx2"
-                    ><code><span class="text-white/40">{{ indent + indent + indent }}[ </span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40"> ]{{ idx2 + 1 != dimension ? "," : "" }}</span></code></pre>
-
-                    <!-- 26 + (idx1 * 26): Closing ] for the grid array, at a fixed offset regardless of grid length
-                    (assumes grid is up to 20 rows, fills lines accordingly) -->
-                    <pre
-                        :data-prefix="26 + (idx1 * 26)"
-                    ><code><span class="text-white/40">{{ indent + indent }}]</span></code></pre>
-
-                    <!-- 27 + (idx1 * 26): Closing } for the object -->
-                    <pre
-                        :data-prefix="27 + (idx1 * 26)"
-                    ><code><span class="text-white/40">{{ indent + "}" + (idx1 != data.length - 1 ? "," : "") }}</span></code></pre>
-                </div>
-
-                <!-- 28 + ((data.length - 1) * 26): Closing ] for the array.
-                This appears AFTER all objects, using the same offset math as above to place it after the last character's block.
-                -->
-                <pre
-                    :data-prefix="28 + ((data.length - 1) * 26)"
-                ><code><span class="text-white/40">]</span></code></pre>
-
-                <!-- 29 + ((data.length - 1) * 26): Blank line after the array close, for formatting/spacing -->
-                <pre
-                    :data-prefix="29 + ((data.length - 1) * 26)"
-                ><code></code></pre>
+                        :data-prefix="28 + ((data.length - 1) * 26)"
+                    ><code><span class="text-white/40">]</span></code></pre>
                 </div>
             </div>
         </div>
@@ -586,24 +604,35 @@ function exportJson() {
 
             <!-- scrollable data area -->
             <div class="mt-6 flex-1 overflow-auto rounded-2xl text-sm">
-                <div v-for="label in Object.keys(renderableData)">
+                <div v-for="label in Object.keys(renderableData)" class="mb-6">
                     <kbd
                         class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
                     >{{ label }}</kbd>
-                    <div v-for="char in renderableData[label]">
 
-                        <!-- if this is code view -->
-                        <div v-if="isCodeView" class="mockup-code w-full pe-10">
+                    <!-- code view: each character's JSON-style grid block -->
+                    <div v-if="isCodeView">
+                        <div
+                            v-for="char in renderableData[label]"
+                            :key="char.id"
+                            class="mockup-code w-full pe-10"
+                        >
                             <pre
                                 v-for="(row, idx) in char['grid']"
                                 :data-prefix="1 + idx"
                             ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
                         </div>
+                    </div>
 
-                        <!-- if this is grid view -->
-                         <div v-if="!isCodeView">
-                            GRID HERE (PLACEHOLDER)
-                         </div>
+                    <!-- grid view: each character rendered onto its own mini
+                         canvas, reusing the same drawing logic (including the
+                         writing-line guide row) as the main writing canvas -->
+                    <div v-else class="mt-3 flex flex-wrap gap-3">
+                        <canvas
+                            v-for="char in renderableData[label]"
+                            :key="char.id"
+                            :ref="el => drawCharacterCanvas(el, char)"
+                            class="aspect-square w-20 touch-none rounded-xl border border-white/10 shadow-lg shadow-black/30"
+                        ></canvas>
                     </div>
                 </div>
             </div>

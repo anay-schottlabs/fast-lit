@@ -271,7 +271,8 @@ export class ChangelogScripts {
                 "Added basic syntax highlighting to the write page's two JSON code views, coloring keys, string values, and grid numbers to match the site's palette.",
                 "Styled the write page's View JSON modal to match the rest of the site, with a bordered header, close icon, and a scrollable code panel.",
                 "The View JSON modal now sizes itself to fit the full width of the JSON it's displaying instead of clipping long lines, and its code panel has more breathing room on the right to match the left.",
-                "Replaced the write page's Show Data accordion with a modal, matching the View JSON modal's styling."
+                "Replaced the write page's Show Data accordion with a modal, matching the View JSON modal's styling.",
+                "Implemented the write page's grid view: each saved character now renders on its own mini canvas, showing the actual drawn shape and writing-line guide instead of a placeholder."
             ]
         )
     ]
