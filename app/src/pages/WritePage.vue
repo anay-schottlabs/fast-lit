@@ -421,12 +421,27 @@ function deleteCharacter(id) {
                     v-if="currentPage == Pages.DEVELOPER"
                     class="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5"
                 >
-                    <!-- set chars to label data -->
-                    <input
-                        class="input w-full !border-white/15 !bg-white/5 !text-white placeholder:!text-white/40 focus-ring"
-                        v-model="currentLabel"
-                        :placeholder="WriteScripts.devCharInputPlaceholder"
-                    >
+                    <!-- current label: the single field that decides what
+                         every subsequent stroke gets classified as, so it
+                         gets outsized visual weight relative to everything
+                         else in this panel instead of reading as just
+                         another input field -->
+                    <div class="rounded-2xl border border-red/30 bg-red/5 p-5">
+                        <div class="mb-2 flex items-center justify-between gap-2">
+                            <label class="text-xs font-semibold uppercase tracking-widest text-red-light">
+                                Label
+                            </label>
+                            <span
+                                v-if="renderableData[currentLabel]?.length"
+                                class="text-xs text-white/40"
+                            >{{ renderableData[currentLabel].length }} saved for "{{ currentLabel }}"</span>
+                        </div>
+                        <input
+                            class="input w-full !border-none !bg-transparent !px-0 !text-3xl !font-bold !text-white !shadow-none placeholder:!text-lg placeholder:!font-normal placeholder:!text-white/30 focus-ring"
+                            v-model="currentLabel"
+                            :placeholder="WriteScripts.devCharInputPlaceholder"
+                        >
+                    </div>
 
                     <!-- export data -->
                     <div class="flex flex-wrap gap-2 w-full">

@@ -102,7 +102,7 @@ export class ReadScripts {
 }
 
 export class WriteScripts {
-    static devCharInputPlaceholder = "Type in characters to classify this data as";
+    static devCharInputPlaceholder = "What are you drawing? (e.g. a, 5, ☺)";
     static accordionHeaderClosed = "Show Data";
     static accordionHeaderOpen = "Hide Data";
     static downloadJsonButton = "Download JSON";
@@ -296,7 +296,8 @@ export class ChangelogScripts {
                 "Revamped the write page's code view syntax highlighting: commas are now plain white, and 1s and 0s in the grid data are colored differently from each other instead of sharing one color.",
                 "Fixed the Show Data modal's label pill forcing every label to uppercase, and made it bigger and more prominent.",
                 "Added the ability to delete individual saved characters from the Show Data modal, in both grid and code view.",
-                "Fixed the Download JSON button not visually dimming when disabled, unlike the View JSON button next to it."
+                "Fixed the Download JSON button not visually dimming when disabled, unlike the View JSON button next to it.",
+                "Made the write page's character-label field the visual focus of the developer panel: a large bold input in its own red-tinted card, with a live count of how many characters are saved under the current label."
             ]
         )
     ]
