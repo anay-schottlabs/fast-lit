@@ -552,13 +552,14 @@ function exportJson() {
     </dialog>
 
     <!-- show data modal — same header/close-icon pattern as the view json
-         modal above; content/logic (Grid-Code toggle, renderableData
-         rendering) unchanged from when this lived in the accordion. -->
+         modal above. max-h (not a fixed height) plus a min-w lets the box
+         size itself to content in both directions, so the empty-state
+         walkthrough below doesn't end up in a tall, awkwardly narrow sliver. -->
     <dialog
         class="modal"
         :class="{ 'modal-open': isDataOpen }"
     >
-        <div class="modal-box bg-deepblue !w-fit !max-w-[95vw] h-7/8 flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
+        <div class="modal-box bg-deepblue !w-fit !max-w-[95vw] max-h-[85vh] min-w-[22rem] flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
             <div class="relative flex items-center justify-center border-b border-white/10 pb-4">
                 <button
                     class="btn btn-circle btn-ghost absolute left-0 top-1/2 -translate-y-1/2 transition-colors hover:bg-white/10 focus-ring"
@@ -590,52 +591,87 @@ function exportJson() {
                 <span class="text-2xl font-bold !text-red">{{ WriteScripts.accordionHeaderClosed }} ({{ data.length }})</span>
             </div>
 
-            <!-- Grid/Code toggle, same logic as before -->
-            <div class="mt-4 flex items-center justify-center gap-2 text-white/70">
-                Grid
-                <input
-                    type="checkbox"
-                    :checked="isCodeView"
-                    @change="isCodeView = $event.target.checked"
-                    class="toggle toggle-xl"
-                />
-                Code
-            </div>
-
-            <!-- scrollable data area -->
-            <div class="mt-6 flex-1 overflow-auto rounded-2xl text-sm">
-                <div v-for="label in Object.keys(renderableData)" class="mb-6">
-                    <kbd
-                        class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
-                    >{{ label }}</kbd>
-
-                    <!-- code view: each character's JSON-style grid block -->
-                    <div v-if="isCodeView">
-                        <div
-                            v-for="char in renderableData[label]"
-                            :key="char.id"
-                            class="mockup-code w-full pe-10"
-                        >
-                            <pre
-                                v-for="(row, idx) in char['grid']"
-                                :data-prefix="1 + idx"
-                            ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
-                        </div>
-                    </div>
-
-                    <!-- grid view: each character rendered onto its own mini
-                         canvas, reusing the same drawing logic (including the
-                         writing-line guide row) as the main writing canvas -->
-                    <div v-else class="mt-3 flex flex-wrap gap-3">
-                        <canvas
-                            v-for="char in renderableData[label]"
-                            :key="char.id"
-                            :ref="el => drawCharacterCanvas(el, char)"
-                            class="aspect-square w-20 touch-none rounded-xl border border-white/10 shadow-lg shadow-black/30"
-                        ></canvas>
+            <!-- empty state: a short walkthrough instead of a blank list -->
+            <div
+                v-if="data.length === 0"
+                class="flex flex-1 flex-col items-center justify-center gap-6 py-8"
+            >
+                <p class="text-white/60">{{ WriteScripts.noDataDescription }}</p>
+                <div class="grid gap-4 sm:grid-cols-3">
+                    <div
+                        v-for="(step, idx) in WriteScripts.noDataSteps"
+                        :key="step.title"
+                        class="w-56 rounded-2xl border border-white/10 bg-white/5 p-5 text-left"
+                    >
+                        <span class="mb-3 flex h-8 w-8 items-center justify-center rounded-full bg-red text-sm font-bold">
+                            {{ idx + 1 }}
+                        </span>
+                        <h3 class="mb-1 font-semibold">{{ step.title }}</h3>
+                        <p class="text-sm text-white/70">{{ step.description }}</p>
                     </div>
                 </div>
             </div>
+
+            <template v-else>
+                <!-- Grid/Code toggle, styled as the same segmented pill
+                     control used for the Write/Learn/Developer tabs -->
+                <div class="mt-4 inline-flex gap-1 self-center rounded-2xl border border-white/10 bg-white/5 p-1">
+                    <button
+                        class="rounded-xl px-5 py-2 text-sm font-semibold transition-colors duration-150 focus-ring"
+                        :class="!isCodeView ? 'bg-red text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'"
+                        @click="isCodeView = false"
+                    >Grid</button>
+                    <button
+                        class="rounded-xl px-5 py-2 text-sm font-semibold transition-colors duration-150 focus-ring"
+                        :class="isCodeView ? 'bg-red text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'"
+                        @click="isCodeView = true"
+                    >Code</button>
+                </div>
+
+                <!-- scrollable data area -->
+                <div class="mt-6 flex-1 overflow-auto rounded-2xl text-sm">
+                    <div
+                        v-for="label in Object.keys(renderableData)"
+                        :key="label"
+                        class="mb-4 rounded-2xl border border-white/10 bg-white/5 p-4"
+                    >
+                        <div class="mb-3 flex items-center gap-2">
+                            <span class="rounded-full border border-red/40 bg-red/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-red-light">
+                                {{ label }}
+                            </span>
+                            <span class="text-xs text-white/40">{{ renderableData[label].length }} saved</span>
+                        </div>
+
+                        <!-- code view: each character's JSON-style grid block -->
+                        <div v-if="isCodeView" class="flex flex-col gap-4">
+                            <div
+                                v-for="char in renderableData[label]"
+                                :key="char.id"
+                                class="mockup-code w-full pe-10"
+                            >
+                                <pre
+                                    v-for="(row, idx) in char['grid']"
+                                    :data-prefix="1 + idx"
+                                ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
+                            </div>
+                        </div>
+
+                        <!-- grid view: each character rendered onto its own mini
+                             canvas, reusing the same drawing logic (including the
+                             writing-line guide row) as the main writing canvas.
+                             Sized close to a code block's footprint so the modal
+                             doesn't jump in size when switching between modes. -->
+                        <div v-else class="flex flex-wrap gap-4">
+                            <canvas
+                                v-for="char in renderableData[label]"
+                                :key="char.id"
+                                :ref="el => drawCharacterCanvas(el, char)"
+                                class="aspect-square w-80 max-w-full touch-none rounded-xl border border-white/10 shadow-lg shadow-black/30"
+                            ></canvas>
+                        </div>
+                    </div>
+                </div>
+            </template>
         </div>
     </dialog>
 </template>

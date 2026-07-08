@@ -107,6 +107,25 @@ export class WriteScripts {
     static accordionHeaderOpen = "Hide Data";
     static downloadJsonButton = "Download JSON";
     static viewJsonButton = "View JSON";
+
+    // shown in the show-data modal in place of the data list when nothing
+    // has been saved yet
+    static noDataTitle = "No Data Yet";
+    static noDataDescription = "Collect a few characters to see them here.";
+    static noDataSteps = [
+        {
+            title: "Draw a Character",
+            description: "Use the grid on the left to draw a character, using the horizontal guide line as a reference for where it should sit."
+        },
+        {
+            title: "Label It",
+            description: "Type the character you're drawing into the label field above, so it's saved under the right classification."
+        },
+        {
+            title: "Release to Save",
+            description: "Releasing the mouse saves your drawing under that label and clears the grid for the next one."
+        }
+    ];
 }
 
 export class FeedbackScripts {
@@ -272,7 +291,8 @@ export class ChangelogScripts {
                 "Styled the write page's View JSON modal to match the rest of the site, with a bordered header, close icon, and a scrollable code panel.",
                 "The View JSON modal now sizes itself to fit the full width of the JSON it's displaying instead of clipping long lines, and its code panel has more breathing room on the right to match the left.",
                 "Replaced the write page's Show Data accordion with a modal, matching the View JSON modal's styling.",
-                "Implemented the write page's grid view: each saved character now renders on its own mini canvas, showing the actual drawn shape and writing-line guide instead of a placeholder."
+                "Implemented the write page's grid view: each saved character now renders on its own mini canvas, showing the actual drawn shape and writing-line guide instead of a placeholder.",
+                "Polished the Show Data modal: bigger grid-view canvases so it doesn't jump in size when switching modes, a proper walkthrough instead of a blank modal when no data has been saved yet, a segmented Grid/Code toggle matching the page's tabs, and red badge labels in place of the light kbd chips."
             ]
         )
     ]
