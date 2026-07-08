@@ -25,11 +25,8 @@ const navItemClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right roun
 // brightens on hover — icons/labels below inherit this via currentColor.
 // Forced !important because style.css's unlayered "button { color: white }"
 // rule otherwise beats these (layered) utility classes regardless of specificity.
-// Uses --color-red-light (not the base brand red) since this label is
-// text-xl and not bold, too small/light for the base red's ~4.3:1 contrast
-// to clear WCAG AA's 4.5:1 normal-text threshold.
 function navTextClass(path) {
-    return route.path === path ? "!text-red-light" : "!text-white/70 hover:!text-white";
+    return route.path === path ? "!text-red" : "!text-white/70 hover:!text-white";
 }
 </script>
 

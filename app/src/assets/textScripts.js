@@ -252,6 +252,13 @@ export class ChangelogScripts {
                 "Words read by the home page's live preview now count toward the site's total words read stat, saved as you leave the page.",
                 "Added a Privacy Policy page for the Fast Lit Grabber extension, styled to match the rest of the site with numbered section badges and a red accent."
             ]
+        ),
+        new this.Entry(
+            "July 8, 2026",
+            "1.4.0",
+            [
+                "The sidebar's active page indicator now uses the full brand red instead of a lighter, softer red."
+            ]
         )
     ]
 }
