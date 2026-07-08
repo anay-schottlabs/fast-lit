@@ -101,6 +101,12 @@ export class ReadScripts {
     ]);
 }
 
+export class WriteScripts {
+    static devCharInputPlaceholder = "Type in characters to classify this data as";
+    static accordionHeaderClosed = "Show Data";
+    static accordionHeaderOpen = "Hide Data";
+}
+
 export class FeedbackScripts {
     static formUrl =
         "https://docs.google.com/forms/d/e/1FAIpQLSdaEN4WwLu2AzdmdHN8mrzijrTXoN-K_JK5rBbj5dCeXVxqdA/viewform?usp=publish-editor";
