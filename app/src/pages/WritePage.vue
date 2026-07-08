@@ -431,6 +431,7 @@ function clearAllData() {
     if (data.value.length === 0) return;
     if (!confirm("Clear all saved characters? This can't be undone.")) return;
     data.value = [];
+    currentLabel.value = "";
 }
 </script>
 

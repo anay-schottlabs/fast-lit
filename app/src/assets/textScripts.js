@@ -300,7 +300,8 @@ export class ChangelogScripts {
                 "Made the write page's character-label field the visual focus of the developer panel: a large bold input in its own red-tinted card, with a live count of how many characters are saved under the current label.",
                 "Saved write page characters now persist in the browser via IndexedDB, so they survive a reload instead of being lost.",
                 "The write page's developer panel now matches the drawing grid's height, filling the extra space with simple stats (total characters, labels, and the most common label) and a Clear All Data button.",
-                "Fixed the write page's drawing grid changing size depending on which tab was active or how much data was saved — it's now a consistent size everywhere."
+                "Fixed the write page's drawing grid changing size depending on which tab was active or how much data was saved — it's now a consistent size everywhere.",
+                "Clear All Data on the write page now also clears the current label, not just the saved characters."
             ]
         )
     ]
