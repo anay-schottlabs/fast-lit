@@ -453,16 +453,22 @@ function clearAllData() {
         <!-- split screen: the write box (canvas) stays fixed on the left,
              the active tab's panel fills the remaining space on the right.
              Stacks vertically (canvas on top) on small screens.
-             lg:items-stretch makes the right panel match the canvas's
-             height at desktop widths instead of just shrinking to its
-             own (much shorter) content. -->
-        <div class="flex flex-col items-start gap-6 lg:flex-row lg:items-stretch">
+             items-start (not items-stretch) is deliberate: flex's stretch
+             sizing can interact unpredictably with the canvas's aspect-square
+             sizing depending on the right panel's content height, visibly
+             elongating the canvas beyond its intended size. Instead the
+             right panel gets an explicit lg:h-[...] using the exact same
+             min(90vw,65vh,29rem) formula as the canvas, so both are sized
+             independently off the same fixed expression — no cross-axis
+             interaction, and the grid stays the same size no matter which
+             tab (or how much content) is on the right. -->
+        <div class="flex flex-col items-start gap-6 lg:flex-row">
             <canvas
                 id="drawCanvas"
                 class="
                     mx-auto
                     aspect-square
-                    w-[min(90vw,65vh,26rem)]
+                    w-[min(90vw,65vh,29rem)]
                     shrink-0
                     touch-none
                     rounded-2xl
@@ -472,14 +478,14 @@ function clearAllData() {
                     shadow-black/40
                     lg:mx-0
                     cursor-pointer
-                "           
+                "
             ></canvas>
 
-            <div class="w-full min-w-0">
+            <div class="w-full min-w-0 lg:h-[min(90vw,65vh,29rem)]">
                 <!-- write page -->
                 <div
                     v-if="currentPage == Pages.WRITE"
-                    class="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4"
+                    class="flex h-full min-h-16 flex-wrap items-center justify-center gap-2 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-4"
                 >
                     <kbd
                         class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
@@ -491,19 +497,21 @@ function clearAllData() {
                 <!-- learn page -->
                 <div
                     v-if="currentPage == Pages.LEARN"
-                    class="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4"
+                    class="flex h-full min-h-16 flex-wrap items-center justify-center gap-2 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-4"
                 >
                     <p class="text-white/70">learn page</p>
                 </div>
 
-                <!-- developer page — h-full so it fills the height the split
-                     screen row stretches this column to (see lg:items-stretch
-                     above), with the stats card below absorbing the leftover
-                     space via flex-1 so the panel matches the canvas's height
-                     instead of leaving it visually shorter. -->
+                <!-- developer page — h-full fills the wrapper's fixed
+                     lg:h-[...] height (matching the canvas independently,
+                     see the comment above), with the stats card below
+                     absorbing the leftover space via flex-1. overflow-y-auto
+                     is a safety net in case content ever needs more room
+                     than that fixed height provides, so it scrolls instead
+                     of pushing the canvas taller. -->
                 <div
                     v-if="currentPage == Pages.DEVELOPER"
-                    class="flex h-full flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5"
+                    class="flex h-full flex-col gap-4 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-5"
                 >
                     <!-- current label: the single field that decides what
                          every subsequent stroke gets classified as, so it
