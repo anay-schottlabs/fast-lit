@@ -351,7 +351,12 @@ window.addEventListener('keydown', (event) => {
                 start();
             }
         }
-        else if (event.key == "r") {
+        // Excludes Ctrl/Cmd+R: that's the browser's reload shortcut, and since
+        // event.key is still "r" when held with a modifier, this shortcut was
+        // firing end() (resetting progress to 0) a moment before the actual
+        // reload — which then persisted the just-reset value, making it look
+        // like reading progress never survived a reload at all.
+        else if (event.key == "r" && !event.ctrlKey && !event.metaKey) {
             end();
         }
         // WPM can be adjusted regardless of play state — the interval watcher
