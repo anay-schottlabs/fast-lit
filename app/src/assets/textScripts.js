@@ -114,12 +114,12 @@ export class WriteScripts {
     static noDataDescription = "Collect a few characters to see them here.";
     static noDataSteps = [
         {
-            title: "Draw a Character",
-            description: "Use the grid on the left to draw a character, using the horizontal guide line as a reference for where it should sit."
+            title: "Label the Character",
+            description: "Type the character you're drawing into the label field above, so it's saved under the right classification."
         },
         {
-            title: "Label It",
-            description: "Type the character you're drawing into the label field above, so it's saved under the right classification."
+            title: "Draw It",
+            description: "Use the grid on the left to draw a character, using the horizontal guide line as a reference for where it should sit."
         },
         {
             title: "Release to Save",
@@ -292,7 +292,8 @@ export class ChangelogScripts {
                 "The View JSON modal now sizes itself to fit the full width of the JSON it's displaying instead of clipping long lines, and its code panel has more breathing room on the right to match the left.",
                 "Replaced the write page's Show Data accordion with a modal, matching the View JSON modal's styling.",
                 "Implemented the write page's grid view: each saved character now renders on its own mini canvas, showing the actual drawn shape and writing-line guide instead of a placeholder.",
-                "Polished the Show Data modal: bigger grid-view canvases so it doesn't jump in size when switching modes, a proper walkthrough instead of a blank modal when no data has been saved yet, a segmented Grid/Code toggle matching the page's tabs, and red badge labels in place of the light kbd chips."
+                "Polished the Show Data modal: bigger grid-view canvases so it doesn't jump in size when switching modes, a proper walkthrough instead of a blank modal when no data has been saved yet, a segmented Grid/Code toggle matching the page's tabs, and red badge labels in place of the light kbd chips.",
+                "Revamped the write page's code view syntax highlighting: commas are now plain white, and 1s and 0s in the grid data are colored differently from each other instead of sharing one color."
             ]
         )
     ]

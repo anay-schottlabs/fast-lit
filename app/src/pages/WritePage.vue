@@ -526,7 +526,7 @@ function exportJson() {
                         <pre
                             v-for="(row, idx2) in char['grid']"
                             :data-prefix="6 + (idx1 * 26) + idx2"
-                        ><code><span class="text-white/40">{{ indent + indent + indent }}[ </span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40"> ]{{ idx2 + 1 != dimension ? "," : "" }}</span></code></pre>
+                        ><code><span class="text-white/40">{{ indent + indent + indent }}[ </span><template v-for="(cell, i) in row" :key="i"><span :class="cell === 1 ? 'text-red-light' : 'text-violet-300'">{{ cell }}</span><span v-if="i < row.length - 1" class="text-white">,</span></template><span class="text-white/40"> ]{{ idx2 + 1 != dimension ? "," : "" }}</span></code></pre>
 
                         <!-- 26 + (idx1 * 26): Closing ] for the grid array, at a fixed offset regardless of grid length
                         (assumes grid is up to 20 rows, fills lines accordingly) -->
@@ -652,7 +652,7 @@ function exportJson() {
                                 <pre
                                     v-for="(row, idx) in char['grid']"
                                     :data-prefix="1 + idx"
-                                ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
+                                ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><template v-for="(cell, i) in row" :key="i"><span :class="cell === 1 ? 'text-red-light' : 'text-violet-300'">{{ cell }}</span><span v-if="i < row.length - 1" class="text-white">,</span></template><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
                             </div>
                         </div>
 
