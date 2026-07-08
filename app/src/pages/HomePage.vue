@@ -4,7 +4,7 @@ import { useRouter } from 'vue-router';
 import { HomeScripts } from '@/assets/textScripts.js';
 import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { db } from '@/firebase/index.js';
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, doc, updateDoc, increment } from "firebase/firestore";
 
 const totalWordsRead = ref(0);
 // distinguishes "still loading" from "genuinely zero" so the stat cards
@@ -26,45 +26,15 @@ onMounted(async () => {
 
 // counts every word the live preview cycles through during this page visit,
 // added to the firestore total when the page is closed, reloaded, or
-// navigated away from within the app.
+// navigated away from within the app — same increment-on-close pattern as
+// Reader.vue's updateTotalWordsRead().
 let demoWordsRead = 0;
 
-const FIRESTORE_COMMIT_URL = `https://firestore.googleapis.com/v1/projects/${db.app.options.projectId}/databases/(default)/documents:commit`;
-
-// beforeunload/pagehide handlers can't reliably wait on async work — the
-// browser doesn't keep the page alive for a pending fetch/XHR to finish, so
-// the Firestore SDK's write (a long-lived WebChannel request) can get cut
-// off mid-flight before it ever reaches the server. Confirmed this in
-// testing: an SDK updateDoc() call fired from beforeunload silently never
-// landed, so this hits Firestore's REST commit endpoint directly with an
-// atomic increment transform instead, using fetch's keepalive option so the
-// browser finishes sending it even after the page unloads. (navigator.
-// sendBeacon() is built for exactly this case too, but Brave Shields and
-// some ad-blocking extensions flag the Beacon API itself as a tracking
-// mechanism and block it outright regardless of destination — keepalive
-// fetch gives the same unload guarantee without that association.)
-function saveDemoWordsRead() {
+async function saveDemoWordsRead() {
     if (demoWordsRead > 0 && docId) {
-        const body = {
-            writes: [
-                {
-                    transform: {
-                        document: `projects/${db.app.options.projectId}/databases/(default)/documents/stats/${docId}`,
-                        fieldTransforms: [
-                            { fieldPath: "totalWordsRead", increment: { integerValue: String(demoWordsRead) } }
-                        ]
-                    }
-                }
-            ]
-        };
-        fetch(FIRESTORE_COMMIT_URL, {
-            method: "POST",
-            headers: { "Content-Type": "application/json" },
-            body: JSON.stringify(body),
-            keepalive: true
-        }).catch(() => {
-            // best-effort — if this is blocked or fails, there's nothing to
-            // retry from a page that's already unloading
+        const statsRef = doc(db, "stats", docId);
+        await updateDoc(statsRef, {
+            totalWordsRead: increment(demoWordsRead)
         });
         demoWordsRead = 0;
     }

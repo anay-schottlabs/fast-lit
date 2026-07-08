@@ -174,8 +174,7 @@ export class ChangelogScripts {
                 "Text you paste or send over from the Fast Lit Grabber extension, your reading speed, and your progress through the text are now all saved on your device, so you can pick up right where you left off the next time you open the read page.",
                 "Fixed the play/pause and stop buttons rendering noticeably smaller than the previous/next word buttons next to them.",
                 "Fixed a bug where reloading the read page with Ctrl+R or Cmd+R would reset your reading progress instead of restoring it, since that key combo was also triggering the reader's own \"press R to reset\" shortcut a moment before the reload.",
-                "Words read by the home page's live preview now count toward the site's total words read stat, saved as you leave the page.",
-                "Fixed the home page's word count from silently failing to save for anyone with an ad blocker or Brave Shields enabled, since those tools commonly block the browser API originally used to save it on page close."
+                "Words read by the home page's live preview now count toward the site's total words read stat, saved as you leave the page."
             ]
         )
     ]
