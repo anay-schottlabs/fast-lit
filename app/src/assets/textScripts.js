@@ -250,7 +250,7 @@ export class ChangelogScripts {
                 "Fixed the play/pause and stop buttons rendering noticeably smaller than the previous/next word buttons next to them.",
                 "Fixed a bug where reloading the read page with Ctrl+R or Cmd+R would reset your reading progress instead of restoring it, since that key combo was also triggering the reader's own \"press R to reset\" shortcut a moment before the reload.",
                 "Words read by the home page's live preview now count toward the site's total words read stat, saved as you leave the page.",
-                "Added a Privacy Policy page for the Fast Lit Grabber extension."
+                "Added a Privacy Policy page for the Fast Lit Grabber extension, styled to match the rest of the site with numbered section badges and a red accent."
             ]
         )
     ]
