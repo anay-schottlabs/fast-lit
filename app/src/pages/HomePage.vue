@@ -2,7 +2,7 @@
 import Header from '../components/Header.vue';
 import { useRouter } from 'vue-router';
 import { HomeScripts } from '@/assets/textScripts.js';
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
 import { db } from '@/firebase/index.js';
 import { collection, getDocs } from "firebase/firestore";
 
@@ -10,15 +10,56 @@ const totalWordsRead = ref(0);
 // distinguishes "still loading" from "genuinely zero" so the stat cards
 // don't flash a real-looking 0 while the Firestore read is in flight
 const statsLoading = ref(true);
+// docId is only set once the Firestore stats doc has loaded below; guards
+// saveDemoWordsRead against running before it's available.
+let docId;
 
 // get stats from firestore
 onMounted(async () => {
     const querySnapshot = await getDocs(collection(db, "stats"));
     querySnapshot.forEach((doc) => {
+        docId = doc.id;
         totalWordsRead.value = doc.data().totalWordsRead;
     });
     statsLoading.value = false;
 });
+
+// counts every word the live preview cycles through during this page visit,
+// added to the firestore total when the page is closed, reloaded, or
+// navigated away from within the app.
+let demoWordsRead = 0;
+
+const FIRESTORE_COMMIT_URL = `https://firestore.googleapis.com/v1/projects/${db.app.options.projectId}/databases/(default)/documents:commit`;
+
+// beforeunload/pagehide handlers can't reliably wait on async work — the
+// browser doesn't keep the page alive for a pending fetch/XHR to finish, so
+// the Firestore SDK's write (a long-lived WebChannel request) can get cut
+// off mid-flight before it ever reaches the server. Confirmed this in
+// testing: an SDK updateDoc() call fired from beforeunload silently never
+// landed. navigator.sendBeacon() is built specifically for this "flush data
+// as the page goes away" case — the browser guarantees the request is sent
+// even after the page unloads — so this hits Firestore's REST commit
+// endpoint directly with an atomic increment transform, bypassing the SDK.
+function saveDemoWordsRead() {
+    if (demoWordsRead > 0 && docId) {
+        const body = {
+            writes: [
+                {
+                    transform: {
+                        document: `projects/${db.app.options.projectId}/databases/(default)/documents/stats/${docId}`,
+                        fieldTransforms: [
+                            { fieldPath: "totalWordsRead", increment: { integerValue: String(demoWordsRead) } }
+                        ]
+                    }
+                }
+            ]
+        };
+        navigator.sendBeacon(FIRESTORE_COMMIT_URL, new Blob([JSON.stringify(body)], { type: "application/json" }));
+        demoWordsRead = 0;
+    }
+}
+
+window.addEventListener('beforeunload', saveDemoWordsRead);
 
 const router = useRouter();
 
@@ -30,6 +71,11 @@ function navigateTo(path) {
 // RSVP focal-point effect right in the hero, the same way Reader.vue does
 // for real reading sessions.
 const demoIndex = ref(0);
+
+// every index change is one more word the live preview has cycled through
+watch(demoIndex, () => {
+    demoWordsRead++;
+});
 
 const demoWord = computed(() => HomeScripts.demoWords[demoIndex.value]);
 const demoBefore = computed(() => demoWord.value.slice(0, Math.floor(demoWord.value.length / 2)));
@@ -82,6 +128,12 @@ onMounted(() => {
 
 onUnmounted(() => {
     clearInterval(demoInterval);
+    // beforeunload only fires on an actual tab close/reload — navigating to
+    // another page within the app just unmounts this component, so flush
+    // the count here too, and drop the listener since it'd otherwise stack
+    // up (and misfire with a stale docId) if the user revisits the home page.
+    window.removeEventListener('beforeunload', saveDemoWordsRead);
+    saveDemoWordsRead();
 });
 
 // stat cards shown below the hero, backed by the same totalWordsRead math as before
