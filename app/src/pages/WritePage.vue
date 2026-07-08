@@ -331,117 +331,115 @@ function exportJson() {
 <template>
     <Header pageName="Write" />
 
-    <!-- main page content, constrained/centered like every other page so the
-         character row and canvas share one column instead of drifting apart
-         (the row was previously flush-left while the canvas centered itself) -->
-    <div class="mx-auto max-w-2xl p-5">
-        <ul class="menu menu-vertical lg:menu-horizontal bg-base-200 rounded-box">
-            <li>
-                <a
-                    :class="{ 'active': currentPage === Pages.WRITE }"
-                    @click="currentPage = Pages.WRITE"
-                >Write</a>
-            </li>
-            <li>
-                <a
-                    :class="{ 'active': currentPage === Pages.LEARN }"
-                    @click="currentPage = Pages.LEARN"
-                >Learn</a>
-            </li>
-            <li>
-                <a
-                    :class="{ 'active': currentPage === Pages.DEVELOPER }"
-                    @click="currentPage = Pages.DEVELOPER"
-                >Developer</a>
-            </li>
-        </ul>
-
-        <!-- write page -->
-        <div
-            v-if="currentPage == Pages.WRITE"
-            class="my-5 min-h-16 rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-wrap items-center justify-center gap-2"
-        >
-            <kbd
-                class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
-                v-for="(char, idx) in writeChars"
-                :key="idx"
-            >{{ char }}</kbd>
+    <!-- main page content, wide enough for the split-screen layout below -->
+    <div class="mx-auto max-w-4xl p-5">
+        <!-- page tabs, styled as a dark segmented control to match the rest of the site -->
+        <div class="mb-6 inline-flex gap-1 rounded-2xl border border-white/10 bg-white/5 p-1">
+            <button
+                v-for="page in Object.values(Pages)"
+                :key="page"
+                class="rounded-xl px-5 py-2 text-sm font-semibold capitalize transition-colors duration-150 focus-ring"
+                :class="currentPage === page ? 'bg-red text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'"
+                @click="currentPage = page"
+            >{{ page }}</button>
         </div>
 
-        <!-- learn page -->
-        <div
-            v-if="currentPage == Pages.LEARN"
-            class="my-5 min-h-16 rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-wrap items-center justify-center gap-2"
-        >
-            <p>learn page</p>
-        </div>
+        <!-- split screen: the write box (canvas) stays fixed on the left,
+             the active tab's panel fills the remaining space on the right.
+             Stacks vertically (canvas on top) on small screens. -->
+        <div class="flex flex-col items-start gap-6 lg:flex-row">
+            <canvas
+                id="drawCanvas"
+                class="mx-auto aspect-square w-[min(90vw,65vh,26rem)] shrink-0 touch-none rounded-2xl border border-white/10 shadow-2xl shadow-black/40 lg:mx-0"
+            ></canvas>
 
-        <!-- developer page -->
-        <div
-            v-if="currentPage == Pages.DEVELOPER"
-            class="my-5 min-h-16 rounded-2xl border border-white/10 bg-white/5 p-4 flex flex-wrap items-center justify-center gap-2"
-        >
-            <!-- set chars to label data -->
-            <input
-                class="input w-full"
-                v-model="currentLabel"
-                :placeholder="WriteScripts.devCharInputPlaceholder"
-            >
-
-            <!-- export data -->
-            <div>
-                <button class="btn" @click="isViewJsonModalOpen = true">View json</button>
-                <button class="btn" @click="exportJson">Download json</button>
-            </div>
-
-            <!-- accordion to view all data -->
-            <details 
-                class="collapse collapse-arrow bg-base-100 border border-base-300"
-                :open="isDataOpen"
-                @toggle="isDataOpen = $event.target.open"
-            >
-                <summary class="collapse-title font-semibold">
-                    {{ isDataOpen ? WriteScripts.accordionHeaderOpen : WriteScripts.accordionHeaderClosed }} ({{ data.length }})
-                    <div class="ms-50">
-                        Grid
-                        <input
-                            type="checkbox"
-                            :checked="isCodeView"
-                            @change="isCodeView = $event.target.checked"                       
-                            class="toggle toggle-xl"
-                        />
-                        Code
-                    </div>
-                </summary>
-                <div class="collapse-content text-sm">
-                    <div v-for="label in Object.keys(renderableData)">
-                        <kbd
-                            class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
-                        >{{ label }}</kbd>
-                        <div v-for="char in renderableData[label]"> 
-
-                            <!-- if this is code view -->
-                            <div v-if="isCodeView" class="mockup-code w-full">
-                                <pre
-                                    v-for="(row, idx) in char['grid']"
-                                    :data-prefix="1 + idx"
-                                ><code>{{ idx == 0 ? "[" : " " }}[{{ row.toString() }}]{{ idx + 1 == dimension ? "]" : "," }}</code></pre>
-                            </div>
-
-                            <!-- if this is grid view -->
-                             <div v-if="!isCodeView">
-                                GRID HERE (PLACEHOLDER)
-                             </div>
-                        </div>
-                    </div>
+            <div class="w-full min-w-0">
+                <!-- write page -->
+                <div
+                    v-if="currentPage == Pages.WRITE"
+                    class="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4"
+                >
+                    <kbd
+                        class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
+                        v-for="(char, idx) in writeChars"
+                        :key="idx"
+                    >{{ char }}</kbd>
                 </div>
-            </details>
-        </div>
 
-        <canvas
-            id="drawCanvas"
-            class="aspect-square touch-none rounded-2xl mx-auto w-[min(90vw,65vh,32rem)] border border-white/10 shadow-2xl shadow-black/40"
-        ></canvas>
+                <!-- learn page -->
+                <div
+                    v-if="currentPage == Pages.LEARN"
+                    class="flex min-h-16 flex-wrap items-center justify-center gap-2 rounded-2xl border border-white/10 bg-white/5 p-4"
+                >
+                    <p class="text-white/70">learn page</p>
+                </div>
+
+                <!-- developer page -->
+                <div
+                    v-if="currentPage == Pages.DEVELOPER"
+                    class="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5"
+                >
+                    <!-- set chars to label data -->
+                    <input
+                        class="input w-full !border-white/15 !bg-white/5 !text-white placeholder:!text-white/40 focus-ring"
+                        v-model="currentLabel"
+                        :placeholder="WriteScripts.devCharInputPlaceholder"
+                    >
+
+                    <!-- export data -->
+                    <div class="flex flex-wrap gap-2">
+                        <button class="btn-red" @click="isViewJsonModalOpen = true">View json</button>
+                        <button
+                            class="btn rounded-2xl border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10 focus-ring"
+                            @click="exportJson"
+                        >Download json</button>
+                    </div>
+
+                    <!-- accordion to view all data -->
+                    <details
+                        class="collapse collapse-arrow rounded-2xl border border-white/15 bg-white/5 text-white"
+                        :open="isDataOpen"
+                        @toggle="isDataOpen = $event.target.open"
+                    >
+                        <summary class="collapse-title font-semibold">
+                            {{ isDataOpen ? WriteScripts.accordionHeaderOpen : WriteScripts.accordionHeaderClosed }} ({{ data.length }})
+                            <div class="ms-50 flex items-center gap-2 text-white/70">
+                                Grid
+                                <input
+                                    type="checkbox"
+                                    :checked="isCodeView"
+                                    @change="isCodeView = $event.target.checked"
+                                    class="toggle toggle-xl"
+                                />
+                                Code
+                            </div>
+                        </summary>
+                        <div class="collapse-content text-sm">
+                            <div v-for="label in Object.keys(renderableData)">
+                                <kbd
+                                    class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
+                                >{{ label }}</kbd>
+                                <div v-for="char in renderableData[label]">
+
+                                    <!-- if this is code view -->
+                                    <div v-if="isCodeView" class="mockup-code w-full">
+                                        <pre
+                                            v-for="(row, idx) in char['grid']"
+                                            :data-prefix="1 + idx"
+                                        ><code>{{ idx == 0 ? "[" : " " }}[{{ row.toString() }}]{{ idx + 1 == dimension ? "]" : "," }}</code></pre>
+                                    </div>
+
+                                    <!-- if this is grid view -->
+                                     <div v-if="!isCodeView">
+                                        GRID HERE (PLACEHOLDER)
+                                     </div>
+                                </div>
+                            </div>
+                        </div>
+                    </details>
+                </div>
+            </div>
+        </div>
     </div>
 
     <!-- view json modal — contents intentionally blank for now, styling TBD -->
