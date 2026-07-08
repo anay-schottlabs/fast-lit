@@ -269,7 +269,8 @@ export class ChangelogScripts {
                 "Fixed the (currently hidden) write page registering a new character any time you released the mouse anywhere on the page, instead of only when you actually drew on the grid.",
                 "Restyled the (currently hidden) write page's Write/Learn/Developer tabs and developer tools (label input, buttons, data accordion) to match the rest of the site's dark theme, and split the layout into the drawing grid on the left with the active tab's panel on the right.",
                 "Added basic syntax highlighting to the write page's two JSON code views, coloring keys, string values, and grid numbers to match the site's palette.",
-                "Styled the write page's View JSON modal to match the rest of the site, with a bordered header, close icon, and a scrollable code panel."
+                "Styled the write page's View JSON modal to match the rest of the site, with a bordered header, close icon, and a scrollable code panel.",
+                "The View JSON modal now sizes itself to fit the full width of the JSON it's displaying instead of clipping long lines, and its code panel has more breathing room on the right to match the left."
             ]
         )
     ]

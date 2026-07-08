@@ -451,7 +451,7 @@ function exportJson() {
         class="modal"
         :class="{ 'modal-open': isViewJsonModalOpen }"
     >
-        <div class="modal-box bg-deepblue h-7/8 flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
+        <div class="modal-box bg-deepblue !w-fit !max-w-[95vw] h-7/8 flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
             <!-- header: close button + title share one relative row, same
                  structural pattern as the read page's settings modal -->
             <div class="relative flex items-center justify-center border-b border-white/10 pb-4">
@@ -487,7 +487,10 @@ function exportJson() {
 
             <!-- scrollable code area -->
             <div class="mt-6 flex-1 overflow-auto rounded-2xl">
-                <div class="mockup-code w-full">
+                <!-- mockup-code's built-in per-line padding-right (1.25rem) reads as
+                     much thinner than the left side's line-number gutter, so this adds
+                     extra right padding on the container itself to balance them out. -->
+                <div class="mockup-code w-full pe-10">
                 <!-- Very basic syntax highlighting: punctuation/brackets are dimmed
                      (text-white/40), JSON keys use the brand red-light accent, string
                      values are full white, and grid numbers use a soft violet — same
