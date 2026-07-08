@@ -436,7 +436,7 @@ function deleteCharacter(id) {
                             :disabled="data.length == 0"
                         >{{ WriteScripts.viewJsonButton }}</button>
                         <button
-                            class="btn rounded-2xl border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10 focus-ring flex-1 min-w-[9rem]"
+                            class="btn rounded-2xl border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10 focus-ring flex-1 min-w-[9rem] disabled:opacity-50 disabled:hover:bg-white/5"
                             @click="exportJson"
                             :disabled="data.length == 0"
                         >{{ WriteScripts.downloadJsonButton }}</button>
