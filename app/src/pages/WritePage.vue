@@ -192,8 +192,13 @@ function onPointerMove(event) {
     }
 }
 
-// Releasing the pointer ends the current drag and clears the grid.
+// Releasing the pointer ends the current drag and clears the grid. Guarded
+// on isDrawing (only set true by a pointerdown on the canvas itself) since
+// this listener is on window to keep dragging past the canvas edge working —
+// without the guard, releasing the mouse anywhere on the page would reset
+// the grid and register a character even if the drag never touched the canvas.
 function onPointerUp() {
+    if (!isDrawing) return;
     isDrawing = false;
     resetGrid();
 }

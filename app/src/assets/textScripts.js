@@ -257,7 +257,8 @@ export class ChangelogScripts {
             "July 8, 2026",
             "1.4.0",
             [
-                "The sidebar's active page indicator now uses the full brand red instead of a lighter, softer red."
+                "The sidebar's active page indicator now uses the full brand red instead of a lighter, softer red.",
+                "Fixed the (currently hidden) write page registering a new character any time you released the mouse anywhere on the page, instead of only when you actually drew on the grid."
             ]
         )
     ]
