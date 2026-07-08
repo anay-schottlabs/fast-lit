@@ -334,11 +334,11 @@ function exportJson() {
     <!-- main page content, wide enough for the split-screen layout below -->
     <div class="mx-auto max-w-4xl p-5">
         <!-- page tabs, styled as a dark segmented control to match the rest of the site -->
-        <div class="mb-6 inline-flex gap-1 rounded-2xl border border-white/10 bg-white/5 p-1">
+        <div class="mb-6 inline-flex gap-1 rounded-2xl border border-white/10 bg-white/5 p-1 w-full">
             <button
                 v-for="page in Object.values(Pages)"
                 :key="page"
-                class="rounded-xl px-5 py-2 text-sm font-semibold capitalize transition-colors duration-150 focus-ring"
+                class="rounded-xl px-5 py-2 text-sm font-semibold capitalize transition-colors duration-150 focus-ring w-full"
                 :class="currentPage === page ? 'bg-red text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'"
                 @click="currentPage = page"
             >{{ page }}</button>
@@ -426,7 +426,7 @@ function exportJson() {
                                         <pre
                                             v-for="(row, idx) in char['grid']"
                                             :data-prefix="1 + idx"
-                                        ><code>{{ idx == 0 ? "[" : " " }}[{{ row.toString() }}]{{ idx + 1 == dimension ? "]" : "," }}</code></pre>
+                                        ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
                                     </div>
 
                                     <!-- if this is grid view -->
@@ -450,36 +450,65 @@ function exportJson() {
         <div class="modal-box">
             <button @click="isViewJsonModalOpen = false">Close</button>
 
-            <!-- if this is code view -->
             <div class="mockup-code w-full">
-                <pre data-prefix="1"><code>[</code></pre>
+                <!-- Very basic syntax highlighting: punctuation/brackets are dimmed
+                     (text-white/40), JSON keys use the brand red-light accent, string
+                     values are full white, and grid numbers use a soft violet — same
+                     three-tone treatment as the accordion's code view below. -->
+
+                <!-- 1: Opening [ of the array -->
+                <pre data-prefix="1"><code><span class="text-white/40">[</span></code></pre>
+
+                <!-- For each character (object) in the data array -->
                 <div v-for="(char, idx1) in data">
+                    <!-- 2 + (idx1 * 26): Opening { of the object; each character starts on a unique base for its block,
+                    spaced by 26 lines to leave room for its grid rows -->
                     <pre
                         :data-prefix="2 + (idx1 * 26)"
-                    ><code>{{ indent + "{" }}</code></pre>
+                    ><code><span class="text-white/40">{{ indent }}{</span></code></pre>
+
+                    <!-- 3 + (idx1 * 26): "id" field line -->
                     <pre
                         :data-prefix="3 + (idx1 * 26)"
-                    ><code>{{ indent + indent }}"id": "{{ char["id"] }}",</code></pre>
+                    ><code><span class="text-white/40">{{ indent + indent }}</span><span class="text-red-light">"id"</span><span class="text-white/40">: </span><span class="text-white">"{{ char["id"] }}"</span><span class="text-white/40">,</span></code></pre>
+
+                    <!-- 4 + (idx1 * 26): "label" field line -->
                     <pre
                         :data-prefix="4 + (idx1 * 26)"
-                    ><code>{{ indent + indent }}"label": "{{ char["label"] }}",</code></pre>
+                    ><code><span class="text-white/40">{{ indent + indent }}</span><span class="text-red-light">"label"</span><span class="text-white/40">: </span><span class="text-white">"{{ char["label"] }}"</span><span class="text-white/40">,</span></code></pre>
+
+                    <!-- 5 + (idx1 * 26): "grid": [ line, starting of grid array -->
                     <pre
                         :data-prefix="5 + (idx1 * 26)"
-                    ><code>{{ indent + indent }}"grid": [</code></pre>
+                    ><code><span class="text-white/40">{{ indent + indent }}</span><span class="text-red-light">"grid"</span><span class="text-white/40">: [</span></code></pre>
+
+                    <!-- 6 + (idx1 * 26) + idx2: Each row of the grid, where idx2 is the row index. -->
+                    <!-- This ensures grid lines are numbered sequentially, starting right after the object metadata -->
                     <pre
                         v-for="(row, idx2) in char['grid']"
                         :data-prefix="6 + (idx1 * 26) + idx2"
-                    ><code>{{ indent + indent + indent }}[ {{ row.toString() }} ]{{ idx2 + 1 != dimension ? "," : "" }}</code></pre>
+                    ><code><span class="text-white/40">{{ indent + indent + indent }}[ </span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40"> ]{{ idx2 + 1 != dimension ? "," : "" }}</span></code></pre>
+
+                    <!-- 26 + (idx1 * 26): Closing ] for the grid array, at a fixed offset regardless of grid length
+                    (assumes grid is up to 20 rows, fills lines accordingly) -->
                     <pre
                         :data-prefix="26 + (idx1 * 26)"
-                    ><code>{{ indent + indent }}]</code></pre>
+                    ><code><span class="text-white/40">{{ indent + indent }}]</span></code></pre>
+
+                    <!-- 27 + (idx1 * 26): Closing } for the object -->
                     <pre
                         :data-prefix="27 + (idx1 * 26)"
-                    ><code>{{ indent + "}" }}</code></pre>
+                    ><code><span class="text-white/40">{{ indent + "}" }}</span></code></pre>
                 </div>
+
+                <!-- 28 + ((data.length - 1) * 26): Closing ] for the array.
+                This appears AFTER all objects, using the same offset math as above to place it after the last character's block.
+                -->
                 <pre
                     :data-prefix="28 + ((data.length - 1) * 26)"
-                ><code>]</code></pre>
+                ><code><span class="text-white/40">]</span></code></pre>
+
+                <!-- 29 + ((data.length - 1) * 26): Blank line after the array close, for formatting/spacing -->
                 <pre
                     :data-prefix="29 + ((data.length - 1) * 26)"
                 ><code></code></pre>
