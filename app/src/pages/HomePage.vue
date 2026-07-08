@@ -36,10 +36,13 @@ const FIRESTORE_COMMIT_URL = `https://firestore.googleapis.com/v1/projects/${db.
 // the Firestore SDK's write (a long-lived WebChannel request) can get cut
 // off mid-flight before it ever reaches the server. Confirmed this in
 // testing: an SDK updateDoc() call fired from beforeunload silently never
-// landed. navigator.sendBeacon() is built specifically for this "flush data
-// as the page goes away" case — the browser guarantees the request is sent
-// even after the page unloads — so this hits Firestore's REST commit
-// endpoint directly with an atomic increment transform, bypassing the SDK.
+// landed, so this hits Firestore's REST commit endpoint directly with an
+// atomic increment transform instead, using fetch's keepalive option so the
+// browser finishes sending it even after the page unloads. (navigator.
+// sendBeacon() is built for exactly this case too, but Brave Shields and
+// some ad-blocking extensions flag the Beacon API itself as a tracking
+// mechanism and block it outright regardless of destination — keepalive
+// fetch gives the same unload guarantee without that association.)
 function saveDemoWordsRead() {
     if (demoWordsRead > 0 && docId) {
         const body = {
@@ -54,7 +57,15 @@ function saveDemoWordsRead() {
                 }
             ]
         };
-        navigator.sendBeacon(FIRESTORE_COMMIT_URL, new Blob([JSON.stringify(body)], { type: "application/json" }));
+        fetch(FIRESTORE_COMMIT_URL, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(body),
+            keepalive: true
+        }).catch(() => {
+            // best-effort — if this is blocked or fails, there's nothing to
+            // retry from a page that's already unloading
+        });
         demoWordsRead = 0;
     }
 }
