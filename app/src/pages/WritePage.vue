@@ -1,6 +1,6 @@
 <script setup>
 import Header from '../components/Header.vue';
-import { ref, watch, onMounted, onUnmounted, nextTick, render } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick, render } from 'vue';
 import { WriteScripts } from '@/assets/textScripts.js';
 
 const canvas = ref(null);
@@ -415,6 +415,23 @@ function exportJson() {
 function deleteCharacter(id) {
     data.value = data.value.filter((char) => char.id !== id);
 }
+
+// very simple at-a-glance stats for the developer panel
+const uniqueLabelCount = computed(() => Object.keys(renderableData.value).length);
+const mostCommonLabel = computed(() => {
+    const entries = Object.entries(renderableData.value);
+    if (entries.length === 0) return null;
+    return entries.reduce((max, entry) => entry[1].length > max[1].length ? entry : max);
+});
+
+// Wipes every saved character. Goes through the same `data` source of
+// truth as deleteCharacter, so renderableData and IndexedDB both stay
+// in sync automatically via the watch above.
+function clearAllData() {
+    if (data.value.length === 0) return;
+    if (!confirm("Clear all saved characters? This can't be undone.")) return;
+    data.value = [];
+}
 </script>
 
 <template>
@@ -435,8 +452,11 @@ function deleteCharacter(id) {
 
         <!-- split screen: the write box (canvas) stays fixed on the left,
              the active tab's panel fills the remaining space on the right.
-             Stacks vertically (canvas on top) on small screens. -->
-        <div class="flex flex-col items-start gap-6 lg:flex-row">
+             Stacks vertically (canvas on top) on small screens.
+             lg:items-stretch makes the right panel match the canvas's
+             height at desktop widths instead of just shrinking to its
+             own (much shorter) content. -->
+        <div class="flex flex-col items-start gap-6 lg:flex-row lg:items-stretch">
             <canvas
                 id="drawCanvas"
                 class="
@@ -476,10 +496,14 @@ function deleteCharacter(id) {
                     <p class="text-white/70">learn page</p>
                 </div>
 
-                <!-- developer page -->
+                <!-- developer page — h-full so it fills the height the split
+                     screen row stretches this column to (see lg:items-stretch
+                     above), with the stats card below absorbing the leftover
+                     space via flex-1 so the panel matches the canvas's height
+                     instead of leaving it visually shorter. -->
                 <div
                     v-if="currentPage == Pages.DEVELOPER"
-                    class="flex flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5"
+                    class="flex h-full flex-col gap-4 rounded-2xl border border-white/10 bg-white/5 p-5"
                 >
                     <!-- current label: the single field that decides what
                          every subsequent stroke gets classified as, so it
@@ -523,6 +547,34 @@ function deleteCharacter(id) {
                         class="btn rounded-2xl border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10 focus-ring"
                         @click="isDataOpen = true"
                     >{{ WriteScripts.accordionHeaderClosed }} ({{ data.length }})</button>
+
+                    <!-- very simple stats — fills whatever vertical space is
+                         left over once the panel is stretched to the canvas's
+                         height, instead of leaving it blank -->
+                    <div class="flex flex-1 flex-col justify-center gap-4 rounded-2xl border border-white/10 bg-white/5 p-5">
+                        <p class="text-center text-xs font-semibold uppercase tracking-widest text-white/50">Stats</p>
+                        <div class="grid grid-cols-3 gap-3 text-center">
+                            <div>
+                                <p class="text-3xl font-bold text-red-light">{{ data.length }}</p>
+                                <p class="mt-1 text-xs text-white/50">Characters</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-bold text-red-light">{{ uniqueLabelCount }}</p>
+                                <p class="mt-1 text-xs text-white/50">Labels</p>
+                            </div>
+                            <div>
+                                <p class="text-3xl font-bold text-red-light">{{ mostCommonLabel ? mostCommonLabel[1].length : 0 }}</p>
+                                <p class="mt-1 truncate text-xs text-white/50">{{ mostCommonLabel ? `"${mostCommonLabel[0]}"` : "Most Common" }}</p>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- clear all -->
+                    <button
+                        class="btn w-full rounded-2xl border border-red/40 bg-transparent text-red-light transition-colors hover:bg-red/10 focus-ring disabled:opacity-50 disabled:hover:bg-transparent"
+                        :disabled="data.length == 0"
+                        @click="clearAllData"
+                    >Clear All Data</button>
                 </div>
             </div>
         </div>
