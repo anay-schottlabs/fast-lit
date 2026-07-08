@@ -115,6 +115,81 @@ export class FeedbackScripts {
     static categories = ["Bug Reports", "Feature Ideas", "General Thoughts"];
 }
 
+export class PrivacyScripts {
+    static title = "Privacy Policy for Fast Lit Grabber";
+    static lastUpdated = "Last Updated: July 2026";
+    static intro = text([
+        "Fast Lit Grabber is designed to help users quickly send article text from webpages to the Fast Lit reading application.",
+        "We respect your privacy and are committed to collecting as little information as possible."
+    ]);
+    static sections = [
+        {
+            heading: "Information We Access",
+            paragraphs: [
+                "When you use the extension, Fast Lit Grabber temporarily accesses the content of the webpage you choose. This content is used solely to extract readable article text and send it to the Fast Lit web application so you can read it using Fast Lit's interface.",
+                "The extension does not access webpage content unless you explicitly activate it."
+            ]
+        },
+        {
+            heading: "Information We Collect",
+            paragraphs: ["Fast Lit Grabber does not collect or store:"],
+            list: [
+                "Personal information",
+                "Names or email addresses",
+                "Browsing history",
+                "Login credentials",
+                "Payment information",
+                "Cookies",
+                "Analytics about your browsing activity"
+            ],
+            after: ["The extension does not create user accounts."]
+        },
+        {
+            heading: "How Website Content Is Used",
+            paragraphs: [
+                "Website content is processed only to perform the extension's core functionality.",
+                "Specifically, webpage content is:"
+            ],
+            list: [
+                "Read only when you activate the extension.",
+                "Processed to extract readable text.",
+                "Sent to the Fast Lit website so the text can be displayed for reading."
+            ],
+            after: ["Website content is not permanently stored by the extension and is not sold or shared with third parties for advertising or marketing purposes."]
+        },
+        {
+            heading: "Data Stored by Fast Lit",
+            paragraphs: [
+                "The Fast Lit website may maintain anonymous aggregate statistics, such as the total number of words read across all users. These statistics do not identify individual users and are not linked to personal information."
+            ]
+        },
+        {
+            heading: "Third-Party Services",
+            paragraphs: [
+                "Fast Lit uses Google Firebase to store anonymous aggregate application statistics. No personally identifiable information is stored through Firebase."
+            ]
+        },
+        {
+            heading: "Data Sharing",
+            paragraphs: [
+                "We do not sell, rent, or share personal information with third parties."
+            ]
+        },
+        {
+            heading: "Security",
+            paragraphs: [
+                "Communication between the extension and the Fast Lit website occurs over encrypted HTTPS connections."
+            ]
+        },
+        {
+            heading: "Changes to This Policy",
+            paragraphs: [
+                "This Privacy Policy may be updated from time to time. Any changes will be reflected on this page with an updated effective date."
+            ]
+        }
+    ];
+}
+
 export class ChangelogScripts {
     static Entry = class {
         constructor(date, version, changes) {
@@ -174,7 +249,8 @@ export class ChangelogScripts {
                 "Text you paste or send over from the Fast Lit Grabber extension, your reading speed, and your progress through the text are now all saved on your device, so you can pick up right where you left off the next time you open the read page.",
                 "Fixed the play/pause and stop buttons rendering noticeably smaller than the previous/next word buttons next to them.",
                 "Fixed a bug where reloading the read page with Ctrl+R or Cmd+R would reset your reading progress instead of restoring it, since that key combo was also triggering the reader's own \"press R to reset\" shortcut a moment before the reload.",
-                "Words read by the home page's live preview now count toward the site's total words read stat, saved as you leave the page."
+                "Words read by the home page's live preview now count toward the site's total words read stat, saved as you leave the page.",
+                "Added a Privacy Policy page for the Fast Lit Grabber extension."
             ]
         )
     ]
