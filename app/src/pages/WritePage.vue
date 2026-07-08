@@ -387,13 +387,17 @@ function exportJson() {
                     >
 
                     <!-- export data -->
-                    <div class="flex flex-wrap gap-2">
-                        <button class="btn-red" @click="isViewJsonModalOpen = true">View json</button>
+                    <div class="flex flex-wrap gap-2 w-full">
                         <button
-                            class="btn rounded-2xl border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10 focus-ring"
+                            class="btn-red flex-1 min-w-[9rem]"
+                            @click="isViewJsonModalOpen = true"
+                        >{{ WriteScripts.viewJsonButton }}</button>
+                        <button
+                            class="btn rounded-2xl border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10 focus-ring flex-1 min-w-[9rem]"
                             @click="exportJson"
-                        >Download json</button>
+                        >{{ WriteScripts.downloadJsonButton }}</button>
                     </div>
+      
 
                     <!-- accordion to view all data -->
                     <details
@@ -442,15 +446,48 @@ function exportJson() {
         </div>
     </div>
 
-    <!-- view json modal — contents intentionally blank for now, styling TBD -->
+    <!-- view json modal -->
     <dialog
         class="modal"
         :class="{ 'modal-open': isViewJsonModalOpen }"
     >
-        <div class="modal-box">
-            <button @click="isViewJsonModalOpen = false">Close</button>
+        <div class="modal-box bg-deepblue h-7/8 flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
+            <!-- header: close button + title share one relative row, same
+                 structural pattern as the read page's settings modal -->
+            <div class="relative flex items-center justify-center border-b border-white/10 pb-4">
+                <button
+                    class="btn btn-circle btn-ghost absolute left-0 top-1/2 -translate-y-1/2 transition-colors hover:bg-white/10 focus-ring"
+                    @click="isViewJsonModalOpen = false"
+                >
+                    <svg
+                        version="1.1"
+                        id="Layer_1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        x="0px"
+                        y="0px"
+                        width="16px"
+                        height="16px"
+                        viewBox="0 0 122.878 122.88"
+                        fill="white"
+                    >
+                        <g>
+                            <path
+                                d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
+                                l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
+                                l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
+                                c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
+                            />
+                        </g>
+                    </svg>
+                </button>
 
-            <div class="mockup-code w-full">
+                <span class="text-2xl font-bold !text-red">{{ WriteScripts.viewJsonButton }}</span>
+            </div>
+
+            <!-- scrollable code area -->
+            <div class="mt-6 flex-1 overflow-auto rounded-2xl">
+                <div class="mockup-code w-full">
                 <!-- Very basic syntax highlighting: punctuation/brackets are dimmed
                      (text-white/40), JSON keys use the brand red-light accent, string
                      values are full white, and grid numbers use a soft violet — same
@@ -465,7 +502,7 @@ function exportJson() {
                     spaced by 26 lines to leave room for its grid rows -->
                     <pre
                         :data-prefix="2 + (idx1 * 26)"
-                    ><code><span class="text-white/40">{{ indent }}{</span></code></pre>
+                    ><code><span class="text-white/40">{{ indent }}{{ "{" }}</span></code></pre>
 
                     <!-- 3 + (idx1 * 26): "id" field line -->
                     <pre
@@ -498,7 +535,7 @@ function exportJson() {
                     <!-- 27 + (idx1 * 26): Closing } for the object -->
                     <pre
                         :data-prefix="27 + (idx1 * 26)"
-                    ><code><span class="text-white/40">{{ indent + "}" }}</span></code></pre>
+                    ><code><span class="text-white/40">{{ indent + "}" + (idx1 != data.length - 1 ? "," : "") }}</span></code></pre>
                 </div>
 
                 <!-- 28 + ((data.length - 1) * 26): Closing ] for the array.
@@ -512,6 +549,7 @@ function exportJson() {
                 <pre
                     :data-prefix="29 + ((data.length - 1) * 26)"
                 ><code></code></pre>
+                </div>
             </div>
         </div>
     </dialog>
