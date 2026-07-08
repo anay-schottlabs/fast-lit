@@ -338,7 +338,7 @@ function exportJson() {
             <button
                 v-for="page in Object.values(Pages)"
                 :key="page"
-                class="rounded-xl px-5 py-2 text-sm font-semibold capitalize transition-colors duration-150 focus-ring w-full"
+                class="rounded-xl px-5 py-2 text-sm font-semibold capitalize transition-colors duration-150 focus-ring w-full cursor-pointer"
                 :class="currentPage === page ? 'bg-red text-white' : 'text-white/60 hover:bg-white/10 hover:text-white'"
                 @click="currentPage = page"
             >{{ page }}</button>
@@ -350,7 +350,20 @@ function exportJson() {
         <div class="flex flex-col items-start gap-6 lg:flex-row">
             <canvas
                 id="drawCanvas"
-                class="mx-auto aspect-square w-[min(90vw,65vh,26rem)] shrink-0 touch-none rounded-2xl border border-white/10 shadow-2xl shadow-black/40 lg:mx-0"
+                class="
+                    mx-auto
+                    aspect-square
+                    w-[min(90vw,65vh,26rem)]
+                    shrink-0
+                    touch-none
+                    rounded-2xl
+                    border
+                    border-white/10
+                    shadow-2xl
+                    shadow-black/40
+                    lg:mx-0
+                    cursor-pointer
+                "           
             ></canvas>
 
             <div class="w-full min-w-0">
@@ -399,48 +412,11 @@ function exportJson() {
                     </div>
       
 
-                    <!-- accordion to view all data -->
-                    <details
-                        class="collapse collapse-arrow rounded-2xl border border-white/15 bg-white/5 text-white"
-                        :open="isDataOpen"
-                        @toggle="isDataOpen = $event.target.open"
-                    >
-                        <summary class="collapse-title font-semibold">
-                            {{ isDataOpen ? WriteScripts.accordionHeaderOpen : WriteScripts.accordionHeaderClosed }} ({{ data.length }})
-                            <div class="ms-50 flex items-center gap-2 text-white/70">
-                                Grid
-                                <input
-                                    type="checkbox"
-                                    :checked="isCodeView"
-                                    @change="isCodeView = $event.target.checked"
-                                    class="toggle toggle-xl"
-                                />
-                                Code
-                            </div>
-                        </summary>
-                        <div class="collapse-content text-sm">
-                            <div v-for="label in Object.keys(renderableData)">
-                                <kbd
-                                    class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
-                                >{{ label }}</kbd>
-                                <div v-for="char in renderableData[label]">
-
-                                    <!-- if this is code view -->
-                                    <div v-if="isCodeView" class="mockup-code w-full">
-                                        <pre
-                                            v-for="(row, idx) in char['grid']"
-                                            :data-prefix="1 + idx"
-                                        ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
-                                    </div>
-
-                                    <!-- if this is grid view -->
-                                     <div v-if="!isCodeView">
-                                        GRID HERE (PLACEHOLDER)
-                                     </div>
-                                </div>
-                            </div>
-                        </div>
-                    </details>
+                    <!-- trigger for the show-data modal below -->
+                    <button
+                        class="btn rounded-2xl border border-white/20 bg-white/5 text-white transition-colors hover:bg-white/10 focus-ring"
+                        @click="isDataOpen = true"
+                    >{{ WriteScripts.accordionHeaderClosed }} ({{ data.length }})</button>
                 </div>
             </div>
         </div>
@@ -552,6 +528,83 @@ function exportJson() {
                 <pre
                     :data-prefix="29 + ((data.length - 1) * 26)"
                 ><code></code></pre>
+                </div>
+            </div>
+        </div>
+    </dialog>
+
+    <!-- show data modal — same header/close-icon pattern as the view json
+         modal above; content/logic (Grid-Code toggle, renderableData
+         rendering) unchanged from when this lived in the accordion. -->
+    <dialog
+        class="modal"
+        :class="{ 'modal-open': isDataOpen }"
+    >
+        <div class="modal-box bg-deepblue !w-fit !max-w-[95vw] h-7/8 flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
+            <div class="relative flex items-center justify-center border-b border-white/10 pb-4">
+                <button
+                    class="btn btn-circle btn-ghost absolute left-0 top-1/2 -translate-y-1/2 transition-colors hover:bg-white/10 focus-ring"
+                    @click="isDataOpen = false"
+                >
+                    <svg
+                        version="1.1"
+                        id="Layer_1"
+                        xmlns="http://www.w3.org/2000/svg"
+                        xmlns:xlink="http://www.w3.org/1999/xlink"
+                        x="0px"
+                        y="0px"
+                        width="16px"
+                        height="16px"
+                        viewBox="0 0 122.878 122.88"
+                        fill="white"
+                    >
+                        <g>
+                            <path
+                                d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
+                                l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
+                                l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
+                                c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
+                            />
+                        </g>
+                    </svg>
+                </button>
+
+                <span class="text-2xl font-bold !text-red">{{ WriteScripts.accordionHeaderClosed }} ({{ data.length }})</span>
+            </div>
+
+            <!-- Grid/Code toggle, same logic as before -->
+            <div class="mt-4 flex items-center justify-center gap-2 text-white/70">
+                Grid
+                <input
+                    type="checkbox"
+                    :checked="isCodeView"
+                    @change="isCodeView = $event.target.checked"
+                    class="toggle toggle-xl"
+                />
+                Code
+            </div>
+
+            <!-- scrollable data area -->
+            <div class="mt-6 flex-1 overflow-auto rounded-2xl text-sm">
+                <div v-for="label in Object.keys(renderableData)">
+                    <kbd
+                        class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
+                    >{{ label }}</kbd>
+                    <div v-for="char in renderableData[label]">
+
+                        <!-- if this is code view -->
+                        <div v-if="isCodeView" class="mockup-code w-full pe-10">
+                            <pre
+                                v-for="(row, idx) in char['grid']"
+                                :data-prefix="1 + idx"
+                            ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><span class="text-violet-300">{{ row.toString() }}</span><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
+                        </div>
+
+                        <!-- if this is grid view -->
+                         <div v-if="!isCodeView">
+                            GRID HERE (PLACEHOLDER)
+                         </div>
+                    </div>
                 </div>
             </div>
         </div>
