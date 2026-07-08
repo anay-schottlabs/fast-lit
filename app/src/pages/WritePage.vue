@@ -318,9 +318,69 @@ const renderableData = ref({});
 // 4 space indent for rendering code
 const indent = "    ";
 
+// Persists `data` to IndexedDB so saved characters survive a reload.
+// Vue's reactive arrays/objects are Proxies, which IndexedDB's
+// structured-clone algorithm can't serialize directly (it throws
+// DataCloneError trying to store one), so records are stringified before
+// being put in the store and parsed back on load rather than storing
+// `data.value` as-is.
+const WRITE_DB_NAME = "fastlit-write";
+const WRITE_DB_VERSION = 1;
+const WRITE_DB_STORE = "characters";
+const WRITE_DB_KEY = "data";
+
+function openWriteDb() {
+    return new Promise((resolve, reject) => {
+        const request = indexedDB.open(WRITE_DB_NAME, WRITE_DB_VERSION);
+        request.onupgradeneeded = () => {
+            request.result.createObjectStore(WRITE_DB_STORE);
+        };
+        request.onsuccess = () => resolve(request.result);
+        request.onerror = () => reject(request.error);
+    });
+}
+
+async function loadDataFromDb() {
+    try {
+        const db = await openWriteDb();
+        const stored = await new Promise((resolve, reject) => {
+            const tx = db.transaction(WRITE_DB_STORE, "readonly");
+            const request = tx.objectStore(WRITE_DB_STORE).get(WRITE_DB_KEY);
+            request.onsuccess = () => resolve(request.result);
+            request.onerror = () => reject(request.error);
+        });
+        return stored ? JSON.parse(stored) : [];
+    } catch {
+        // IndexedDB unavailable (e.g. private browsing) — fall back to an
+        // empty, in-session-only data set.
+        return [];
+    }
+}
+
+async function saveDataToDb(value) {
+    try {
+        const db = await openWriteDb();
+        await new Promise((resolve, reject) => {
+            const tx = db.transaction(WRITE_DB_STORE, "readwrite");
+            tx.objectStore(WRITE_DB_STORE).put(JSON.stringify(value), WRITE_DB_KEY);
+            tx.oncomplete = () => resolve();
+            tx.onerror = () => reject(tx.error);
+        });
+    } catch {
+        // data still works for this session, it just won't persist.
+    }
+}
+
+// restore any previously saved characters once on mount
+onMounted(async () => {
+    data.value = await loadDataFromDb();
+});
+
 // watch data's value so that we can create renderableData
 // so that data can more easily be parsed and displayed in the html
 watch(data, (newData) => {
+    saveDataToDb(newData);
+
     // reset renderableData, it will be reconstructed later in this method
     renderableData.value = {};
     newData.forEach((char) => {

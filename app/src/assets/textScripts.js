@@ -102,7 +102,7 @@ export class ReadScripts {
 }
 
 export class WriteScripts {
-    static devCharInputPlaceholder = "What are you drawing? (e.g. a, 5, ☺)";
+    static devCharInputPlaceholder = "What are you drawing?";
     static accordionHeaderClosed = "Show Data";
     static accordionHeaderOpen = "Hide Data";
     static downloadJsonButton = "Download JSON";
@@ -297,7 +297,8 @@ export class ChangelogScripts {
                 "Fixed the Show Data modal's label pill forcing every label to uppercase, and made it bigger and more prominent.",
                 "Added the ability to delete individual saved characters from the Show Data modal, in both grid and code view.",
                 "Fixed the Download JSON button not visually dimming when disabled, unlike the View JSON button next to it.",
-                "Made the write page's character-label field the visual focus of the developer panel: a large bold input in its own red-tinted card, with a live count of how many characters are saved under the current label."
+                "Made the write page's character-label field the visual focus of the developer panel: a large bold input in its own red-tinted card, with a live count of how many characters are saved under the current label.",
+                "Saved write page characters now persist in the browser via IndexedDB, so they survive a reload instead of being lost."
             ]
         )
     ]
