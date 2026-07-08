@@ -349,6 +349,12 @@ function exportJson() {
 
     URL.revokeObjectURL(url);
 }
+
+// Removes a single saved character by id. data is the source of truth —
+// renderableData rebuilds automatically via the watch above once data changes.
+function deleteCharacter(id) {
+    data.value = data.value.filter((char) => char.id !== id);
+}
 </script>
 
 <template>
@@ -649,12 +655,34 @@ function exportJson() {
                             <div
                                 v-for="char in renderableData[label]"
                                 :key="char.id"
-                                class="mockup-code w-full pe-10"
+                                class="relative"
                             >
-                                <pre
-                                    v-for="(row, idx) in char['grid']"
-                                    :data-prefix="1 + idx"
-                                ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><template v-for="(cell, i) in row" :key="i"><span :class="cell === 1 ? 'text-red-light' : 'text-violet-300'">{{ cell }}</span><span v-if="i < row.length - 1" class="text-white">,</span></template><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
+                                <button
+                                    class="btn btn-circle btn-xs absolute -right-2 -top-2 z-10 border border-white/20 bg-deepblue text-white/70 transition-colors hover:border-red hover:bg-red hover:text-white focus-ring"
+                                    @click="deleteCharacter(char.id)"
+                                    aria-label="Delete character"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="10px"
+                                        height="10px"
+                                        viewBox="0 0 122.878 122.88"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
+                                            l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
+                                            l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
+                                            c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
+                                        />
+                                    </svg>
+                                </button>
+                                <div class="mockup-code w-full pe-10">
+                                    <pre
+                                        v-for="(row, idx) in char['grid']"
+                                        :data-prefix="1 + idx"
+                                    ><code><span class="text-white/40">{{ idx == 0 ? "[" : " " }}[</span><template v-for="(cell, i) in row" :key="i"><span :class="cell === 1 ? 'text-red-light' : 'text-violet-300'">{{ cell }}</span><span v-if="i < row.length - 1" class="text-white">,</span></template><span class="text-white/40">]{{ idx + 1 == dimension ? "]" : "," }}</span></code></pre>
+                                </div>
                             </div>
                         </div>
 
@@ -664,12 +692,36 @@ function exportJson() {
                              Sized close to a code block's footprint so the modal
                              doesn't jump in size when switching between modes. -->
                         <div v-else class="flex flex-wrap gap-4">
-                            <canvas
+                            <div
                                 v-for="char in renderableData[label]"
                                 :key="char.id"
-                                :ref="el => drawCharacterCanvas(el, char)"
-                                class="aspect-square w-80 max-w-full touch-none rounded-xl border border-white/10 shadow-lg shadow-black/30"
-                            ></canvas>
+                                class="relative"
+                            >
+                                <button
+                                    class="btn btn-circle btn-xs absolute -right-2 -top-2 z-10 border border-white/20 bg-deepblue text-white/70 transition-colors hover:border-red hover:bg-red hover:text-white focus-ring"
+                                    @click="deleteCharacter(char.id)"
+                                    aria-label="Delete character"
+                                >
+                                    <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        width="10px"
+                                        height="10px"
+                                        viewBox="0 0 122.878 122.88"
+                                        fill="currentColor"
+                                    >
+                                        <path
+                                            d="M1.426,8.313c-1.901-1.901-1.901-4.984,0-6.886c1.901-1.902,4.984-1.902,6.886,0
+                                            l53.127,53.127l53.127-53.127c1.901-1.902,4.984-1.902,6.887,0c1.901,1.901,1.901,4.985,0,6.886L68.324,61.439
+                                            l53.128,53.128c1.901,1.901,1.901,4.984,0,6.886c-1.902,1.902-4.985,1.902-6.887,0L61.438,68.326L8.312,121.453
+                                            c-1.901,1.902-4.984,1.902-6.886,0c-1.901-1.901-1.901-4.984,0-6.886l53.127-53.128L1.426,8.313L1.426,8.313z"
+                                        />
+                                    </svg>
+                                </button>
+                                <canvas
+                                    :ref="el => drawCharacterCanvas(el, char)"
+                                    class="aspect-square w-80 max-w-full touch-none rounded-xl border border-white/10 shadow-lg shadow-black/30"
+                                ></canvas>
+                            </div>
                         </div>
                     </div>
                 </div>

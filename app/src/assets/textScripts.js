@@ -294,7 +294,8 @@ export class ChangelogScripts {
                 "Implemented the write page's grid view: each saved character now renders on its own mini canvas, showing the actual drawn shape and writing-line guide instead of a placeholder.",
                 "Polished the Show Data modal: bigger grid-view canvases so it doesn't jump in size when switching modes, a proper walkthrough instead of a blank modal when no data has been saved yet, a segmented Grid/Code toggle matching the page's tabs, and red badge labels in place of the light kbd chips.",
                 "Revamped the write page's code view syntax highlighting: commas are now plain white, and 1s and 0s in the grid data are colored differently from each other instead of sharing one color.",
-                "Fixed the Show Data modal's label pill forcing every label to uppercase, and made it bigger and more prominent."
+                "Fixed the Show Data modal's label pill forcing every label to uppercase, and made it bigger and more prominent.",
+                "Added the ability to delete individual saved characters from the Show Data modal, in both grid and code view."
             ]
         )
     ]
