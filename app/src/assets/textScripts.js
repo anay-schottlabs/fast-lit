@@ -393,7 +393,8 @@ export class ChangelogScripts {
                 "Thickened the new sidebar icons' strokes so they read as bold and clean instead of thin, matching the rest of the site's weight.",
                 "Redesigned the sidebar icons again as bolder, wider, much simpler marks (2-3 strokes each) instead of detailed line drawings — a plain roofline house, three text lines for Read, a signature scribble for Write, a simplified thumbs-up, and a clock for Changelog.",
                 "Replaced the home page's stat icons (previously an unrelated info-circle and archive box borrowed from a generic icon set) with marks that actually match what they measure: the same text-line and scribble marks as the sidebar's Read/Write icons, and a bolt for Hours Saved.",
-                "Added an Extension page covering the Fast Lit Grabber Chrome extension in depth: what it does, how it works step by step, an FAQ, a link to the Chrome Web Store listing, and a privacy callout linking to the full Privacy Policy. It has its own entry in the sidebar, directly under Write."
+                "Added an Extension page covering the Fast Lit Grabber Chrome extension in depth: what it does, how it works step by step, an FAQ, a link to the Chrome Web Store listing, and a privacy callout linking to the full Privacy Policy. It has its own entry in the sidebar, directly under Write.",
+                "The sidebar is now a floating card (rounded corners, border, shadow) inset from the top and bottom edges instead of a flush-docked panel, matching the card styling used everywhere else on the site."
             ]
         )
     ]
