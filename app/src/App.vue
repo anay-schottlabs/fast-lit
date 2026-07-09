@@ -112,9 +112,8 @@ function navItemClass(path) {
                                 class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
-                                <path d="M4 11.5 12 4l8 7.5" />
-                                <path d="M6 10.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-8.5" />
-                                <path d="M10 20v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" />
+                                <path d="M3 11l9-7 9 7" />
+                                <path d="M5 9.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5" />
                             </svg>
                             <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Home</span>
                         </button>
@@ -139,9 +138,9 @@ function navItemClass(path) {
                                 class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
-                                <path d="M12 7c-1.6-1.3-3.7-2-6-2v13c2.3 0 4.4.7 6 2" />
-                                <path d="M12 7c1.6-1.3 3.7-2 6-2v13c-2.3 0-4.4.7-6 2" />
-                                <path d="M12 7v13" />
+                                <path d="M4 7h16" />
+                                <path d="M4 12h16" />
+                                <path d="M4 17h10" />
                             </svg>
                             <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Read</span>
                         </button>
@@ -166,8 +165,7 @@ function navItemClass(path) {
                                 class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
-                                <path d="M4 20l.8-3.6L15.5 5.7a1.5 1.5 0 0 1 2.1 0l.7.7a1.5 1.5 0 0 1 0 2.1L7.6 19.2 4 20Z" />
-                                <path d="M14 7.5l2.5 2.5" />
+                                <path d="M3 14c1.75-4 3.75-4 5.5 0s3.75 4 5.5 0 3.75-4 5.5 0" />
                             </svg>
                             <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Write</span>
                         </button>
@@ -192,8 +190,8 @@ function navItemClass(path) {
                                 class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
-                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z" />
-                                <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
+                                <path d="M4 12h3v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z" />
+                                <path d="M7 12l3-8a3 3 0 0 1 3 3v4h5.5a2 2 0 0 1 2 2.4l-1.2 6.6a2 2 0 0 1-2 1.6H7" />
                             </svg>
                             <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Feedback</span>
                         </button>
@@ -218,10 +216,8 @@ function navItemClass(path) {
                                 :style="{ width: svgSize, height: svgSize }"
                                 class="shrink-0"
                             >
-                                <path d="M20 7h-9" />
-                                <path d="M14 17H5" />
-                                <circle cx="17" cy="17" r="3" />
-                                <circle cx="7" cy="7" r="3" />
+                                <circle cx="12" cy="12" r="8" />
+                                <path d="M12 8v4l3 2" />
                             </svg>
                             <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Changelog</span>
                         </button>
