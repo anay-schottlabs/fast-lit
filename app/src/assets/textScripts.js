@@ -316,7 +316,8 @@ export class ChangelogScripts {
                 "The write page is no longer hidden — it now has its own Write entry in the sidebar, directly under Read.",
                 "Replaced the home page's Books Finished stat with Words Written, tracking characters drawn on the write page and converting them to an approximate word count. Hours Saved now also credits the estimated 0.24 seconds saved per character written, on top of the existing reading-based estimate.",
                 "The home page's live word preview no longer counts toward the site's Words Read stat.",
-                "Redrew every sidebar icon from scratch as one cohesive set (Home, Read, Write, Feedback, Changelog) — same viewBox, stroke weight, and line style throughout, replacing the old Feedback icon, which was a mismatched filled illustration at a completely different scale from the rest."
+                "Redrew every sidebar icon from scratch as one cohesive set (Home, Read, Write, Feedback, Changelog) — same viewBox, stroke weight, and line style throughout, replacing the old Feedback icon, which was a mismatched filled illustration at a completely different scale from the rest.",
+                "Thickened the new sidebar icons' strokes so they read as bold and clean instead of thin, matching the rest of the site's weight."
             ]
         )
     ]
