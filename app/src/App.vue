@@ -63,34 +63,36 @@ function navItemClass(path) {
                 class="flex min-h-full flex-col border-r border-white/10 bg-white/5 is-drawer-close:w-18 is-drawer-open:w-64 transition-[width] duration-200 ease-out"
             >
                 <!-- Sidebar content here -->
-                <ul class="flex w-full grow flex-col gap-1 px-2 py-3">
-                    <!-- button to toggle the sidebar -->
-                    <li>
-                        <label
-                            for="sidebar-drawer-toggle"
-                            class="is-drawer-close:tooltip is-drawer-close:tooltip-right flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 !text-white/40 transition-colors duration-150 hover:bg-white/5 hover:!text-white/70 focus-ring"
-                            data-tip="Toggle sidebar"
+                <!-- Collapse/expand control — deliberately kept OUTSIDE the
+                     nav <ul> below (its own row, plus a divider) so it reads
+                     as menu chrome rather than another destination in the
+                     list, even though it shares the nav items' hover/focus
+                     language. -->
+                <div class="w-full px-2 pt-3 pb-2">
+                    <label
+                        for="sidebar-drawer-toggle"
+                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 !text-white/40 transition-colors duration-150 hover:bg-white/5 hover:!text-white/70 focus-ring"
+                        data-tip="Toggle sidebar"
+                    >
+                        <svg
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                            :style="{ width: toggleSvgSize, height: toggleSvgSize }"
+                            fill="none"
+                            stroke="currentColor"
+                            stroke-width="2.5"
+                            stroke-linecap="round"
+                            stroke-linejoin="round"
+                            class="shrink-0 is-drawer-open:rotate-180 transition-transform duration-200"
                         >
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                :style="{ width: toggleSvgSize, height: toggleSvgSize }"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="shrink-0 is-drawer-open:rotate-180 transition-transform duration-200"
-                            >
-                                <rect x="3" y="3" width="18" height="18" rx="2" />
-                                <line x1="9" y1="4" x2="9" y2="20" />
-                                <polyline points="14 10 16 12 14 14" />
-                            </svg>
-                            <span class="is-drawer-close:hidden whitespace-nowrap text-sm">Collapse</span>
-                        </label>
-                    </li>
+                            <polyline points="9 6 15 12 9 18" />
+                        </svg>
+                        <span class="is-drawer-close:hidden whitespace-nowrap text-sm">Collapse</span>
+                    </label>
+                </div>
+                <div class="mx-4 border-t border-white/10"></div>
 
-
+                <ul class="flex w-full grow flex-col gap-1 px-2 pt-2 pb-3">
                     <!-- button to navigate to the home page -->
                     <li>
                         <button
