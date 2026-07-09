@@ -25,7 +25,7 @@ function navigateTo(path) {
 // button's own box model. is-drawer-close:tooltip wires the button into
 // daisyUI's tooltip off the sidebar checkbox's state; it only renders once
 // paired with a data-tip attribute below.
-const navBaseClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-colors duration-150 focus-ring cursor-pointer";
+const navBaseClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right is-drawer-close:justify-center flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-colors duration-150 focus-ring cursor-pointer";
 
 // Active page gets a soft red pill background; everything else is a muted
 // white that brightens on hover. Icons carry no color classes of their own
@@ -71,7 +71,7 @@ function navItemClass(path) {
                 <div class="w-full px-2 pt-3 pb-2">
                     <label
                         for="sidebar-drawer-toggle"
-                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 !text-white/40 transition-colors duration-150 hover:bg-white/5 hover:!text-white/70 focus-ring"
+                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right is-drawer-close:justify-center flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 !text-white/40 transition-colors duration-150 hover:bg-white/5 hover:!text-white/70 focus-ring"
                         data-tip="Toggle sidebar"
                     >
                         <svg

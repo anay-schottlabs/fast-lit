@@ -311,7 +311,8 @@ export class ChangelogScripts {
                 "Redesigned the sidebar: nav buttons are now a consistent size and span the full sidebar width instead of shrinking to fit their label, the active page gets a red pill background instead of just red text, and the collapse toggle now has a working tooltip and a chevron that flips direction to show which way it'll collapse.",
                 "The sidebar's version badge is now a proper card pinned to the bottom of the sidebar instead of a floating label, and expanding/collapsing the sidebar now animates smoothly instead of snapping instantly.",
                 "Every sidebar button now shows a pointer cursor on hover, and the collapse toggle is noticeably smaller and dimmer than the main nav buttons so it reads as a secondary control instead of competing with Home/Read/Feedback/Changelog.",
-                "Swapped the collapse toggle's icon for a simple centered chevron (the old panel-shaped icon was asymmetric and looked off-center) and moved it above the nav list with its own divider, so it reads as menu chrome instead of another item in the list."
+                "Swapped the collapse toggle's icon for a simple centered chevron (the old panel-shaped icon was asymmetric and looked off-center) and moved it above the nav list with its own divider, so it reads as menu chrome instead of another item in the list.",
+                "Fixed every collapsed sidebar icon sitting slightly left of center in its square hit target instead of being truly centered."
             ]
         )
     ]
