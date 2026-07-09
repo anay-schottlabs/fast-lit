@@ -253,11 +253,11 @@ const writeChars = ref([]);
 let charactersInSession = 0;
 
 function recognizeCharacter() {
+    charactersInSession++;
     if (currentPage.value == Pages.WRITE) {
         // Push a random lowercase alphabet character
         const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
         writeChars.value.push(randomChar);
-        charactersInSession++;
     }
     else if (currentPage.value == Pages.LEARN) {
     }
