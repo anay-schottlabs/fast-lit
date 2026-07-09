@@ -6,8 +6,11 @@ const changelog = ChangelogScripts.changelog;
 const newestEntry = changelog[changelog.length - 1];
 const currentVersion = newestEntry.version;
 
-// Use one consistent SVG size for all icons
+// Use one consistent SVG size for all main nav icons. The collapse toggle
+// intentionally uses a smaller size — it's a secondary control, not a nav
+// destination, and shouldn't compete with Home/Read/Feedback/Changelog.
 const svgSize = '2rem';
+const toggleSvgSize = '1.375rem';
 
 const route = useRoute();
 const router = useRouter();
@@ -22,7 +25,7 @@ function navigateTo(path) {
 // button's own box model. is-drawer-close:tooltip wires the button into
 // daisyUI's tooltip off the sidebar checkbox's state; it only renders once
 // paired with a data-tip attribute below.
-const navBaseClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-colors duration-150 focus-ring";
+const navBaseClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-colors duration-150 focus-ring cursor-pointer";
 
 // Active page gets a soft red pill background; everything else is a muted
 // white that brightens on hover. Icons carry no color classes of their own
@@ -65,13 +68,13 @@ function navItemClass(path) {
                     <li>
                         <label
                             for="sidebar-drawer-toggle"
-                            :class="[navBaseClass, '!text-white/60 hover:bg-white/10 hover:!text-white cursor-pointer']"
+                            class="is-drawer-close:tooltip is-drawer-close:tooltip-right flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 !text-white/40 transition-colors duration-150 hover:bg-white/5 hover:!text-white/70 focus-ring"
                             data-tip="Toggle sidebar"
                         >
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
-                                :style="{ width: svgSize, height: svgSize }"
+                                :style="{ width: toggleSvgSize, height: toggleSvgSize }"
                                 fill="none"
                                 stroke="currentColor"
                                 stroke-width="2"
@@ -83,7 +86,7 @@ function navItemClass(path) {
                                 <line x1="9" y1="4" x2="9" y2="20" />
                                 <polyline points="14 10 16 12 14 14" />
                             </svg>
-                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Collapse</span>
+                            <span class="is-drawer-close:hidden whitespace-nowrap text-sm">Collapse</span>
                         </label>
                     </li>
 
