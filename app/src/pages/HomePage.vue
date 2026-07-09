@@ -2,9 +2,9 @@
 import Header from '../components/Header.vue';
 import { useRouter } from 'vue-router';
 import { HomeScripts } from '@/assets/textScripts.js';
-import { ref, computed, onMounted, onUnmounted, watch } from 'vue';
+import { ref, computed, onMounted, onUnmounted } from 'vue';
 import { db } from '@/firebase/index.js';
-import { collection, getDocs, doc, updateDoc, increment } from "firebase/firestore";
+import { collection, getDocs } from "firebase/firestore";
 
 const totalWordsRead = ref(0);
 // written on the write page, in words (5 letters average per word) — see
@@ -14,38 +14,16 @@ const totalWordsWritten = ref(0);
 // distinguishes "still loading" from "genuinely zero" so the stat cards
 // don't flash a real-looking 0 while the Firestore read is in flight
 const statsLoading = ref(true);
-// docId is only set once the Firestore stats doc has loaded below; guards
-// saveDemoWordsRead against running before it's available.
-let docId;
 
 // get stats from firestore
 onMounted(async () => {
     const querySnapshot = await getDocs(collection(db, "stats"));
     querySnapshot.forEach((doc) => {
-        docId = doc.id;
         totalWordsRead.value = doc.data().totalWordsRead;
         totalWordsWritten.value = doc.data().totalWordsWritten ?? 0;
     });
     statsLoading.value = false;
 });
-
-// counts every word the live preview cycles through during this page visit,
-// added to the firestore total when the page is closed, reloaded, or
-// navigated away from within the app — same increment-on-close pattern as
-// Reader.vue's updateTotalWordsRead().
-let demoWordsRead = 0;
-
-async function saveDemoWordsRead() {
-    if (demoWordsRead > 0 && docId) {
-        const statsRef = doc(db, "stats", docId);
-        await updateDoc(statsRef, {
-            totalWordsRead: increment(demoWordsRead)
-        });
-        demoWordsRead = 0;
-    }
-}
-
-window.addEventListener('beforeunload', saveDemoWordsRead);
 
 const router = useRouter();
 
@@ -57,11 +35,6 @@ function navigateTo(path) {
 // RSVP focal-point effect right in the hero, the same way Reader.vue does
 // for real reading sessions.
 const demoIndex = ref(0);
-
-// every index change is one more word the live preview has cycled through
-watch(demoIndex, () => {
-    demoWordsRead++;
-});
 
 const demoWord = computed(() => HomeScripts.demoWords[demoIndex.value]);
 const demoBefore = computed(() => demoWord.value.slice(0, Math.floor(demoWord.value.length / 2)));
@@ -114,12 +87,6 @@ onMounted(() => {
 
 onUnmounted(() => {
     clearInterval(demoInterval);
-    // beforeunload only fires on an actual tab close/reload — navigating to
-    // another page within the app just unmounts this component, so flush
-    // the count here too, and drop the listener since it'd otherwise stack
-    // up (and misfire with a stale docId) if the user revisits the home page.
-    window.removeEventListener('beforeunload', saveDemoWordsRead);
-    saveDemoWordsRead();
 });
 
 // stat cards shown below the hero, backed by the same totalWordsRead math as before
