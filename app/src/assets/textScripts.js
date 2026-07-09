@@ -318,7 +318,8 @@ export class ChangelogScripts {
                 "The home page's live word preview no longer counts toward the site's Words Read stat.",
                 "Redrew every sidebar icon from scratch as one cohesive set (Home, Read, Write, Feedback, Changelog) — same viewBox, stroke weight, and line style throughout, replacing the old Feedback icon, which was a mismatched filled illustration at a completely different scale from the rest.",
                 "Thickened the new sidebar icons' strokes so they read as bold and clean instead of thin, matching the rest of the site's weight.",
-                "Redesigned the sidebar icons again as bolder, wider, much simpler marks (2-3 strokes each) instead of detailed line drawings — a plain roofline house, three text lines for Read, a signature scribble for Write, a simplified thumbs-up, and a clock for Changelog."
+                "Redesigned the sidebar icons again as bolder, wider, much simpler marks (2-3 strokes each) instead of detailed line drawings — a plain roofline house, three text lines for Read, a signature scribble for Write, a simplified thumbs-up, and a clock for Changelog.",
+                "Replaced the home page's stat icons (previously an unrelated info-circle and archive box borrowed from a generic icon set) with marks that actually match what they measure: the same text-line and scribble marks as the sidebar's Read/Write icons, and a bolt for Hours Saved."
             ]
         )
     ]

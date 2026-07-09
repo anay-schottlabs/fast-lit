@@ -94,12 +94,15 @@ const statCards = computed(() => [
     {
         label: "Words Read",
         value: `${(totalWordsRead.value / 1000).toFixed(1)}k`,
-        icon: "M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z"
+        // same three-bar "text" mark as the sidebar's Read icon, so this
+        // card visually ties back to the Read nav item
+        icon: "M4 7h16M4 12h16M4 17h10"
     },
     {
         label: "Words Written",
         value: Math.floor(totalWordsWritten.value),
-        icon: "M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"
+        // same signature-scribble mark as the sidebar's Write icon
+        icon: "M3 14c1.75-4 3.75-4 5.5 0s3.75 4 5.5 0 3.75-4 5.5 0"
     },
     {
         label: "Hours Saved",
@@ -111,7 +114,9 @@ const statCards = computed(() => [
         // so seconds saved = words * 5 * 0.24 = words * 1.2, then /3600 for
         // hours — combined here as /3000 (3600 / 1.2).
         value: Math.floor(totalWordsRead.value / 500 / 2 / 60 + totalWordsWritten.value / 3000),
-        icon: "M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"
+        // a bolt for speed/efficiency gained, distinct from the sidebar's
+        // clock (used there for Changelog's history-of-changes instead)
+        icon: "M13 3 4 14h6l-1 7 9-11h-6z"
     }
 ]);
 </script>
@@ -211,7 +216,7 @@ const statCards = computed(() => [
                         <path
                             stroke-linecap="round"
                             stroke-linejoin="round"
-                            stroke-width="2"
+                            stroke-width="2.5"
                             :d="stat.icon"
                         ></path>
                     </svg>
