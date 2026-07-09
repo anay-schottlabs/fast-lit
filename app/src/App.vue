@@ -55,10 +55,10 @@ function navItemClass(path) {
         </div>
 
         <div
-            class="min-h-screen drawer-side is-drawer-close:w-18 is-drawer-open:w-64"
+            class="min-h-screen drawer-side is-drawer-close:w-[5.5rem] is-drawer-open:w-[17rem]"
         ></div>
 
-        <div class="drawer-side is-drawer-close:overflow-visible fixed top-4 bottom-4 left-0 !h-auto">
+        <div class="drawer-side is-drawer-close:overflow-visible fixed top-4 bottom-4 left-4 !h-auto">
             <div
                 class="flex min-h-full flex-col rounded-2xl border border-white/10 bg-white/5 shadow-2xl shadow-black/40 is-drawer-close:w-18 is-drawer-open:w-64 transition-[width] duration-200 ease-out"
             >
