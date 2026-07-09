@@ -128,6 +128,79 @@ export class WriteScripts {
     ];
 }
 
+export class ExtensionScripts {
+    static storeUrl = "https://chromewebstore.google.com/detail/fast-lit-grabber/kmlpobbeoknaajpbfpnogchfpifaobfl";
+    static heroBadge = "Chrome Extension";
+    static heroTitle = "Fast Lit Grabber";
+    static heroContent = text([
+        "Fast Lit Grabber pulls the readable text out of any article and sends it straight into Fast Lit —",
+        "no copying, no pasting, no cleanup.",
+        "Open an article, click the extension, and start reading at speed in seconds."
+    ]);
+    static installButton = "Add to Chrome — It's Free";
+
+    static features = [
+        {
+            title: "One-Click Import",
+            description: "Click the Fast Lit Grabber icon on any article and its content lands directly in Fast Lit's reader, ready to go."
+        },
+        {
+            title: "Clean Article Extraction",
+            description: "The extension strips out ads, navigation, comments, and other clutter, keeping only the actual article text."
+        },
+        {
+            title: "Works Almost Anywhere",
+            description: "News sites, blogs, documentation, research papers — if a page has a readable article, the Grabber can pull it."
+        }
+    ];
+
+    static stepsTitle = "How It Works";
+    static steps = [
+        {
+            title: "Install the Extension",
+            description: "Add Fast Lit Grabber to Chrome from the Chrome Web Store. It takes a few seconds and doesn't require an account."
+        },
+        {
+            title: "Open an Article",
+            description: "Browse to any page with an article, blog post, or other readable content you'd like to read faster."
+        },
+        {
+            title: "Click the Grabber Icon",
+            description: "Click the Fast Lit Grabber icon in your browser toolbar to extract the page's readable text."
+        },
+        {
+            title: "Read Instantly",
+            description: "Fast Lit opens automatically with your text loaded and ready — press play and start reading at speed."
+        }
+    ];
+
+    static faq = [
+        {
+            question: "Is Fast Lit Grabber free?",
+            answer: "Yes. Fast Lit Grabber is completely free, with no account, subscription, or hidden costs."
+        },
+        {
+            question: "What happens to the page content?",
+            answer: "The extension only reads a page when you click its icon. The extracted text is sent to Fast Lit to display for reading — it isn't stored by the extension or shared with third parties."
+        },
+        {
+            question: "What if a page won't grab cleanly?",
+            answer: "Some pages (paywalled articles, apps disguised as websites, pages with little actual text) can't be reliably extracted. You can always paste text into Fast Lit directly instead."
+        },
+        {
+            question: "Is it available for browsers other than Chrome?",
+            answer: "Fast Lit Grabber currently supports Chrome and other Chromium-based browsers (like Edge and Brave) through the Chrome Web Store."
+        }
+    ];
+
+    static privacyTitle = "Your Privacy Comes First";
+    static privacyContent = text([
+        "Fast Lit Grabber only reads a page's content when you explicitly click the extension icon — it never runs in the background,",
+        "never tracks your browsing, and never collects personal information or login credentials."
+    ]);
+    static privacyLinkText = "Read the full Privacy Policy";
+}
+
 export class FeedbackScripts {
     static formUrl =
         "https://docs.google.com/forms/d/e/1FAIpQLSdaEN4WwLu2AzdmdHN8mrzijrTXoN-K_JK5rBbj5dCeXVxqdA/viewform?usp=publish-editor";
@@ -319,7 +392,8 @@ export class ChangelogScripts {
                 "Redrew every sidebar icon from scratch as one cohesive set (Home, Read, Write, Feedback, Changelog) — same viewBox, stroke weight, and line style throughout, replacing the old Feedback icon, which was a mismatched filled illustration at a completely different scale from the rest.",
                 "Thickened the new sidebar icons' strokes so they read as bold and clean instead of thin, matching the rest of the site's weight.",
                 "Redesigned the sidebar icons again as bolder, wider, much simpler marks (2-3 strokes each) instead of detailed line drawings — a plain roofline house, three text lines for Read, a signature scribble for Write, a simplified thumbs-up, and a clock for Changelog.",
-                "Replaced the home page's stat icons (previously an unrelated info-circle and archive box borrowed from a generic icon set) with marks that actually match what they measure: the same text-line and scribble marks as the sidebar's Read/Write icons, and a bolt for Hours Saved."
+                "Replaced the home page's stat icons (previously an unrelated info-circle and archive box borrowed from a generic icon set) with marks that actually match what they measure: the same text-line and scribble marks as the sidebar's Read/Write icons, and a bolt for Hours Saved.",
+                "Added an Extension page covering the Fast Lit Grabber Chrome extension in depth: what it does, how it works step by step, an FAQ, a link to the Chrome Web Store listing, and a privacy callout linking to the full Privacy Policy. It has its own entry in the sidebar, directly under Write."
             ]
         )
     ]

@@ -171,6 +171,32 @@ function navItemClass(path) {
                         </button>
                     </li>
 
+                    <!-- button to navigate to the extension page -->
+                    <li>
+                        <button
+                            :class="navItemClass('/extension')"
+                            @click="navigateTo('/extension')"
+                            data-tip="Extension"
+                        >
+                            <!-- Extension icon -->
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="shrink-0"
+                                :style="{ width: svgSize, height: svgSize }"
+                            >
+                                <rect x="5" y="7" width="12" height="12" rx="2" />
+                                <circle cx="14" cy="7" r="3" />
+                            </svg>
+                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Extension</span>
+                        </button>
+                    </li>
+
                     <!-- button to navigate to the feedback page -->
                     <li>
                         <button
