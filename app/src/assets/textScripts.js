@@ -303,6 +303,14 @@ export class ChangelogScripts {
                 "Fixed the write page's drawing grid changing size depending on which tab was active or how much data was saved — it's now a consistent size everywhere.",
                 "Clear All Data on the write page now also clears the current label, not just the saved characters."
             ]
+        ),
+        new this.Entry(
+            "July 9, 2026",
+            "1.5.0",
+            [
+                "Redesigned the sidebar: nav buttons are now a consistent size and span the full sidebar width instead of shrinking to fit their label, the active page gets a red pill background instead of just red text, and the collapse toggle now has a working tooltip and a chevron that flips direction to show which way it'll collapse.",
+                "The sidebar's version badge is now a proper card pinned to the bottom of the sidebar instead of a floating label, and expanding/collapsing the sidebar now animates smoothly instead of snapping instantly."
+            ]
         )
     ]
 }

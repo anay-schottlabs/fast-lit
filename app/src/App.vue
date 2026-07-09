@@ -16,17 +16,28 @@ function navigateTo(path) {
     router.push(path);
 }
 
-// shared classes for every sidebar nav item: rounded hover highlight, a
-// smooth color/background transition instead of the old hard-coded "none",
-// and a focus-visible ring for keyboard navigation
-const navItemClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right rounded-lg transition-colors duration-150 hover:bg-white/10 focus-ring";
+// Shared by every sidebar nav item (and the collapse toggle) so button
+// height/padding/spacing is identical whether the sidebar is expanded or
+// collapsed to an icon rail — only the container width changes, never the
+// button's own box model. is-drawer-close:tooltip wires the button into
+// daisyUI's tooltip off the sidebar checkbox's state; it only renders once
+// paired with a data-tip attribute below.
+const navBaseClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-colors duration-150 focus-ring";
 
-// active page gets the brand red; everything else is a soft white that
-// brightens on hover — icons/labels below inherit this via currentColor.
-// Forced !important because style.css's unlayered "button { color: white }"
-// rule otherwise beats these (layered) utility classes regardless of specificity.
-function navTextClass(path) {
-    return route.path === path ? "!text-red" : "!text-white/70 hover:!text-white";
+// Active page gets a soft red pill background; everything else is a muted
+// white that brightens on hover. Icons carry no color classes of their own
+// — they inherit through currentColor from whichever of these wins, so the
+// icon and label always recolor together. Forced !important because
+// style.css's unlayered "button { color: white }" rule otherwise beats
+// these (layered) utility classes regardless of specificity.
+function navItemClass(path) {
+    const isActive = route.path === path;
+    return [
+        navBaseClass,
+        isActive
+            ? "bg-red/10 !text-red"
+            : "!text-white/70 hover:bg-white/10 hover:!text-white",
+    ];
 }
 </script>
 
@@ -46,17 +57,15 @@ function navTextClass(path) {
 
         <div class="drawer-side is-drawer-close:overflow-visible fixed">
             <div
-                class="flex min-h-full flex-col items-start border-r border-white/10 bg-white/5 is-drawer-close:w-18 is-drawer-open:w-64"
+                class="flex min-h-full flex-col border-r border-white/10 bg-white/5 is-drawer-close:w-18 is-drawer-open:w-64 transition-[width] duration-200 ease-out"
             >
                 <!-- Sidebar content here -->
-                <ul
-                    class="menu w-full grow flex flex-col is-drawer-open:items-start is-drawer-close:items-start"
-                >
+                <ul class="flex w-full grow flex-col gap-1 px-2 py-3">
                     <!-- button to toggle the sidebar -->
                     <li>
                         <label
                             for="sidebar-drawer-toggle"
-                            :class="navItemClass"
+                            :class="[navBaseClass, '!text-white/60 hover:bg-white/10 hover:!text-white cursor-pointer']"
                             data-tip="Toggle sidebar"
                         >
                             <svg
@@ -68,12 +77,13 @@ function navTextClass(path) {
                                 stroke-width="2"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                class="my-1.5 inline-block text-white/70 hover:text-white"
+                                class="shrink-0 is-drawer-open:rotate-180 transition-transform duration-200"
                             >
                                 <rect x="3" y="3" width="18" height="18" rx="2" />
                                 <line x1="9" y1="4" x2="9" y2="20" />
                                 <polyline points="14 10 16 12 14 14" />
                             </svg>
+                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Collapse</span>
                         </label>
                     </li>
 
@@ -81,7 +91,7 @@ function navTextClass(path) {
                     <!-- button to navigate to the home page -->
                     <li>
                         <button
-                            :class="[navItemClass, navTextClass('/')]"
+                            :class="navItemClass('/')"
                             @click="navigateTo('/')"
                             data-tip="Home"
                         >
@@ -94,7 +104,7 @@ function navTextClass(path) {
                                 stroke-width="2.5"
                                 fill="none"
                                 stroke="currentColor"
-                                class="my-1.5 inline-block"
+                                class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
                                 <path
@@ -104,14 +114,14 @@ function navTextClass(path) {
                                     d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
                                 />
                             </svg>
-                            <span class="is-drawer-close:hidden text-xl ms-3">Home</span>
+                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Home</span>
                         </button>
                     </li>
 
                     <!-- button to navigate to the read page -->
                     <li>
                         <button
-                            :class="[navItemClass, navTextClass('/read')]"
+                            :class="navItemClass('/read')"
                             @click="navigateTo('/read')"
                             data-tip="Read"
                         >
@@ -124,21 +134,21 @@ function navTextClass(path) {
                                 stroke-width="2"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                class="my-1.5 inline-block"
+                                class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
                                 <path d="M9 4L10 4C11.1046 4 12 4.89543 12 6L12 18C12 19.1046 11.1046 20 10 20L9 20"/>
                                 <path d="M15 4L14 4C12.8954 4 12 4.89543 12 6L12 18C12 19.1046 12.8954 20 14 20L15 20"/>
                                 <path d="M10 12H14"/>
                             </svg>
-                            <span class="is-drawer-close:hidden text-xl ms-3">Read</span>
+                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Read</span>
                         </button>
                     </li>
 
                     <!-- button to navigate to the feedback page -->
                     <li>
                         <button
-                            :class="[navItemClass, navTextClass('/feedback')]"
+                            :class="navItemClass('/feedback')"
                             @click="navigateTo('/feedback')"
                             data-tip="Feedback"
                         >
@@ -151,7 +161,7 @@ function navTextClass(path) {
                                 stroke-width="2"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
-                                class="my-1.5 inline-block"
+                                class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
                                 <path
@@ -169,14 +179,14 @@ function navTextClass(path) {
                                     fill="currentColor"
                                 />
                             </svg>
-                            <span class="is-drawer-close:hidden text-xl ms-3">Feedback</span>
+                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Feedback</span>
                         </button>
                     </li>
 
                     <!-- button to navigate to the changelog page -->
                     <li>
                         <button
-                            :class="[navItemClass, navTextClass('/changelog')]"
+                            :class="navItemClass('/changelog')"
                             @click="navigateTo('/changelog')"
                             data-tip="Changelog"
                         >
@@ -190,41 +200,33 @@ function navTextClass(path) {
                                 fill="none"
                                 stroke="currentColor"
                                 :style="{ width: svgSize, height: svgSize }"
-                                class="my-1.5 inline-block"
+                                class="shrink-0"
                             >
                                 <path d="M20 7h-9" />
                                 <path d="M14 17H5" />
                                 <circle cx="17" cy="17" r="3" />
                                 <circle cx="7" cy="7" r="3" />
                             </svg>
-                            <span class="is-drawer-close:hidden text-xl ms-3">Changelog</span>
+                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Changelog</span>
                         </button>
                     </li>
-
-                    <!-- current version, linked to changelog page -->
-                    <!-- hidden (not just its text) while collapsed, since the
-                         button alone had no icon and rendered as a tiny blank
-                         hit target -->
-                    <li class="is-drawer-close:hidden fixed bottom-6">
-                        <button
-                            :class="navItemClass"
-                            @click="navigateTo('/changelog')"
-                        >
-                            <span
-                                class="
-                                    text-red
-                                    font-mono
-                                    font-bold
-                                    text-3xl
-                                    ms-3
-                                "
-                            >
-                                v{{ currentVersion }}
-                            </span>
-                        </button>
-                    </li>
-
                 </ul>
+
+                <!-- current version, linked to changelog page — pinned to
+                     the bottom of the sidebar via mt-auto rather than
+                     position:fixed, so it stays part of normal flex flow
+                     and can never overlap nav items on short viewports.
+                     Hidden (not just its text) while collapsed, since the
+                     button alone had no icon and rendered as a tiny blank
+                     hit target. -->
+                <div class="is-drawer-close:hidden mt-auto w-full px-2 pb-3">
+                    <button
+                        :class="[navBaseClass, 'justify-center border border-red/30 bg-red/10 hover:bg-red/20 !text-red-light']"
+                        @click="navigateTo('/changelog')"
+                    >
+                        <span class="font-mono text-lg font-bold">v{{ currentVersion }}</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>
