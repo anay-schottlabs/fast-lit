@@ -106,18 +106,15 @@ function navItemClass(path) {
                                 viewBox="0 0 24 24"
                                 stroke-linejoin="round"
                                 stroke-linecap="round"
-                                stroke-width="2.5"
+                                stroke-width="1.75"
                                 fill="none"
                                 stroke="currentColor"
                                 class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
-                                <path
-                                    d="M15 21v-8a1 1 0 0 0-1-1h-4a1 1 0 0 0-1 1v8"
-                                />
-                                <path
-                                    d="M3 10a2 2 0 0 1 .709-1.528l7-5.999a2 2 0 0 1 2.582 0l7 5.999A2 2 0 0 1 21 10v9a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"
-                                />
+                                <path d="M4 11.5 12 4l8 7.5" />
+                                <path d="M6 10.5V19a1 1 0 0 0 1 1h10a1 1 0 0 0 1-1v-8.5" />
+                                <path d="M10 20v-5a1 1 0 0 1 1-1h2a1 1 0 0 1 1 1v5" />
                             </svg>
                             <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Home</span>
                         </button>
@@ -136,15 +133,15 @@ function navItemClass(path) {
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
-                                stroke-width="2"
+                                stroke-width="1.75"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
-                                <path d="M9 4L10 4C11.1046 4 12 4.89543 12 6L12 18C12 19.1046 11.1046 20 10 20L9 20"/>
-                                <path d="M15 4L14 4C12.8954 4 12 4.89543 12 6L12 18C12 19.1046 12.8954 20 14 20L15 20"/>
-                                <path d="M10 12H14"/>
+                                <path d="M12 7c-1.6-1.3-3.7-2-6-2v13c2.3 0 4.4.7 6 2" />
+                                <path d="M12 7c1.6-1.3 3.7-2 6-2v13c-2.3 0-4.4.7-6 2" />
+                                <path d="M12 7v13" />
                             </svg>
                             <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Read</span>
                         </button>
@@ -163,14 +160,14 @@ function navItemClass(path) {
                                 viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
-                                stroke-width="2"
+                                stroke-width="1.75"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
-                                <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
-                                <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4Z"/>
+                                <path d="M4 20l.8-3.6L15.5 5.7a1.5 1.5 0 0 1 2.1 0l.7.7a1.5 1.5 0 0 1 0 2.1L7.6 19.2 4 20Z" />
+                                <path d="M14 7.5l2.5 2.5" />
                             </svg>
                             <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Write</span>
                         </button>
@@ -186,29 +183,17 @@ function navItemClass(path) {
                             <!-- Feedback icon -->
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 128 128"
+                                viewBox="0 0 24 24"
                                 fill="none"
                                 stroke="currentColor"
-                                stroke-width="2"
+                                stroke-width="1.75"
                                 stroke-linecap="round"
                                 stroke-linejoin="round"
                                 class="shrink-0"
                                 :style="{ width: svgSize, height: svgSize }"
                             >
-                                <path
-                                    d="M86.5,114.1c-0.5,2.9-3,4.9-5.9,4.9H34v8h46.6c6.8,0,12.6-4.9,13.8-11.5l6.4-36
-                                    c0.7-4.1-0.4-8.3-3-11.4c-2.7-3.2-6.6-5-10.7-5H71.2
-                                    c1.2-3.7,2.8-9.1,4.1-16.2l0.6-4.2c0.9-6.6-3.7-12.6-10.2-13.5
-                                    c-3.2-0.4-6.3,0.4-8.9,2.3c-2.6,1.9-4.2,4.8-4.7,7.9l-0.6,4
-                                    c-0.1,0.5-0.2,1-0.2,1.5c-0.1,0.5-0.2,1-0.3,1.5
-                                    C47.9,61,36.3,72.8,21.3,76.6L16,77.9V127h8V84.1
-                                    c17.5-4.7,31.2-18.7,34.9-36c0.1-0.6,0.2-1.2,0.4-1.8
-                                    c0.1-0.6,0.2-1.2,0.3-1.8l0.6-4c0.1-1.1,0.7-2,1.6-2.6
-                                    c0.9-0.6,1.9-0.9,3-0.8c2.2,0.3,3.7,2.3,3.4,4.5l-0.5,3.9
-                                    c-2.1,11.6-5,18.3-5.5,19.6l-0.3,0.8l0,5.2h25.5
-                                    c1.8,0,3.5,0.8,4.6,2.1c1.1,1.4,1.6,3.2,1.3,4.9L86.5,114.1z"
-                                    fill="currentColor"
-                                />
+                                <path d="M14 9V5a3 3 0 0 0-3-3l-4 9v11h11.28a2 2 0 0 0 2-1.7l1.38-9a2 2 0 0 0-2-2.3z" />
+                                <path d="M7 22H4a2 2 0 0 1-2-2v-7a2 2 0 0 1 2-2h3" />
                             </svg>
                             <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Feedback</span>
                         </button>
@@ -227,7 +212,7 @@ function navItemClass(path) {
                                 viewBox="0 0 24 24"
                                 stroke-linejoin="round"
                                 stroke-linecap="round"
-                                stroke-width="2"
+                                stroke-width="1.75"
                                 fill="none"
                                 stroke="currentColor"
                                 :style="{ width: svgSize, height: svgSize }"
