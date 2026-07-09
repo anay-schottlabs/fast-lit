@@ -313,7 +313,8 @@ export class ChangelogScripts {
                 "Every sidebar button now shows a pointer cursor on hover, and the collapse toggle is noticeably smaller and dimmer than the main nav buttons so it reads as a secondary control instead of competing with Home/Read/Feedback/Changelog.",
                 "Swapped the collapse toggle's icon for a simple centered chevron (the old panel-shaped icon was asymmetric and looked off-center) and moved it above the nav list with its own divider, so it reads as menu chrome instead of another item in the list.",
                 "Fixed every collapsed sidebar icon sitting slightly left of center in its square hit target instead of being truly centered.",
-                "The write page is no longer hidden — it now has its own Write entry in the sidebar, directly under Read."
+                "The write page is no longer hidden — it now has its own Write entry in the sidebar, directly under Read.",
+                "Replaced the home page's Books Finished stat with Words Written, tracking characters drawn on the write page and converting them to an approximate word count. Hours Saved now also credits the estimated 0.24 seconds saved per character written, on top of the existing reading-based estimate."
             ]
         )
     ]

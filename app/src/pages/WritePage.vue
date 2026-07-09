@@ -1,7 +1,9 @@
 <script setup>
 import Header from '../components/Header.vue';
-import { ref, computed, watch, onMounted, onUnmounted, nextTick, render } from 'vue';
+import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { WriteScripts } from '@/assets/textScripts.js';
+import { db } from '@/firebase/index.js';
+import { collection, getDocs, doc, updateDoc, increment } from "firebase/firestore";
 
 const canvas = ref(null);
 
@@ -244,11 +246,18 @@ function resetGrid() {
 
 const writeChars = ref([]);
 
+// Counts every character recognized in Write mode during this session,
+// converted to an approximate word count (5 letters average per word) and
+// flushed to Firestore's totalWordsWritten field — the same field
+// HomePage.vue reads for the Words Written stat and its hours-saved bonus.
+let charactersInSession = 0;
+
 function recognizeCharacter() {
     if (currentPage.value == Pages.WRITE) {
         // Push a random lowercase alphabet character
         const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
         writeChars.value.push(randomChar);
+        charactersInSession++;
     }
     else if (currentPage.value == Pages.LEARN) {
     }
@@ -267,6 +276,32 @@ function recognizeCharacter() {
     }
 }
 
+// stats — totalWordsWritten in firestore
+
+let statsDocId;
+
+onMounted(async () => {
+    const querySnapshot = await getDocs(collection(db, "stats"));
+    querySnapshot.forEach((doc) => {
+        statsDocId = doc.id;
+    });
+});
+
+// same increment-on-close pattern as HomePage.vue's saveDemoWordsRead and
+// Reader.vue's updateTotalWordsRead, added to the firestore total when the
+// page is closed, reloaded, or navigated away from within the app.
+async function updateTotalWordsWritten() {
+    if (charactersInSession > 0 && statsDocId) {
+        const statsRef = doc(db, "stats", statsDocId);
+        await updateDoc(statsRef, {
+            totalWordsWritten: increment(charactersInSession / 5)
+        });
+        charactersInSession = 0;
+    }
+}
+
+window.addEventListener('beforeunload', updateTotalWordsWritten);
+
 // lifecycle hooks
 
 onMounted(() => {
@@ -281,6 +316,14 @@ onUnmounted(() => {
     canvas.value?.removeEventListener('pointerdown', onPointerDown);
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
+
+    // beforeunload only fires on an actual tab close/reload — navigating to
+    // another page within the app just unmounts this component, so flush
+    // the count here too, and drop the listener since it'd otherwise stack
+    // up (and misfire with a stale statsDocId) if the user revisits the
+    // write page.
+    window.removeEventListener('beforeunload', updateTotalWordsWritten);
+    updateTotalWordsWritten();
 });
 
 // pages
