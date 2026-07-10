@@ -389,7 +389,7 @@ const Pages = Object.freeze({
     WRITE: "write",
     DEVELOPER: "developer"
 });
-const currentPage = ref(Pages.WRITE);
+const currentPage = ref(Pages.LEARN);
 
 // handles opening and closing of the data accordion
 const isDataOpen = ref(false);
