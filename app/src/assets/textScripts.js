@@ -128,6 +128,30 @@ export class WriteScripts {
     ];
 }
 
+// Builds a fresh dimension x dimension array of 0s — a separate array
+// instance per call, so filling in one character's strokes later can't
+// accidentally mutate another character's grid through a shared reference.
+function emptyCharacterGrid(dimension) {
+    return Array.from({ length: dimension }, () => Array(dimension).fill(0));
+}
+
+export class LearnScripts {
+    // Matches the write page's own canvas grid dimension.
+    static dimension = 20;
+
+    // One dimension x dimension stroke grid per character Fast Lit can teach,
+    // keyed by the character itself. Every grid is empty (all zeroes) for
+    // now — these get filled in with the actual Teeline shorthand strokes,
+    // character by character, drawn the same way as the write page's canvas.
+    static characters = Object.fromEntries(
+        [
+            ..."abcdefghijklmnopqrstuvwxyz",
+            ..."0123456789",
+            ".", ","
+        ].map((char) => [char, emptyCharacterGrid(LearnScripts.dimension)])
+    );
+}
+
 export class ExtensionScripts {
     static storeUrl = "https://chromewebstore.google.com/detail/fast-lit-grabber/kmlpobbeoknaajpbfpnogchfpifaobfl";
     static heroBadge = "Chrome Extension";
@@ -396,7 +420,8 @@ export class ChangelogScripts {
                 "Added an Extension page covering the Fast Lit Grabber Chrome extension in depth: what it does, how it works step by step, an FAQ, a link to the Chrome Web Store listing, and a privacy callout linking to the full Privacy Policy. It has its own entry in the sidebar, directly under Write.",
                 "The sidebar is now a floating card (rounded corners, border, shadow) inset evenly from the top, bottom, and left edges instead of a flush-docked panel, matching the card styling used everywhere else on the site.",
                 "Fixed the write page's recognized-character rows being spaced far apart instead of stacking directly on top of each other once there was enough to wrap onto a second or third row, and made them flow like text — starting from the top-left and wrapping left to right — instead of centering as a group.",
-                "Reordered the write page's tabs to Learn, Write, Developer, putting Write in the middle."
+                "Reordered the write page's tabs to Learn, Write, Developer, putting Write in the middle.",
+                "Laid the groundwork for the learn page: an empty 20x20 stroke grid for every letter, digit, period, and comma, ready to be filled in with Teeline shorthand."
             ]
         )
     ]
