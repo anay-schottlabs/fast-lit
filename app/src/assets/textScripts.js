@@ -210,8 +210,8 @@ export class LearnScripts {
     static demoModeTitle = "See a Demo";
     static demoModeDescription = "Watch how the character is written, stroke by stroke.";
     static demoStageInstruction = "Watch a demo of how the selected character is written.";
-    static demoButtonLabel = "Play Demo";
-    static demoComingSoonNote = "Demo playback isn't wired up yet — coming soon.";
+    static demoButtonLabel = "Replay";
+    static demoLoopingNote = "Playing on a loop — press Replay to start over.";
 }
 
 export class ExtensionScripts {
@@ -657,6 +657,17 @@ export class ChangelogScripts {
                     "The learn tab's demo now actually plays: it reveals the selected character's strokes one point",
                     "at a time in the same grayed-out preview color, keeping earlier points lit so the whole character",
                     "is visible for a beat before the loop resets and starts over."
+                ])
+            ]
+        ),
+        new this.Entry(
+            "July 10, 2026",
+            "1.6.0",
+            [
+                text([
+                    "Updated the learn tab's demo screen now that playback actually works: the \"Play Demo\" button",
+                    "(previously disabled with a \"coming soon\" note) is now an active Replay button that restarts",
+                    "the animation on demand, with a note explaining it's already looping automatically."
                 ])
             ]
         )
