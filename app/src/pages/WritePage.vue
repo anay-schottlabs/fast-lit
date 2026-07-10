@@ -302,7 +302,14 @@ async function predict(grid) {
 function recognizeCharacter() {
     charactersInSession++;
     if (currentPage.value == Pages.WRITE) {
-        predict(grid.value).then(result => writeChars.value.push(result));   
+        predict(grid.value).then(result => {
+            if (result == "delete") {
+                writeChars.value.pop();
+            }
+            else {
+                writeChars.value.push(result);
+            }
+        });
     }
     else if (currentPage.value == Pages.LEARN) {
     }
@@ -579,7 +586,7 @@ function clearAllData() {
                 <!-- write page -->
                 <div
                     v-if="currentPage == Pages.WRITE"
-                    class="flex h-full min-h-16 flex-wrap items-center justify-center gap-2 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-4"
+                    class="flex h-full min-h-16 flex-wrap content-center items-center justify-center gap-2 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-4"
                 >
                     <kbd
                         class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow"
