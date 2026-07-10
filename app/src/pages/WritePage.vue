@@ -1,7 +1,7 @@
 <script setup>
 import Header from '../components/Header.vue';
 import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
-import { WriteScripts } from '@/assets/textScripts.js';
+import { WriteScripts, LearnScripts } from '@/assets/textScripts.js';
 import { db } from '@/firebase/index.js';
 import { collection, getDocs, doc, updateDoc, increment } from "firebase/firestore";
 import * as ort from "onnxruntime-web";
@@ -391,6 +391,58 @@ const Pages = Object.freeze({
 });
 const currentPage = ref(Pages.LEARN);
 
+// learn page
+
+// The learn tab walks through a small state machine: pick a character from
+// the full LearnScripts.characters database, then choose to either draw it
+// (graded) or watch a demo. Grading and demo playback aren't implemented yet
+// — this is UI-only scaffolding for both paths.
+const LearnStage = Object.freeze({
+    SELECT_CHARACTER: "selectCharacter",
+    CHOOSE_MODE: "chooseMode",
+    DRAW: "draw",
+    DEMO: "demo"
+});
+const learnStage = ref(LearnStage.SELECT_CHARACTER);
+const learnSelectedChar = ref(null);
+// Commands (delete, space) are words, not single glyphs, so the selected-
+// character badge needs a wider, smaller-text treatment instead of the
+// fixed square used for single characters.
+const isLearnSelectedCommand = computed(() => (learnSelectedChar.value?.length ?? 0) > 1);
+
+// Grouped once at setup — LearnScripts.characters never changes at runtime,
+// so these don't need to be reactive.
+const learnCharacterKeys = Object.keys(LearnScripts.characters);
+const learnLetters = learnCharacterKeys.filter((char) => /^[a-z]$/.test(char));
+const learnDigits = learnCharacterKeys.filter((char) => /^[0-9]$/.test(char));
+// Punctuation is single-character and not a letter/digit; commands (delete,
+// space) are multi-character control gestures rather than literal
+// characters, so they get their own group instead of falling in here.
+const learnPunctuation = learnCharacterKeys.filter((char) => char.length === 1 && !/^[a-z0-9]$/.test(char));
+const learnCommands = learnCharacterKeys.filter((char) => char.length > 1);
+
+function selectLearnCharacter(char) {
+    learnSelectedChar.value = char;
+    learnStage.value = LearnStage.CHOOSE_MODE;
+}
+
+function startLearnDraw() {
+    learnStage.value = LearnStage.DRAW;
+}
+
+function startLearnDemo() {
+    learnStage.value = LearnStage.DEMO;
+}
+
+function backToLearnCharacterSelect() {
+    learnStage.value = LearnStage.SELECT_CHARACTER;
+    learnSelectedChar.value = null;
+}
+
+function backToLearnModeChoice() {
+    learnStage.value = LearnStage.CHOOSE_MODE;
+}
+
 // handles opening and closing of the data accordion
 const isDataOpen = ref(false);
 
@@ -595,12 +647,164 @@ function clearAllData() {
                     >{{ char }}</kbd>
                 </div>
 
-                <!-- learn page -->
+                <!-- learn page — walks through picking a character, then
+                     choosing to either draw it (graded) or watch a demo.
+                     Neither grading nor demo playback is implemented yet;
+                     this is UI-only scaffolding for both paths. -->
                 <div
                     v-if="currentPage == Pages.LEARN"
-                    class="flex h-full min-h-16 flex-wrap items-center justify-center gap-2 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-4"
+                    class="flex h-full flex-col gap-4 overflow-y-auto rounded-2xl border border-white/10 bg-white/5 p-5"
                 >
-                    <p class="text-white/70">learn page</p>
+                    <!-- stage 1: pick a character -->
+                    <template v-if="learnStage == LearnStage.SELECT_CHARACTER">
+                        <p class="text-xs font-semibold uppercase tracking-widest text-white/50">
+                            {{ LearnScripts.chooseCharacterTitle }}
+                        </p>
+
+                        <div>
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-red-light">
+                                {{ LearnScripts.letterGroupLabel }}
+                            </p>
+                            <div class="grid grid-cols-6 gap-2 sm:grid-cols-7">
+                                <button
+                                    class="aspect-square rounded-xl border border-white/10 bg-white/5 text-lg font-bold uppercase text-white transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
+                                    v-for="char in learnLetters"
+                                    :key="char"
+                                    @click="selectLearnCharacter(char)"
+                                >{{ char }}</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-red-light">
+                                {{ LearnScripts.digitGroupLabel }}
+                            </p>
+                            <div class="grid grid-cols-6 gap-2 sm:grid-cols-7">
+                                <button
+                                    class="aspect-square rounded-xl border border-white/10 bg-white/5 text-lg font-bold uppercase text-white transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
+                                    v-for="char in learnDigits"
+                                    :key="char"
+                                    @click="selectLearnCharacter(char)"
+                                >{{ char }}</button>
+                            </div>
+                        </div>
+
+                        <div>
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-red-light">
+                                {{ LearnScripts.punctuationGroupLabel }}
+                            </p>
+                            <div class="grid grid-cols-6 gap-2 sm:grid-cols-7">
+                                <button
+                                    class="aspect-square rounded-xl border border-white/10 bg-white/5 text-lg font-bold uppercase text-white transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
+                                    v-for="char in learnPunctuation"
+                                    :key="char"
+                                    @click="selectLearnCharacter(char)"
+                                >{{ char }}</button>
+                            </div>
+                        </div>
+
+                        <!-- commands: control gestures (delete, space)
+                             rather than literal characters, so they get
+                             wider word-length tiles instead of the
+                             single-character square tiles above -->
+                        <div>
+                            <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-red-light">
+                                {{ LearnScripts.commandGroupLabel }}
+                            </p>
+                            <div class="flex flex-wrap gap-2">
+                                <button
+                                    class="rounded-xl border border-white/10 bg-white/5 px-4 py-2 text-sm font-semibold capitalize text-white transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
+                                    v-for="char in learnCommands"
+                                    :key="char"
+                                    @click="selectLearnCharacter(char)"
+                                >{{ char }}</button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- stage 2: choose to draw it or watch a demo -->
+                    <template v-else-if="learnStage == LearnStage.CHOOSE_MODE">
+                        <button
+                            class="inline-flex w-fit items-center gap-1 text-sm text-white/60 transition-colors hover:text-white focus-ring rounded cursor-pointer"
+                            @click="backToLearnCharacterSelect"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0">
+                                <polyline points="15 6 9 12 15 18" />
+                            </svg>
+                            {{ LearnScripts.backToCharacterSelectLabel }}
+                        </button>
+
+                        <div class="flex flex-1 flex-col items-center justify-center gap-6">
+                            <span
+                                class="flex items-center justify-center rounded-2xl border border-red/30 bg-red/10 font-bold text-red-light"
+                                :class="isLearnSelectedCommand ? 'h-20 px-6 text-2xl capitalize' : 'h-20 w-20 text-4xl uppercase'"
+                            >{{ learnSelectedChar }}</span>
+
+                            <div class="grid w-full gap-4 sm:grid-cols-2">
+                                <button
+                                    class="rounded-2xl border border-white/10 bg-white/5 p-6 text-left shadow-2xl shadow-black/40 transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
+                                    @click="startLearnDraw"
+                                >
+                                    <h3 class="mb-2 text-lg font-semibold !text-red">{{ LearnScripts.drawModeTitle }}</h3>
+                                    <p class="text-sm text-white/70">{{ LearnScripts.drawModeDescription }}</p>
+                                </button>
+                                <button
+                                    class="rounded-2xl border border-white/10 bg-white/5 p-6 text-left shadow-2xl shadow-black/40 transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
+                                    @click="startLearnDemo"
+                                >
+                                    <h3 class="mb-2 text-lg font-semibold !text-red">{{ LearnScripts.demoModeTitle }}</h3>
+                                    <p class="text-sm text-white/70">{{ LearnScripts.demoModeDescription }}</p>
+                                </button>
+                            </div>
+                        </div>
+                    </template>
+
+                    <!-- stage 3: draw it — reuses the shared canvas on the
+                         left; grading isn't implemented yet. -->
+                    <template v-else-if="learnStage == LearnStage.DRAW">
+                        <button
+                            class="inline-flex w-fit items-center gap-1 text-sm text-white/60 transition-colors hover:text-white focus-ring rounded cursor-pointer"
+                            @click="backToLearnModeChoice"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0">
+                                <polyline points="15 6 9 12 15 18" />
+                            </svg>
+                            {{ LearnScripts.backToModeChoiceLabel }}
+                        </button>
+
+                        <div class="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+                            <span
+                                class="flex items-center justify-center rounded-2xl border border-red/30 bg-red/10 font-bold text-red-light"
+                                :class="isLearnSelectedCommand ? 'h-16 px-5 text-lg capitalize' : 'h-16 w-16 text-3xl uppercase'"
+                            >{{ learnSelectedChar }}</span>
+                            <p class="text-white/70">{{ LearnScripts.drawStageInstruction }}</p>
+                            <button class="btn-red" disabled>{{ LearnScripts.gradeButtonLabel }}</button>
+                            <p class="text-xs text-white/40">{{ LearnScripts.gradeComingSoonNote }}</p>
+                        </div>
+                    </template>
+
+                    <!-- stage 4: demo — playback isn't implemented yet. -->
+                    <template v-else-if="learnStage == LearnStage.DEMO">
+                        <button
+                            class="inline-flex w-fit items-center gap-1 text-sm text-white/60 transition-colors hover:text-white focus-ring rounded cursor-pointer"
+                            @click="backToLearnModeChoice"
+                        >
+                            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-4 w-4 shrink-0">
+                                <polyline points="15 6 9 12 15 18" />
+                            </svg>
+                            {{ LearnScripts.backToModeChoiceLabel }}
+                        </button>
+
+                        <div class="flex flex-1 flex-col items-center justify-center gap-4 text-center">
+                            <span
+                                class="flex items-center justify-center rounded-2xl border border-red/30 bg-red/10 font-bold text-red-light"
+                                :class="isLearnSelectedCommand ? 'h-16 px-5 text-lg capitalize' : 'h-16 w-16 text-3xl uppercase'"
+                            >{{ learnSelectedChar }}</span>
+                            <p class="text-white/70">{{ LearnScripts.demoStageInstruction }}</p>
+                            <button class="btn-red" disabled>{{ LearnScripts.demoButtonLabel }}</button>
+                            <p class="text-xs text-white/40">{{ LearnScripts.demoComingSoonNote }}</p>
+                        </div>
+                    </template>
                 </div>
 
                 <!-- developer page — h-full fills the wrapper's fixed

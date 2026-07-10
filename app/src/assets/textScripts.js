@@ -147,9 +147,35 @@ export class LearnScripts {
         [
             ..."abcdefghijklmnopqrstuvwxyz",
             ..."0123456789",
-            ".", ","
+            ".", ",",
+            // control gestures, not literal characters — same "delete" value
+            // the write page's recognition model already returns to signal
+            // a delete stroke (see WritePage.vue's recognizeCharacter)
+            "delete", "space"
         ].map((char) => [char, emptyCharacterGrid(LearnScripts.dimension)])
     );
+
+    // learn tab UI copy
+    static commandGroupLabel = "Commands";
+    static chooseCharacterTitle = "Choose a Character";
+    static letterGroupLabel = "Letters";
+    static digitGroupLabel = "Numbers";
+    static punctuationGroupLabel = "Punctuation";
+
+    static backToCharacterSelectLabel = "Choose a different character";
+    static backToModeChoiceLabel = "Back";
+
+    static drawModeTitle = "Draw It";
+    static drawModeDescription = "Draw the character yourself on the grid, and get graded on how accurate your strokes are.";
+    static drawStageInstruction = "Draw the selected character on the grid, then submit for grading.";
+    static gradeButtonLabel = "Grade My Drawing";
+    static gradeComingSoonNote = "Grading isn't wired up yet — coming soon.";
+
+    static demoModeTitle = "See a Demo";
+    static demoModeDescription = "Watch how the character is written, stroke by stroke.";
+    static demoStageInstruction = "Watch a demo of how the selected character is written.";
+    static demoButtonLabel = "Play Demo";
+    static demoComingSoonNote = "Demo playback isn't wired up yet — coming soon.";
 }
 
 export class ExtensionScripts {
@@ -576,6 +602,15 @@ export class ChangelogScripts {
                 text([
                     "Laid the groundwork for the learn page: an empty 20x20 stroke grid for every letter, digit,",
                     "period, and comma, ready to be filled in with Teeline shorthand."
+                ]),
+                text([
+                    "Built out the learn tab's UI: pick a character from the full database, then choose to either",
+                    "draw it or watch a demo. Neither grading nor demo playback is wired up yet — this is scaffolding",
+                    "for both, to be built out next."
+                ]),
+                text([
+                    "Added delete and space as two additional entries in the learn page's character database,",
+                    "alongside the letters, digits, and punctuation."
                 ])
             ]
         )
