@@ -236,6 +236,14 @@ function getCanvasPoint(event) {
 function onPointerDown(event) {
     isDrawing = true;
 
+    // Starting a new stroke on the learn tab's draw stage after already
+    // seeing a grade is a fresh attempt, not more of the same drawing —
+    // clear the previous drawing and result first so there's no explicit
+    // "try again" button needed.
+    if (currentPage.value === Pages.LEARN && learnStage.value === LearnStage.DRAW && learnGradeResult.value) {
+        resetLearnDrawingState();
+    }
+
     const point = getCanvasPoint(event);
     if (point) {
         handleCanvasClick(point.x, point.y);
@@ -262,6 +270,13 @@ function onPointerUp() {
     if (!isDrawing) return;
     isDrawing = false;
     resetGrid();
+
+    // Grade automatically the moment the user releases the mouse — no
+    // submit button. Every learn character is a single continuous
+    // stroke, so "pointer released" reliably means "attempt finished".
+    if (currentPage.value === Pages.LEARN && learnStage.value === LearnStage.DRAW) {
+        gradeLearnDrawing();
+    }
 }
 
 // Redraw any time the grid data changes.
@@ -269,11 +284,11 @@ watch(grid, drawGrid, { deep: true });
 
 function resetGrid() {
     recognizeCharacter();
-    // On the learn tab's draw stage the user may draw a character in more
-    // than one stroke before grading it — clearing after every single
-    // stroke release would erase their drawing before they ever get to
-    // submit it. Grading itself (gradeLearnDrawing) clears the grid
-    // afterward, once they're done.
+    // Keep the drawing on screen through the learn tab's draw stage — it
+    // grades automatically on pointer-up (see onPointerUp) and the result
+    // is shown alongside the drawing itself, not after it's wiped. The
+    // next pointerdown (a fresh attempt) is what actually clears it, via
+    // resetLearnDrawingState.
     if (currentPage.value === Pages.LEARN && learnStage.value === LearnStage.DRAW) return;
     clearGrid();
 }
@@ -1039,7 +1054,6 @@ function clearAllData() {
 
                             <template v-if="!learnGradeResult">
                                 <p class="text-white/70">{{ LearnScripts.drawStageInstruction }}</p>
-                                <button class="btn-red" @click="gradeLearnDrawing">{{ LearnScripts.gradeButtonLabel }}</button>
                             </template>
 
                             <template v-else>
@@ -1048,7 +1062,7 @@ function clearAllData() {
                                     <p class="mt-1 text-xs font-semibold uppercase tracking-widest text-white/50">{{ LearnScripts.gradeScoreLabel }}</p>
                                 </div>
                                 <p class="text-white/70">{{ learnGradeFeedback }}</p>
-                                <button class="btn-red" @click="resetLearnDrawingState">{{ LearnScripts.gradeRetryButtonLabel }}</button>
+                                <p class="text-xs text-white/40">{{ LearnScripts.gradeRetryHint }}</p>
                             </template>
                         </div>
                     </template>
