@@ -14,6 +14,7 @@ const colorCanvasBackground = '#120A3D';              // matches main page backg
 const colorCellOff = '#1A124D';                       // slightly lighter for grid off-cells
 const colorCellOn = '#F3EFFE';                        // very light for on-cells; warm off-white
 const colorWritingLineOff = '#38297A';                // dark purple for sub-lines/guide lines
+const colorCellPreview = '#8880AC';                   // muted grayish-lavender for the learn tab's reference-character preview, distinct from the brighter colorCellOn used for actual drawing
 
 const gridGap = 0.01;               // gap between cells, as a fraction of the canvas size
 const innerCornerRadius = 0.4;      // corner rounding for non-edge cells, as a fraction of the gap
@@ -85,7 +86,7 @@ function getCellCornerRadii(row, col, gap, cellSize, canvasCornerRadius) {
 // below) and the grid-view mini previews in the show-data modal, so both
 // stay visually consistent (including the writing-line guide row) without
 // duplicating the drawing logic.
-function drawGridOnCanvas(el, gridData) {
+function drawGridOnCanvas(el, gridData, onColor = colorCellOn) {
     if (!el) return;
 
     const ctx = el.getContext('2d');
@@ -121,12 +122,13 @@ function drawGridOnCanvas(el, gridData) {
             const x = padding + col * (cellSize + gap);
             const y = padding + row * (cellSize + gap);
 
-            // Color priority: lit cells are always colorCellOn. Otherwise,
+            // Color priority: lit cells always use onColor (colorCellOn by
+            // default, or a caller-supplied override). Otherwise,
             // cells on the writing-line row get a lighter "off" shade so the
             // line is visible even where nothing has been drawn.
             const isOn = gridData[row][col] === 1;
             const isWritingLine = row === writingLineRow;
-            ctx.fillStyle = isOn ? colorCellOn : isWritingLine ? colorWritingLineOff : colorCellOff;
+            ctx.fillStyle = isOn ? onColor : isWritingLine ? colorWritingLineOff : colorCellOff;
 
             // Corners are rounded per-cell (with special-cased larger radii
             // on the grid's four outer corners) rather than clipping the
@@ -147,8 +149,17 @@ function drawGridOnCanvas(el, gridData) {
 // Renders the shared reactive `grid` (the writing canvas the user draws on)
 // onto the main canvas. Called on mount and whenever `grid` changes (see the
 // `watch` below).
+// On the learn tab's mode-choice stage (character picked, but neither draw
+// nor demo started yet), the canvas shows a grayed-out reference of the
+// selected character instead of the user's own (empty, at this point)
+// drawing — colorCellPreview keeps it visually distinct from an actual
+// in-progress drawing, which always renders in colorCellOn.
 function drawGrid() {
-    drawGridOnCanvas(canvas.value, grid.value);
+    if (currentPage.value === Pages.LEARN && learnStage.value === LearnStage.CHOOSE_MODE && learnSelectedChar.value) {
+        drawGridOnCanvas(canvas.value, LearnScripts.characters[learnSelectedChar.value], colorCellPreview);
+    } else {
+        drawGridOnCanvas(canvas.value, grid.value);
+    }
 }
 
 // Renders one character's saved (static, non-reactive) grid onto its mini
@@ -410,6 +421,12 @@ const learnSelectedChar = ref(null);
 // fixed square used for single characters.
 const isLearnSelectedCommand = computed(() => (learnSelectedChar.value?.length ?? 0) > 1);
 
+// Redraws the canvas whenever any of these change — e.g. picking a
+// character (or switching away from the mode-choice stage) needs to swap
+// the canvas between the character preview and the user's own drawing,
+// which drawGrid()'s own logic decides based on current page/stage.
+watch([currentPage, learnStage, learnSelectedChar], drawGrid);
+
 // Grouped once at setup — LearnScripts.characters never changes at runtime,
 // so these don't need to be reactive.
 const learnCharacterKeys = Object.keys(LearnScripts.characters);
@@ -420,6 +437,14 @@ const learnDigits = learnCharacterKeys.filter((char) => /^[0-9]$/.test(char));
 // characters, so they get their own group instead of falling in here.
 const learnPunctuation = learnCharacterKeys.filter((char) => char.length === 1 && !/^[a-z0-9]$/.test(char));
 const learnCommands = learnCharacterKeys.filter((char) => char.length > 1);
+
+// The canvas isn't actually interactive on the mode-choice or demo stages
+// (there's nothing to draw yet), so the pointer cursor is dropped there to
+// avoid implying it's clickable — every other page/stage keeps it.
+const showCanvasCursorPointer = computed(() => {
+    if (currentPage.value !== Pages.LEARN) return true;
+    return learnStage.value !== LearnStage.CHOOSE_MODE && learnStage.value !== LearnStage.DEMO;
+});
 
 function selectLearnCharacter(char) {
     learnSelectedChar.value = char;
@@ -630,8 +655,8 @@ function clearAllData() {
                     shadow-2xl
                     shadow-black/40
                     lg:mx-0
-                    cursor-pointer
                 "
+                :class="{ 'cursor-pointer': showCanvasCursorPointer }"
             ></canvas>
 
             <div class="w-full min-w-0 lg:h-[min(90vw,65vh,29rem)]">

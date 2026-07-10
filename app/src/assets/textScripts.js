@@ -642,6 +642,11 @@ export class ChangelogScripts {
                 text([
                     "Added delete and space as two additional entries in the learn page's character database,",
                     "alongside the letters, digits, and punctuation."
+                ]),
+                text([
+                    "The learn tab's canvas now shows a grayed-out preview of the character you picked once you've",
+                    "chosen it but before starting to draw or demo, and no longer shows a pointer cursor",
+                    "on that screen or the demo screen, since neither is actually drawable yet."
                 ])
             ]
         )
