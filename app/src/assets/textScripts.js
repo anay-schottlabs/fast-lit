@@ -202,16 +202,12 @@ export class LearnScripts {
     static backToModeChoiceLabel = "Back";
 
     static drawModeTitle = "Draw It";
-    static drawModeDescription = "Draw the character yourself on the grid, and get graded on how accurate your strokes are.";
-    static drawStageInstruction = "Draw the selected character on the grid, then submit for grading.";
+    static drawStageInstruction = "Draw the character yourself on the grid, then submit it to get graded on how accurate your strokes are.";
     static gradeButtonLabel = "Grade My Drawing";
     static gradeComingSoonNote = "Grading isn't wired up yet — coming soon.";
 
     static demoModeTitle = "See a Demo";
-    static demoModeDescription = "Watch how the character is written, stroke by stroke.";
-    static demoStageInstruction = "Watch a demo of how the selected character is written.";
-    static demoButtonLabel = "Replay";
-    static demoLoopingNote = "Playing on a loop — press Replay to start over.";
+    static demoStageInstruction = "Watch how the character is written, stroke by stroke — it loops automatically.";
 }
 
 export class ExtensionScripts {
@@ -668,6 +664,11 @@ export class ChangelogScripts {
                     "Updated the learn tab's demo screen now that playback actually works: the \"Play Demo\" button",
                     "(previously disabled with a \"coming soon\" note) is now an active Replay button that restarts",
                     "the animation on demand, with a note explaining it's already looping automatically."
+                ]),
+                text([
+                    "Removed the descriptions from the learn tab's Draw It / See a Demo choice cards, moving that",
+                    "explanation to the individual draw and demo screens instead. Also removed the demo screen's",
+                    "Replay button, since it already plays automatically on a loop."
                 ])
             ]
         )

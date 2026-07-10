@@ -825,18 +825,16 @@ function clearAllData() {
 
                             <div class="grid w-full gap-4 sm:grid-cols-2">
                                 <button
-                                    class="rounded-2xl border border-white/10 bg-white/5 p-6 text-left shadow-2xl shadow-black/40 transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
+                                    class="rounded-2xl border border-white/10 bg-white/5 px-6 py-8 text-center shadow-2xl shadow-black/40 transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
                                     @click="startLearnDraw"
                                 >
-                                    <h3 class="mb-2 text-lg font-semibold !text-red">{{ LearnScripts.drawModeTitle }}</h3>
-                                    <p class="text-sm text-white/70">{{ LearnScripts.drawModeDescription }}</p>
+                                    <h3 class="text-lg font-semibold !text-red">{{ LearnScripts.drawModeTitle }}</h3>
                                 </button>
                                 <button
-                                    class="rounded-2xl border border-white/10 bg-white/5 p-6 text-left shadow-2xl shadow-black/40 transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
+                                    class="rounded-2xl border border-white/10 bg-white/5 px-6 py-8 text-center shadow-2xl shadow-black/40 transition-colors hover:border-red/40 hover:bg-white/10 focus-ring cursor-pointer"
                                     @click="startLearnDemo"
                                 >
-                                    <h3 class="mb-2 text-lg font-semibold !text-red">{{ LearnScripts.demoModeTitle }}</h3>
-                                    <p class="text-sm text-white/70">{{ LearnScripts.demoModeDescription }}</p>
+                                    <h3 class="text-lg font-semibold !text-red">{{ LearnScripts.demoModeTitle }}</h3>
                                 </button>
                             </div>
                         </div>
@@ -866,7 +864,9 @@ function clearAllData() {
                         </div>
                     </template>
 
-                    <!-- stage 4: demo — playback isn't implemented yet. -->
+                    <!-- stage 4: demo — plays automatically (see the
+                         [currentPage, learnStage] watch above), no manual
+                         start/replay control needed. -->
                     <template v-else-if="learnStage == LearnStage.DEMO">
                         <button
                             class="inline-flex w-fit items-center gap-1 text-sm text-white/60 transition-colors hover:text-white focus-ring rounded cursor-pointer"
@@ -884,17 +884,6 @@ function clearAllData() {
                                 :class="isLearnSelectedCommand ? 'h-16 px-5 text-lg capitalize' : 'h-16 w-16 text-3xl uppercase'"
                             >{{ learnSelectedChar }}</span>
                             <p class="text-white/70">{{ LearnScripts.demoStageInstruction }}</p>
-                            <button
-                                class="btn-red inline-flex items-center gap-2"
-                                @click="startDemoLoop"
-                            >
-                                <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" class="h-5 w-5 shrink-0">
-                                    <path d="M3 12a9 9 0 1 1 3 6.7" />
-                                    <path d="M3 17v-5h5" />
-                                </svg>
-                                {{ LearnScripts.demoButtonLabel }}
-                            </button>
-                            <p class="text-xs text-white/40">{{ LearnScripts.demoLoopingNote }}</p>
                         </div>
                     </template>
                 </div>
