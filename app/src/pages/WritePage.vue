@@ -344,6 +344,16 @@ function recognizeCharacter() {
         });
     }
     else if (currentPage.value == Pages.LEARN) {
+        // Only on the character-select stage — drawing on the canvas while
+        // already on the draw/demo stage shouldn't jump to a different
+        // character. Grading a drawing (the draw stage) isn't implemented.
+        if (learnStage.value === LearnStage.SELECT_CHARACTER) {
+            predict(grid.value).then(result => {
+                if (Object.hasOwn(LearnScripts.characters, result)) {
+                    selectLearnCharacter(result);
+                }
+            });
+        }
     }
     else if (currentPage.value == Pages.DEVELOPER) {
         if (currentLabel.value.length != 0) {
@@ -740,9 +750,12 @@ function clearAllData() {
                 >
                     <!-- stage 1: pick a character -->
                     <template v-if="learnStage == LearnStage.SELECT_CHARACTER">
-                        <p class="text-xs font-semibold uppercase tracking-widest text-white/50">
-                            {{ LearnScripts.chooseCharacterTitle }}
-                        </p>
+                        <div>
+                            <p class="text-xs font-semibold uppercase tracking-widest text-white/50">
+                                {{ LearnScripts.chooseCharacterTitle }}
+                            </p>
+                            <p class="mt-1 text-sm text-white/50">{{ LearnScripts.chooseCharacterHint }}</p>
+                        </div>
 
                         <div>
                             <p class="mb-2 text-xs font-semibold uppercase tracking-widest text-red-light">

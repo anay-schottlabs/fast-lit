@@ -194,6 +194,7 @@ export class LearnScripts {
     // learn tab UI copy
     static commandGroupLabel = "Commands";
     static chooseCharacterTitle = "Choose a Character";
+    static chooseCharacterHint = "Tap one below, or draw it on the grid and it'll be picked automatically.";
     static letterGroupLabel = "Letters";
     static digitGroupLabel = "Numbers";
     static punctuationGroupLabel = "Punctuation";
@@ -669,6 +670,11 @@ export class ChangelogScripts {
                     "Removed the descriptions from the learn tab's Draw It / See a Demo choice cards, moving that",
                     "explanation to the individual draw and demo screens instead. Also removed the demo screen's",
                     "Replay button, since it already plays automatically on a loop."
+                ]),
+                text([
+                    "The learn tab's character picker now recognizes handwriting: draw a character on the grid",
+                    "and it's automatically selected (using the same recognition model as the write page),",
+                    "no need to tap it in the list first."
                 ])
             ]
         )
