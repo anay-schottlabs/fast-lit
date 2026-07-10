@@ -385,8 +385,8 @@ onUnmounted(() => {
 
 // pages
 const Pages = Object.freeze({
-    WRITE: "write",
     LEARN: "learn",
+    WRITE: "write",
     DEVELOPER: "developer"
 });
 const currentPage = ref(Pages.WRITE);
