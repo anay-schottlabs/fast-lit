@@ -457,17 +457,28 @@ const isLearnSelectedCommand = computed(() => (learnSelectedChar.value?.length ?
 // time (cumulatively — earlier points stay lit) via demoStrokeIndex,
 // wrapping back to 1 once every indexed cell has been shown.
 const demoStrokeIndex = ref(1);
-const demoFrameIntervalMs = 400;
+// Discrete speed steps (ms per frame, slow to fast) rather than a
+// continuous range — easier to reason about than exposing raw
+// milliseconds, and level 3 preserves the original fixed 400ms pace as
+// the default. Higher level = faster, matching the read page's WPM
+// slider convention.
+const demoSpeedLevels = [800, 600, 400, 250, 150];
+const demoSpeedLevel = ref(3);
+const demoFrameIntervalMs = computed(() => demoSpeedLevels[demoSpeedLevel.value - 1]);
 let demoInterval = null;
 
-function startDemoLoop() {
-    stopDemoLoop();
-    demoStrokeIndex.value = 1;
+function scheduleDemoInterval() {
     demoInterval = setInterval(() => {
         const characterGrid = LearnScripts.characters[learnSelectedChar.value];
         const maxStrokeIndex = characterGrid ? Math.max(0, ...characterGrid.flat()) : 0;
         demoStrokeIndex.value = demoStrokeIndex.value >= maxStrokeIndex ? 1 : demoStrokeIndex.value + 1;
-    }, demoFrameIntervalMs);
+    }, demoFrameIntervalMs.value);
+}
+
+function startDemoLoop() {
+    stopDemoLoop();
+    demoStrokeIndex.value = 1;
+    scheduleDemoInterval();
 }
 
 function stopDemoLoop() {
@@ -485,6 +496,19 @@ watch([currentPage, learnStage], ([page, stage]) => {
         startDemoLoop();
     } else {
         stopDemoLoop();
+    }
+});
+
+// Retimes the running interval when the speed slider changes, without
+// resetting demoStrokeIndex — adjusting speed mid-demo shouldn't jump the
+// animation back to the first stroke point. Only reschedules if the loop
+// is actually running (i.e. we're on the demo stage); otherwise there's
+// nothing to retime yet, and startDemoLoop will pick up the new speed
+// whenever it does start.
+watch(demoFrameIntervalMs, () => {
+    if (demoInterval) {
+        clearInterval(demoInterval);
+        scheduleDemoInterval();
     }
 });
 
@@ -897,6 +921,22 @@ function clearAllData() {
                                 :class="isLearnSelectedCommand ? 'h-16 px-5 text-lg capitalize' : 'h-16 w-16 text-3xl uppercase'"
                             >{{ learnSelectedChar }}</span>
                             <p class="text-white/70">{{ LearnScripts.demoStageInstruction }}</p>
+
+                            <div class="w-full max-w-xs rounded-2xl border border-white/10 bg-white/5 p-4">
+                                <p class="mb-3 text-xs font-semibold uppercase tracking-widest text-white/50">{{ LearnScripts.demoSpeedLabel }}</p>
+                                <input
+                                    type="range"
+                                    class="range range-sm w-full focus-ring"
+                                    min="1"
+                                    max="5"
+                                    step="1"
+                                    v-model.number="demoSpeedLevel"
+                                >
+                                <div class="mt-1 flex justify-between text-xs text-white/40">
+                                    <span>{{ LearnScripts.demoSpeedSlowLabel }}</span>
+                                    <span>{{ LearnScripts.demoSpeedFastLabel }}</span>
+                                </div>
+                            </div>
                         </div>
                     </template>
                 </div>

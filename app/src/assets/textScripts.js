@@ -334,6 +334,9 @@ export class LearnScripts {
 
     static demoModeTitle = "See a Demo";
     static demoStageInstruction = "Watch how the character is written, stroke by stroke — it loops automatically.";
+    static demoSpeedLabel = "Playback Speed";
+    static demoSpeedSlowLabel = "Slow";
+    static demoSpeedFastLabel = "Fast";
 }
 
 export class ExtensionScripts {
@@ -807,7 +810,8 @@ export class ChangelogScripts {
                     "d is a horizontal line drawn left to right directly on the line, e is a short vertical line",
                     "drawn top to bottom from just above the middle down to the line, and delete is a small dot",
                     "at the dead center of the grid."
-                ])
+                ]),
+                "Added a Playback Speed slider to the learn tab's demo screen, with five steps from slow to fast."
             ]
         )
     ]
