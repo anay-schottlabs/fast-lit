@@ -4,6 +4,9 @@ import { ref, computed, watch, onMounted, onUnmounted, nextTick } from 'vue';
 import { WriteScripts } from '@/assets/textScripts.js';
 import { db } from '@/firebase/index.js';
 import { collection, getDocs, doc, updateDoc, increment } from "firebase/firestore";
+import * as ort from "onnxruntime-web";
+
+const session = ref(null);
 
 const canvas = ref(null);
 
@@ -252,12 +255,54 @@ const writeChars = ref([]);
 // HomePage.vue reads for the Words Written stat and its hours-saved bonus.
 let charactersInSession = 0;
 
+// Uses the recognition model to guess the character
+async function predict(grid) {
+    // Flatten 20x20 grid
+    const inputData = new Float32Array(400);
+
+    for (let y = 0; y < 20; y++) {
+        for (let x = 0; x < 20; x++) {
+            inputData[y * 20 + x] = grid[y][x];
+        }
+    }
+
+    // Create tensor
+    const tensor = new ort.Tensor(
+        "float32",
+        inputData,
+        [1, 1, 20, 20]
+    );
+
+    // Run model
+    const results = await session.value.run({
+        input: tensor
+    });
+
+    const output = results.output.data;
+    let maxIndex = 0;
+
+    for (let i = 1; i < output.length; i++) {
+        if (output[i] > output[maxIndex]) {
+            maxIndex = i;
+        }
+    }
+
+    const labels = [
+        "a",
+        "b",
+        "c",
+        "d",
+        "e",
+        "delete"
+    ];
+
+    return labels[maxIndex];
+}
+
 function recognizeCharacter() {
     charactersInSession++;
     if (currentPage.value == Pages.WRITE) {
-        // Push a random lowercase alphabet character
-        const randomChar = String.fromCharCode(97 + Math.floor(Math.random() * 26));
-        writeChars.value.push(randomChar);
+        predict(grid.value).then(result => writeChars.value.push(result));   
     }
     else if (currentPage.value == Pages.LEARN) {
     }
@@ -285,6 +330,11 @@ onMounted(async () => {
     querySnapshot.forEach((doc) => {
         statsDocId = doc.id;
     });
+
+    // load custom character recognition model
+    session.value = await ort.InferenceSession.create(
+        "/shorthand_model.onnx"
+    );
 });
 
 // same increment-on-close pattern as HomePage.vue's saveDemoWordsRead and
