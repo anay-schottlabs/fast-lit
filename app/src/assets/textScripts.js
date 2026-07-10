@@ -395,7 +395,7 @@ export class ChangelogScripts {
                 "Replaced the home page's stat icons (previously an unrelated info-circle and archive box borrowed from a generic icon set) with marks that actually match what they measure: the same text-line and scribble marks as the sidebar's Read/Write icons, and a bolt for Hours Saved.",
                 "Added an Extension page covering the Fast Lit Grabber Chrome extension in depth: what it does, how it works step by step, an FAQ, a link to the Chrome Web Store listing, and a privacy callout linking to the full Privacy Policy. It has its own entry in the sidebar, directly under Write.",
                 "The sidebar is now a floating card (rounded corners, border, shadow) inset evenly from the top, bottom, and left edges instead of a flush-docked panel, matching the card styling used everywhere else on the site.",
-                "Fixed the write page's recognized-character rows being spaced far apart instead of stacking directly on top of each other once there was enough to wrap onto a second or third row."
+                "Fixed the write page's recognized-character rows being spaced far apart instead of stacking directly on top of each other once there was enough to wrap onto a second or third row, and made them flow like text — starting from the top-left and wrapping left to right — instead of centering as a group."
             ]
         )
     ]
