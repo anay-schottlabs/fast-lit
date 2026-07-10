@@ -269,6 +269,16 @@ watch(grid, drawGrid, { deep: true });
 
 function resetGrid() {
     recognizeCharacter();
+    // On the learn tab's draw stage the user may draw a character in more
+    // than one stroke before grading it — clearing after every single
+    // stroke release would erase their drawing before they ever get to
+    // submit it. Grading itself (gradeLearnDrawing) clears the grid
+    // afterward, once they're done.
+    if (currentPage.value === Pages.LEARN && learnStage.value === LearnStage.DRAW) return;
+    clearGrid();
+}
+
+function clearGrid() {
     if (!grid.value || !Array.isArray(grid.value)) return;
     for (let row = 0; row < grid.value.length; row++) {
         for (let col = 0; col < grid.value[row].length; col++) {
@@ -538,12 +548,139 @@ const showCanvasCursorPointer = computed(() => {
     return learnStage.value !== LearnStage.CHOOSE_MODE && learnStage.value !== LearnStage.DEMO;
 });
 
+// Grading: compares the user's drawing (grid, plain 0/1) against the
+// selected character's reference stroke grid (indexed 1, 2, 3, ... in
+// stroke order — see LearnScripts.characters). The reference only marks
+// sampled points along the stroke, not every cell a pen would cross
+// between them, so it's connected into a continuous line first via
+// Bresenham-style interpolation, matching how the cells would actually
+// look if fully traced.
+function interpolateLine(r0, c0, r1, c1) {
+    const cells = [];
+    const dr = Math.abs(r1 - r0);
+    const dc = Math.abs(c1 - c0);
+    const sr = r0 < r1 ? 1 : -1;
+    const sc = c0 < c1 ? 1 : -1;
+    let err = dr - dc;
+    let r = r0;
+    let c = c0;
+    while (true) {
+        cells.push([r, c]);
+        if (r === r1 && c === c1) break;
+        const e2 = 2 * err;
+        if (e2 > -dc) { err -= dc; r += sr; }
+        if (e2 < dr) { err += dr; c += sc; }
+    }
+    return cells;
+}
+
+function buildTargetCells(characterGrid) {
+    const points = [];
+    for (let row = 0; row < characterGrid.length; row++) {
+        for (let col = 0; col < characterGrid[row].length; col++) {
+            const index = characterGrid[row][col];
+            if (index !== 0) points[index - 1] = [row, col];
+        }
+    }
+    const cells = new Set();
+    points.forEach(([row, col], i) => {
+        cells.add(`${row},${col}`);
+        if (i > 0) {
+            const [prevRow, prevCol] = points[i - 1];
+            for (const [r, c] of interpolateLine(prevRow, prevCol, row, col)) {
+                cells.add(`${r},${c}`);
+            }
+        }
+    });
+    return cells;
+}
+
+// Expands a cell set to include every 8-connected neighbor, so grading
+// isn't pixel-perfect — a stroke one cell off the ideal line still counts,
+// since hand-drawn (or mouse-drawn) input is never going to land exactly
+// on the reference path.
+function dilateCells(cells) {
+    const dilated = new Set(cells);
+    for (const key of cells) {
+        const [row, col] = key.split(',').map(Number);
+        for (let dr = -1; dr <= 1; dr++) {
+            for (let dc = -1; dc <= 1; dc++) {
+                const r = row + dr;
+                const c = col + dc;
+                if (r >= 0 && r < dimension && c >= 0 && c < dimension) {
+                    dilated.add(`${r},${c}`);
+                }
+            }
+        }
+    }
+    return dilated;
+}
+
+// Score = harmonic mean (F1) of recall (how much of the reference stroke
+// got traced) and precision (how much of the drawing actually landed near
+// the reference stroke, penalizing stray marks) — both computed with the
+// 1-cell tolerance from dilateCells.
+function gradeDrawing(drawnGrid, characterGrid) {
+    const target = buildTargetCells(characterGrid);
+    const drawn = new Set();
+    for (let row = 0; row < drawnGrid.length; row++) {
+        for (let col = 0; col < drawnGrid[row].length; col++) {
+            if (drawnGrid[row][col] !== 0) drawn.add(`${row},${col}`);
+        }
+    }
+
+    if (drawn.size === 0 || target.size === 0) {
+        return { score: 0, precision: 0, recall: 0 };
+    }
+
+    const targetDilated = dilateCells(target);
+    const drawnDilated = dilateCells(drawn);
+
+    let coveredTarget = 0;
+    for (const key of target) {
+        if (drawnDilated.has(key)) coveredTarget++;
+    }
+    const recall = coveredTarget / target.size;
+
+    let onTargetDrawn = 0;
+    for (const key of drawn) {
+        if (targetDilated.has(key)) onTargetDrawn++;
+    }
+    const precision = onTargetDrawn / drawn.size;
+
+    const score = precision + recall === 0 ? 0 : Math.round((2 * precision * recall) / (precision + recall) * 100);
+    return { score, precision: Math.round(precision * 100), recall: Math.round(recall * 100) };
+}
+
+// null until the user grades a drawing; reset whenever they leave the
+// draw stage, pick a new character, or ask to try again.
+const learnGradeResult = ref(null);
+
+const learnGradeFeedback = computed(() => {
+    if (!learnGradeResult.value) return '';
+    const { score } = learnGradeResult.value;
+    if (score >= 80) return LearnScripts.gradeFeedbackGreat;
+    if (score >= 50) return LearnScripts.gradeFeedbackOkay;
+    return LearnScripts.gradeFeedbackRetry;
+});
+
+function gradeLearnDrawing() {
+    if (!learnSelectedChar.value) return;
+    learnGradeResult.value = gradeDrawing(grid.value, LearnScripts.characters[learnSelectedChar.value]);
+}
+
+function resetLearnDrawingState() {
+    learnGradeResult.value = null;
+    clearGrid();
+}
+
 function selectLearnCharacter(char) {
     learnSelectedChar.value = char;
     learnStage.value = LearnStage.CHOOSE_MODE;
 }
 
 function startLearnDraw() {
+    resetLearnDrawingState();
     learnStage.value = LearnStage.DRAW;
 }
 
@@ -552,11 +689,13 @@ function startLearnDemo() {
 }
 
 function backToLearnCharacterSelect() {
+    resetLearnDrawingState();
     learnStage.value = LearnStage.SELECT_CHARACTER;
     learnSelectedChar.value = null;
 }
 
 function backToLearnModeChoice() {
+    resetLearnDrawingState();
     learnStage.value = LearnStage.CHOOSE_MODE;
 }
 
@@ -878,7 +1017,9 @@ function clearAllData() {
                     </template>
 
                     <!-- stage 3: draw it — reuses the shared canvas on the
-                         left; grading isn't implemented yet. -->
+                         left. resetGrid() skips clearing the grid while
+                         here (see its own comment) so multi-stroke
+                         drawings survive until gradeLearnDrawing runs. -->
                     <template v-else-if="learnStage == LearnStage.DRAW">
                         <button
                             class="inline-flex w-fit items-center gap-1 text-sm text-white/60 transition-colors hover:text-white focus-ring rounded cursor-pointer"
@@ -895,9 +1036,20 @@ function clearAllData() {
                                 class="flex items-center justify-center rounded-2xl border border-red/30 bg-red/10 font-bold text-red-light"
                                 :class="isLearnSelectedCommand ? 'h-16 px-5 text-lg capitalize' : 'h-16 w-16 text-3xl uppercase'"
                             >{{ learnSelectedChar }}</span>
-                            <p class="text-white/70">{{ LearnScripts.drawStageInstruction }}</p>
-                            <button class="btn-red" disabled>{{ LearnScripts.gradeButtonLabel }}</button>
-                            <p class="text-xs text-white/40">{{ LearnScripts.gradeComingSoonNote }}</p>
+
+                            <template v-if="!learnGradeResult">
+                                <p class="text-white/70">{{ LearnScripts.drawStageInstruction }}</p>
+                                <button class="btn-red" @click="gradeLearnDrawing">{{ LearnScripts.gradeButtonLabel }}</button>
+                            </template>
+
+                            <template v-else>
+                                <div>
+                                    <p class="text-5xl font-bold !text-red">{{ learnGradeResult.score }}%</p>
+                                    <p class="mt-1 text-xs font-semibold uppercase tracking-widest text-white/50">{{ LearnScripts.gradeScoreLabel }}</p>
+                                </div>
+                                <p class="text-white/70">{{ learnGradeFeedback }}</p>
+                                <button class="btn-red" @click="resetLearnDrawingState">{{ LearnScripts.gradeRetryButtonLabel }}</button>
+                            </template>
                         </div>
                     </template>
 

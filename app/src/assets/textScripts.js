@@ -813,7 +813,11 @@ export class LearnScripts {
     static drawModeTitle = "Draw It";
     static drawStageInstruction = "Draw the character yourself on the grid, then submit it to get graded on how accurate your strokes are.";
     static gradeButtonLabel = "Grade My Drawing";
-    static gradeComingSoonNote = "Grading isn't wired up yet — coming soon.";
+    static gradeScoreLabel = "Match";
+    static gradeRetryButtonLabel = "Try Again";
+    static gradeFeedbackGreat = "Great job! That's a strong match.";
+    static gradeFeedbackOkay = "Good effort — a bit more practice and you'll have it.";
+    static gradeFeedbackRetry = "Keep practicing — try tracing the shape more closely.";
 
     static demoModeTitle = "See a Demo";
     static demoStageInstruction = "Watch how the character is written, stroke by stroke — it loops automatically.";
@@ -1300,6 +1304,12 @@ export class ChangelogScripts {
                     "stroke diagrams and converted into the same indexed stroke-grid format as the hand-built letters.",
                     "Where a letter shares its stroke with a combined form (like f / ph), only the plain letter",
                     "was added — no duplicate or combined-form entries."
+                ]),
+                text([
+                    "Implemented grading on the learn tab's draw screen: your drawing is compared against the selected",
+                    "character's reference strokes and scored as a percentage match, with feedback and a Try Again button.",
+                    "Drawings also no longer get erased between strokes while on this screen, so multi-stroke",
+                    "characters survive until you submit them for grading."
                 ])
             ]
         )
