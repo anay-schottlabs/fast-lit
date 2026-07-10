@@ -126,7 +126,12 @@ function drawGridOnCanvas(el, gridData, onColor = colorCellOn) {
             // default, or a caller-supplied override). Otherwise,
             // cells on the writing-line row get a lighter "off" shade so the
             // line is visible even where nothing has been drawn.
-            const isOn = gridData[row][col] === 1;
+            // Any nonzero value counts as "on" (not just 1) — the write
+            // page's own drawing grid and saved characters only ever use
+            // 0/1, but LearnScripts character grids number cells in stroke
+            // order (1, 2, 3, ...) so the demo animation can play them back
+            // one point at a time.
+            const isOn = gridData[row][col] !== 0;
             const isWritingLine = row === writingLineRow;
             ctx.fillStyle = isOn ? onColor : isWritingLine ? colorWritingLineOff : colorCellOff;
 
@@ -146,6 +151,15 @@ function drawGridOnCanvas(el, gridData, onColor = colorCellOn) {
     }
 }
 
+// Builds a single-frame 0/1 grid containing every cell whose stroke index
+// is at most `index`, from a LearnScripts character grid numbered in
+// stroke order (1, 2, 3, ...) — used to play the demo back cumulatively,
+// one new point revealed per frame, so the whole character is visible for
+// a beat right before the loop resets.
+function buildDemoFrameGrid(characterGrid, index) {
+    return characterGrid.map((row) => row.map((cell) => (cell !== 0 && cell <= index ? 1 : 0)));
+}
+
 // Renders the shared reactive `grid` (the writing canvas the user draws on)
 // onto the main canvas. Called on mount and whenever `grid` changes (see the
 // `watch` below).
@@ -153,10 +167,17 @@ function drawGridOnCanvas(el, gridData, onColor = colorCellOn) {
 // nor demo started yet), the canvas shows a grayed-out reference of the
 // selected character instead of the user's own (empty, at this point)
 // drawing — colorCellPreview keeps it visually distinct from an actual
-// in-progress drawing, which always renders in colorCellOn.
+// in-progress drawing, which always renders in colorCellOn. On the demo
+// stage, it plays back the same way but cumulatively, one more stroke
+// point revealed each frame via demoStrokeIndex (see the learn page
+// section below) until the full character is shown right before the loop
+// resets back to the first point.
 function drawGrid() {
     if (currentPage.value === Pages.LEARN && learnStage.value === LearnStage.CHOOSE_MODE && learnSelectedChar.value) {
         drawGridOnCanvas(canvas.value, LearnScripts.characters[learnSelectedChar.value], colorCellPreview);
+    } else if (currentPage.value === Pages.LEARN && learnStage.value === LearnStage.DEMO && learnSelectedChar.value) {
+        const frame = buildDemoFrameGrid(LearnScripts.characters[learnSelectedChar.value], demoStrokeIndex.value);
+        drawGridOnCanvas(canvas.value, frame, colorCellPreview);
     } else {
         drawGridOnCanvas(canvas.value, grid.value);
     }
@@ -384,6 +405,7 @@ onUnmounted(() => {
     canvas.value?.removeEventListener('pointerdown', onPointerDown);
     window.removeEventListener('pointermove', onPointerMove);
     window.removeEventListener('pointerup', onPointerUp);
+    stopDemoLoop();
 
     // beforeunload only fires on an actual tab close/reload — navigating to
     // another page within the app just unmounts this component, so flush
@@ -421,11 +443,47 @@ const learnSelectedChar = ref(null);
 // fixed square used for single characters.
 const isLearnSelectedCommand = computed(() => (learnSelectedChar.value?.length ?? 0) > 1);
 
+// Demo playback: reveals the selected character's stroke points one at a
+// time (cumulatively — earlier points stay lit) via demoStrokeIndex,
+// wrapping back to 1 once every indexed cell has been shown.
+const demoStrokeIndex = ref(1);
+const demoFrameIntervalMs = 400;
+let demoInterval = null;
+
+function startDemoLoop() {
+    stopDemoLoop();
+    demoStrokeIndex.value = 1;
+    demoInterval = setInterval(() => {
+        const characterGrid = LearnScripts.characters[learnSelectedChar.value];
+        const maxStrokeIndex = characterGrid ? Math.max(0, ...characterGrid.flat()) : 0;
+        demoStrokeIndex.value = demoStrokeIndex.value >= maxStrokeIndex ? 1 : demoStrokeIndex.value + 1;
+    }, demoFrameIntervalMs);
+}
+
+function stopDemoLoop() {
+    if (demoInterval) {
+        clearInterval(demoInterval);
+        demoInterval = null;
+    }
+}
+
+// Starts/stops the demo loop as the learn tab enters/leaves its demo
+// stage — covers every way to leave (the back button, switching to
+// Write/Developer, picking a different character), not just one path.
+watch([currentPage, learnStage], ([page, stage]) => {
+    if (page === Pages.LEARN && stage === LearnStage.DEMO) {
+        startDemoLoop();
+    } else {
+        stopDemoLoop();
+    }
+});
+
 // Redraws the canvas whenever any of these change — e.g. picking a
 // character (or switching away from the mode-choice stage) needs to swap
 // the canvas between the character preview and the user's own drawing,
-// which drawGrid()'s own logic decides based on current page/stage.
-watch([currentPage, learnStage, learnSelectedChar], drawGrid);
+// and demoStrokeIndex advancing needs to redraw each new frame — which
+// drawGrid()'s own logic decides based on current page/stage.
+watch([currentPage, learnStage, learnSelectedChar, demoStrokeIndex], drawGrid);
 
 // Grouped once at setup — LearnScripts.characters never changes at runtime,
 // so these don't need to be reactive.

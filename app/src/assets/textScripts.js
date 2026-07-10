@@ -136,7 +136,12 @@ function emptyCharacterGrid(dimension) {
 }
 
 // Explicit Teeline stroke grids for characters that have been filled in so
-// far — added one at a time as requested. Anything not listed here still
+// far — added one at a time as requested. Cells are numbered in stroke
+// order (1, 2, 3, ...) rather than a flat 1, so the learn tab's demo
+// animation can play the stroke back one point at a time instead of
+// showing the whole character at once; the write page's own drawing grid
+// and saved characters stay plain 0/1 (see WritePage.vue's isOn check,
+// which treats any nonzero value as "on"). Anything not listed here still
 // falls back to an empty placeholder grid (see LearnScripts.characters).
 const filledCharacterGrids = {
     // "a": a short diagonal stroke running upper-left to lower-right at a
@@ -154,11 +159,11 @@ const filledCharacterGrids = {
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
-        [0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,2,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,3,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,4,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,5,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,6,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
         [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
@@ -171,9 +176,9 @@ export class LearnScripts {
     static dimension = 20;
 
     // One dimension x dimension stroke grid per character Fast Lit can teach,
-    // keyed by the character itself. Every grid is empty (all zeroes) for
-    // now — these get filled in with the actual Teeline shorthand strokes,
-    // character by character, drawn the same way as the write page's canvas.
+    // keyed by the character itself. Filled in one character at a time via
+    // filledCharacterGrids above; anything not filled in yet is an empty
+    // (all zeroes) placeholder.
     static characters = Object.fromEntries(
         [
             ..."abcdefghijklmnopqrstuvwxyz",
@@ -647,6 +652,11 @@ export class ChangelogScripts {
                     "The learn tab's canvas now shows a grayed-out preview of the character you picked once you've",
                     "chosen it but before starting to draw or demo, and no longer shows a pointer cursor",
                     "on that screen or the demo screen, since neither is actually drawable yet."
+                ]),
+                text([
+                    "The learn tab's demo now actually plays: it reveals the selected character's strokes one point",
+                    "at a time in the same grayed-out preview color, keeping earlier points lit so the whole character",
+                    "is visible for a beat before the loop resets and starts over."
                 ])
             ]
         )
