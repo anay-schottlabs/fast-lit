@@ -135,6 +135,37 @@ function emptyCharacterGrid(dimension) {
     return Array.from({ length: dimension }, () => Array(dimension).fill(0));
 }
 
+// Explicit Teeline stroke grids for characters that have been filled in so
+// far — added one at a time as requested. Anything not listed here still
+// falls back to an empty placeholder grid (see LearnScripts.characters).
+const filledCharacterGrids = {
+    // "a": a short diagonal stroke running upper-left to lower-right at a
+    // 45 degree angle, from the vertical middle of the grid (row 10) down
+    // to the writing line (row 15), centered horizontally on column 9.5.
+    a: [
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,1,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0],
+        [0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0]
+    ]
+};
+
 export class LearnScripts {
     // Matches the write page's own canvas grid dimension.
     static dimension = 20;
@@ -151,8 +182,8 @@ export class LearnScripts {
             // control gestures, not literal characters — same "delete" value
             // the write page's recognition model already returns to signal
             // a delete stroke (see WritePage.vue's recognizeCharacter)
-            "delete", "space"
-        ].map((char) => [char, emptyCharacterGrid(LearnScripts.dimension)])
+            "DELETE", "SPACE"
+        ].map((char) => [char, filledCharacterGrids[char] ?? emptyCharacterGrid(LearnScripts.dimension)])
     );
 
     // learn tab UI copy
