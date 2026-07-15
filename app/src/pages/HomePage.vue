@@ -7,10 +7,6 @@ import { db } from '@/firebase/index.js';
 import { collection, getDocs } from "firebase/firestore";
 
 const totalWordsRead = ref(0);
-// written on the write page, in words (5 letters average per word) — see
-// WritePage.vue's updateTotalWordsWritten, which converts and flushes to
-// this same firestore field.
-const totalWordsWritten = ref(0);
 // distinguishes "still loading" from "genuinely zero" so the stat cards
 // don't flash a real-looking 0 while the Firestore read is in flight
 const statsLoading = ref(true);
@@ -20,7 +16,6 @@ onMounted(async () => {
     const querySnapshot = await getDocs(collection(db, "stats"));
     querySnapshot.forEach((doc) => {
         totalWordsRead.value = doc.data().totalWordsRead;
-        totalWordsWritten.value = doc.data().totalWordsWritten ?? 0;
     });
     statsLoading.value = false;
 });
@@ -99,23 +94,18 @@ const statCards = computed(() => [
         icon: "M4 7h16M4 12h16M4 17h10"
     },
     {
-        label: "Words Written",
-        value: Math.floor(totalWordsWritten.value),
-        // same signature-scribble mark as the sidebar's Write icon
-        icon: "M3 14c1.75-4 3.75-4 5.5 0s3.75 4 5.5 0 3.75-4 5.5 0"
+        label: "Books Finished",
+        // an average book is around 100,000 words; rounded down to the nearest book
+        value: Math.floor(totalWordsRead.value / 100000),
+        icon: "M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
     },
     {
         label: "Hours Saved",
-        // reading: average speed on this site is ~500 wpm vs. ~250 wpm average
-        // reading speed, so users read 2x faster; divide words by wpm to get
-        // minutes, then by 2 for time saved, then by 60 for hours saved.
-        // writing: every character written saves an estimated 0.24 seconds vs.
-        // handwriting it. totalWordsWritten is already in words (5 letters/word),
-        // so seconds saved = words * 5 * 0.24 = words * 1.2, then /3600 for
-        // hours — combined here as /3000 (3600 / 1.2).
-        value: Math.floor(totalWordsRead.value / 500 / 2 / 60 + totalWordsWritten.value / 3000),
-        // a bolt for speed/efficiency gained, distinct from the sidebar's
-        // clock (used there for Changelog's history-of-changes instead)
+        // average speed on this site is ~500 wpm vs. ~250 wpm average reading speed,
+        // so users read 2x faster; divide words by wpm to get minutes, then by 2 for
+        // time saved, then by 60 to convert minutes saved to hours saved
+        value: Math.floor(totalWordsRead.value / 500 / 2 / 60),
+        // a bolt for speed/efficiency gained
         icon: "M13 3 4 14h6l-1 7 9-11h-6z"
     }
 ]);
