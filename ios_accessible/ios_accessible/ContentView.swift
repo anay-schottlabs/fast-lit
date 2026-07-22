@@ -72,19 +72,14 @@ struct HomeView: View {
                 .multilineTextAlignment(.center)
                 .padding()
 
-            Button(action: {
-                currentPage = .choose
-            }, label: {
-                Text("Start Reading")
-            })
-            .buttonStyle(.glassProminent)
-
+            // No more direct route to ChooseView from here — reading now
+            // requires logging in first, via the button below.
             Button(action: {
                 currentPage = .account
             }, label: {
                 Text("Log In / Sign Up")
             })
-            .buttonStyle(.glass)
+            .buttonStyle(.glassProminent)
 
             // Skips ChooseView and OrientView entirely — for quickly getting
             // back to ReadView while testing, not part of the normal flow.
