@@ -598,6 +598,21 @@ export class ChangelogScripts {
                     "to reading only."
                 ])
             ]
+        ),
+        new this.Entry(
+            "July 22, 2026",
+            "1.8.0",
+            [
+                text([
+                    "Started a native accessible iOS app (ios_accessible): a home screen, a choose screen listing",
+                    "sample readable content, and a detail view for the content you pick."
+                ]),
+                "Filled the choose screen with 5 sample readable passages (intro, science, fiction, history, and motivational) and fixed the underlying content model, which had broken placeholder code left over from Xcode's template.",
+                text([
+                    "Tapping an item on the choose screen now opens its detail view as a modal instead of trying",
+                    "to push a new screen, which never worked since the app has no navigation stack."
+                ])
+            ]
         )
     ]
 }
