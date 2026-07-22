@@ -289,6 +289,10 @@ struct ReadView: View {
                 .padding(.horizontal)
 
             Text(styledWord)
+                // Large and bold, since this word is the whole point of the
+                // screen — everything else (progress bar, controls) is
+                // secondary to it.
+                .font(.system(size: 60, weight: .bold))
 
             // Side-by-side left/right buttons to step through words one at a time.
             HStack {
