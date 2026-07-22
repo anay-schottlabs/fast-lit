@@ -290,6 +290,22 @@ struct ReadView: View {
                 .buttonStyle(.glassProminent)
                 .disabled(isPlaying)
             }
+
+            Text("\(wpm) wpm")
+
+            // Slider only works with a floating-point Binding, so this wraps
+            // wpm (an Int) in a Binding<Double> that converts on the way in
+            // and out — nothing is stored twice, wpm is still the only source
+            // of truth.
+            Slider(
+                value: Binding(
+                    get: { Double(wpm) },
+                    set: { wpm = Int($0) }
+                ),
+                in: 60...600,
+                step: 20
+            )
+            .padding(.horizontal)
         }
         .padding()
         // Stops any running timer if this view goes away while playing, so
