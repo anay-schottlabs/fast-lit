@@ -35,7 +35,7 @@ struct ContentView: View {
             // "if let" only unwraps and shows ReadView once contentToRead is
             // actually set, which it always is by the time we reach this page.
             if let contentToRead {
-                ReadView(content: contentToRead)
+                ReadView(content: contentToRead, currentPage: $currentPage)
             }
         }
     }
@@ -177,7 +177,12 @@ struct ReadView: View {
     // "let" (not "@Binding") since this view only reads the content, never
     // changes it — a plain stored property is all that's needed here.
     let content: ReadableContent
-    
+
+    // @Binding (not "let"), unlike content above — this one does need to
+    // change, so the "choose something different" button below can send the
+    // user back to ChooseView.
+    @Binding var currentPage: Page
+
     // @State lets this value change and trigger a redraw. It can't be a plain
     // "let" (can't reassign it) or even a plain "var" (SwiftUI throws this
     // whole struct away and rebuilds it on every redraw, so a plain "var"
@@ -371,6 +376,16 @@ struct ReadView: View {
                     startTimer()
                 }
             }
+
+            // Sends the user back to ChooseView to pick something else;
+            // .onDisappear below stops playback the same way it would for
+            // any other reason this view goes away.
+            Button(action: {
+                currentPage = .choose
+            }, label: {
+                Text("Choose Something Different")
+            })
+            .buttonStyle(.glass)
         }
         .padding()
         // Stops any running timer if this view goes away while playing, so
