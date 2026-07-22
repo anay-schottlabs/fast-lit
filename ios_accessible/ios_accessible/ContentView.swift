@@ -230,10 +230,12 @@ struct ReadView: View {
         indexNum = min(max(indexNum + increment, 0), words.count - 1)
     }
 
-    // Starts advancing through words on its own, one word every 60/wpm
-    // seconds (e.g. 300 wpm = 60/300 = a fifth of a second per word).
-    func play() -> Void {
-        isPlaying = true
+    // (Re)creates the repeating Timer at the current wpm's interval. Pulled
+    // out of play() so a wpm change made mid-playback can rebuild the timer
+    // at the new speed too — a Timer's own interval can't be edited in place
+    // once it's scheduled, so the only way to change speed is to replace it.
+    func startTimer() -> Void {
+        timer?.invalidate()
         timer = Timer.scheduledTimer(withTimeInterval: 60.0 / Double(wpm), repeats: true) { _ in
             // Stop instead of advancing once the last word is reached, so
             // playback doesn't keep firing forever with nothing left to show.
@@ -243,6 +245,13 @@ struct ReadView: View {
                 updateIndex(increment: 1)
             }
         }
+    }
+
+    // Starts advancing through words on its own, one word every 60/wpm
+    // seconds (e.g. 300 wpm = 60/300 = a fifth of a second per word).
+    func play() -> Void {
+        isPlaying = true
+        startTimer()
     }
 
     // Stops automatic advancing. Also called once the last word is reached.
@@ -312,6 +321,14 @@ struct ReadView: View {
                 step: 20
             )
             .padding(.horizontal)
+            // Only rebuilds the timer if playback is already running —
+            // otherwise there's no timer to update, and play() will start
+            // one at the current wpm anyway once tapped.
+            .onChange(of: wpm) { _, _ in
+                if isPlaying {
+                    startTimer()
+                }
+            }
         }
         .padding()
         // Stops any running timer if this view goes away while playing, so
