@@ -7,6 +7,7 @@ enum Page {
     case orient
     case read
     case account
+    case library
 }
 
 // Which kind of account the user is logging into or signing up for, chosen
@@ -50,6 +51,8 @@ struct ContentView: View {
             OrientView(currentPage: $currentPage)
         } else if currentPage == .account {
             AccountView(currentPage: $currentPage)
+        } else if currentPage == .library {
+            LibraryView(currentPage: $currentPage)
         } else if currentPage == .read {
             // "if let" only unwraps and shows ReadView once contentToRead is
             // actually set, which it always is by the time we reach this page.
@@ -103,7 +106,7 @@ struct AccountView: View {
 
     var body: some View {
         if accountType == .library {
-            LibraryAccountView(accountType: $accountType)
+            LibraryAccountView(accountType: $accountType, currentPage: $currentPage)
         } else if accountType == .reader {
             ReaderAccountView(accountType: $accountType)
         } else {
@@ -150,15 +153,19 @@ struct LibraryAccountView: View {
     // AccountView's picker the same way it got here.
     @Binding var accountType: AccountType?
 
+    // Passed straight through to the login/sign-up forms below, so either
+    // one can jump to .library once authentication actually succeeds.
+    @Binding var currentPage: Page
+
     // nil until the user picks log in or sign up below; once set, that
     // form replaces this picker.
     @State private var authMode: AuthMode? = nil
 
     var body: some View {
         if authMode == .login {
-            LibraryLoginView(authMode: $authMode)
+            LibraryLoginView(authMode: $authMode, currentPage: $currentPage)
         } else if authMode == .signUp {
-            LibrarySignUpView(authMode: $authMode)
+            LibrarySignUpView(authMode: $authMode, currentPage: $currentPage)
         } else {
             VStack {
                 Text("Library Account")
@@ -192,15 +199,27 @@ struct LibraryAccountView: View {
     }
 }
 
-// Logging into an existing library account. Doesn't do anything yet when
-// "Log In" is tapped — just the empty fields for now.
+// Logging into an existing library account, for real now via AuthService.
 struct LibraryLoginView: View {
     // @Binding so "Go Back" can clear it, returning to LibraryAccountView's
     // log in/sign up picker.
     @Binding var authMode: AuthMode?
 
+    // Set to .library on a successful sign-in.
+    @Binding var currentPage: Page
+
+    @Environment(AuthService.self) private var authService
+
     @State private var username: String = ""
     @State private var password: String = ""
+
+    // nil until a sign-in attempt fails; cleared again on the next attempt.
+    @State private var errorMessage: String? = nil
+
+    // Disables "Log In" for the duration of a sign-in attempt, so a slow
+    // network can't be worked around by mashing the button into firing
+    // several sign-ins at once.
+    @State private var isSubmitting: Bool = false
 
     var body: some View {
         VStack {
@@ -219,11 +238,21 @@ struct LibraryLoginView: View {
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal)
 
-            Button(action: {}, label: {
+            if let errorMessage {
+                Text(errorMessage)
+                    .foregroundStyle(.red)
+                    .font(.footnote)
+                    .padding(.horizontal)
+            }
+
+            Button(action: {
+                logIn()
+            }, label: {
                 Text("Log In")
             })
             .buttonStyle(.glassProminent)
             .padding(.top)
+            .disabled(isSubmitting)
 
             Button(action: {
                 authMode = nil
@@ -234,14 +263,43 @@ struct LibraryLoginView: View {
         }
         .padding()
     }
+
+    // Library accounts are identified by username, but Firebase's
+    // email/password provider needs something shaped like an email — this
+    // appends a fixed, made-up domain so a username becomes one, without
+    // "email" ever appearing anywhere in this screen. LibrarySignUpView
+    // builds the same shape, so a username signed up there can log back in
+    // here.
+    private func libraryEmail(for username: String) -> String {
+        "\(username)@fastlit-library.app"
+    }
+
+    private func logIn() {
+        errorMessage = nil
+        isSubmitting = true
+        Task {
+            do {
+                try await authService.signIn(email: libraryEmail(for: username), password: password)
+                currentPage = .library
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isSubmitting = false
+        }
+    }
 }
 
 // Signing up for a new library account. Same fields as LibraryLoginView,
 // plus a name, since sign up (unlike log in) is creating a new person's
-// account rather than authenticating one that already exists. "Sign Up"
-// doesn't do anything yet, same as everywhere else in this flow.
+// account rather than authenticating one that already exists. Actually
+// creates the account now via AuthService.
 struct LibrarySignUpView: View {
     @Binding var authMode: AuthMode?
+
+    // Set to .library on a successful sign-up.
+    @Binding var currentPage: Page
+
+    @Environment(AuthService.self) private var authService
 
     // Which step of the wizard is showing: 0 = library name, 1 = username,
     // 2 = password + confirm password. A plain Int (rather than an enum)
@@ -256,6 +314,15 @@ struct LibrarySignUpView: View {
     @State private var username: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
+
+    // nil until something goes wrong (password mismatch, or a failed
+    // sign-up); cleared again on the next attempt.
+    @State private var errorMessage: String? = nil
+
+    // Disables "Sign Up" for the duration of a sign-up attempt, so a slow
+    // network can't be worked around by mashing the button into firing
+    // several sign-ups at once.
+    @State private var isSubmitting: Bool = false
 
     var body: some View {
         VStack {
@@ -286,17 +353,27 @@ struct LibrarySignUpView: View {
                     .padding(.horizontal)
             }
 
-            // On the last step this is the actual (still non-functional)
-            // "Sign Up" submit; on earlier steps it just moves forward.
+            if let errorMessage {
+                Text(errorMessage)
+                    .foregroundStyle(.red)
+                    .font(.footnote)
+                    .padding(.horizontal)
+            }
+
+            // On the last step this is the actual "Sign Up" submit; on
+            // earlier steps it just moves forward.
             Button(action: {
                 if step < 2 {
                     step += 1
+                } else {
+                    signUp()
                 }
             }, label: {
                 Text(step < 2 ? "Next" : "Sign Up")
             })
             .buttonStyle(.glassProminent)
             .padding(.top)
+            .disabled(isSubmitting)
 
             // On the first step, "Go Back" leaves the wizard entirely, back
             // to the log in/sign up picker; on later steps it just moves
@@ -309,6 +386,69 @@ struct LibrarySignUpView: View {
                 }
             }, label: {
                 Text("Go Back")
+            })
+            .buttonStyle(.glass)
+        }
+        .padding()
+    }
+
+    // Same fixed-domain trick LibraryLoginView uses, so a username signed
+    // up here can log back in there.
+    private func libraryEmail(for username: String) -> String {
+        "\(username)@fastlit-library.app"
+    }
+
+    private func signUp() {
+        guard password == confirmPassword else {
+            errorMessage = "Passwords don't match."
+            return
+        }
+
+        errorMessage = nil
+        isSubmitting = true
+        Task {
+            do {
+                try await authService.signUp(
+                    email: libraryEmail(for: username),
+                    password: password,
+                    displayName: libraryName
+                )
+                currentPage = .library
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isSubmitting = false
+        }
+    }
+}
+
+// Shown once a library account is signed in — a placeholder for now.
+// Library accounts don't get access to ChooseView/OrientView/ReadView at
+// all; those pages are reader-only, so nothing here leads to them.
+struct LibraryView: View {
+    @Binding var currentPage: Page
+
+    @Environment(AuthService.self) private var authService
+
+    var body: some View {
+        VStack {
+            Text("Library Home")
+                .font(.system(size: 30))
+                .bold()
+                .padding()
+
+            Text("Placeholder — library-facing features go here.")
+                .padding()
+
+            Button(action: {
+                // try? rather than try: sign-out failing here isn't
+                // something the placeholder page needs to react to, and
+                // there's nowhere more useful to send the user than home
+                // regardless of the outcome.
+                try? authService.signOut()
+                currentPage = .home
+            }, label: {
+                Text("Sign Out")
             })
             .buttonStyle(.glass)
         }

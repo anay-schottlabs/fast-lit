@@ -4,10 +4,10 @@ import FirebaseAuth
 
 // Wraps FirebaseAuth so the rest of the app talks to this instead of the
 // Auth SDK directly — one place to change later if the auth approach
-// evolves. Not wired into any login/signup screen yet; that's a separate
-// step. ios_accessibleApp owns the one instance and hands it down via
-// .environment(), so views will eventually read it with
-// @Environment(AuthService.self).
+// evolves. Wired into LibraryLoginView/LibrarySignUpView via
+// @Environment(AuthService.self); ios_accessibleApp owns the one instance
+// and hands it down to every view with .environment(). Reader accounts
+// don't use this yet — they're still six-digit-code placeholders.
 @Observable
 class AuthService {
     // Mirrors Firebase's own signed-in state. nil means signed out.
@@ -38,11 +38,19 @@ class AuthService {
     }
 
     // Creates a brand-new account. Firebase Auth's built-in strategies key
-    // on email, not a plain username — how Library sign-up's "username"
-    // field eventually maps to this is a decision for whenever that screen
-    // itself gets wired up to call this.
-    func signUp(email: String, password: String) async throws {
-        _ = try await Auth.auth().createUser(withEmail: email, password: password)
+    // on email, not a plain username — callers with only a username (like
+    // Library sign-up) build a fixed-domain pseudo-email from it rather
+    // than this class needing to know about that mapping.
+    // displayName is optional since not every caller has one to set (e.g.
+    // Reader sign-up, which asks for a name but nothing else this shares).
+    func signUp(email: String, password: String, displayName: String? = nil) async throws {
+        let result = try await Auth.auth().createUser(withEmail: email, password: password)
+
+        if let displayName {
+            let changeRequest = result.user.createProfileChangeRequest()
+            changeRequest.displayName = displayName
+            try await changeRequest.commitChanges()
+        }
     }
 
     // Signs into an existing email/password account.
