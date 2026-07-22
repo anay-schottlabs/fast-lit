@@ -15,6 +15,11 @@ struct ContentView: View {
     // @State makes SwiftUI track this value and redraw when it changes.
     @State private var currentPage: Page = .home
 
+    // Which content the user picked and accepted, so ReadView knows what to show.
+    // Lives here (not in ChooseView) since it needs to survive past ChooseView
+    // being swapped out for OrientView and then ReadView.
+    @State private var contentToRead: ReadableContent? = nil
+
     // Computed property SwiftUI calls whenever it needs to redraw the screen.
     // "some View" = "returns some type conforming to View, exact type not spelled out."
     var body: some View {
@@ -23,11 +28,15 @@ struct ContentView: View {
         if currentPage == .home {
             HomeView(currentPage: $currentPage)
         } else if currentPage == .choose {
-            ChooseView(currentPage: $currentPage)
+            ChooseView(currentPage: $currentPage, contentToRead: $contentToRead)
         } else if currentPage == .orient {
             OrientView(currentPage: $currentPage)
         } else if currentPage == .read {
-            ReadView()
+            // "if let" only unwraps and shows ReadView once contentToRead is
+            // actually set, which it always is by the time we reach this page.
+            if let contentToRead {
+                ReadView(content: contentToRead)
+            }
         }
     }
 }
@@ -63,6 +72,10 @@ struct HomeView: View {
 // The screen listing sample content to pick from.
 struct ChooseView: View {
     @Binding var currentPage: Page
+
+    // The content the user accepted, reported back up to ContentView so it can
+    // hand it to ReadView once we get there.
+    @Binding var contentToRead: ReadableContent?
 
     // Holds whichever row was tapped, so the .sheet below knows what to show.
     @State private var selectedContent: ReadableContent? = nil
@@ -118,7 +131,8 @@ struct ChooseView: View {
                     // onAccept is a closure we pass in; the detail view calls it
                     // without knowing what it does here on our side.
                     ReadableContentDetailView(content: item, onAccept: {
-                        currentPage = .orient
+                        contentToRead = item // remember what to read...
+                        currentPage = .orient // ...then move on to orienting
                     })
                 }
             }
@@ -174,10 +188,18 @@ struct OrientView: View {
 
 // The actual reading screen — placeholder for now.
 struct ReadView: View {
+    // "let" (not "@Binding") since this view only reads the content, never
+    // changes it — a plain stored property is all that's needed here.
+    let content: ReadableContent
     
-    
+    let currentIndex: Int = 0
+
     var body: some View {
         VStack {
+            // Shows the picked content is actually here; the real RSVP word
+            // display will replace this once that feature is built.
+            Text(content.title)
+                .font(.headline)
             Text("CURRENT WORD")
         }
         .padding()

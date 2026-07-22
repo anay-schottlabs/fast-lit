@@ -622,6 +622,10 @@ export class ChangelogScripts {
                 text([
                     "Split ios_accessible's single body into separate HomeView, ChooseView, OrientView, and",
                     "ReadView structs, each owning just the state and layout it actually needs, for simplicity."
+                ]),
+                text([
+                    "The read screen now actually receives whichever content the user accepted, instead of",
+                    "always showing the same placeholder regardless of what was picked."
                 ])
             ]
         )
