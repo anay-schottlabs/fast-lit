@@ -265,6 +265,13 @@ struct ReadView: View {
         timer = nil
     }
 
+    // Stops playback like pause(), but also rewinds to the first word,
+    // unlike pause() which just freezes wherever playback was.
+    func stop() -> Void {
+        pause()
+        indexNum = 0
+    }
+
     var body: some View {
         VStack {
             // "indexNum + 1" (not indexNum) so the bar reads as "words shown
@@ -329,6 +336,16 @@ struct ReadView: View {
                 })
                 .buttonStyle(.glassProminent)
                 .disabled(isPlaying)
+
+                // Unlike the step buttons, stays enabled while playing — it
+                // needs to be able to interrupt playback, not just adjust
+                // position within it.
+                Button(action: {
+                    stop()
+                }, label: {
+                    Image(systemName: "stop.fill")
+                })
+                .buttonStyle(.glassProminent)
             }
 
             Text("\(wpm) wpm")
