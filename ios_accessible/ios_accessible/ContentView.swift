@@ -243,9 +243,19 @@ struct LibraryLoginView: View {
 struct LibrarySignUpView: View {
     @Binding var authMode: AuthMode?
 
-    @State private var name: String = ""
+    // Which step of the wizard is showing: 0 = library name, 1 = username,
+    // 2 = password + confirm password. A plain Int (rather than an enum)
+    // since it's only ever used as "current step" / "step + 1", and this
+    // view is the only place that needs it.
+    @State private var step: Int = 0
+
+    // "Library" is just a fun way to describe an organization account, so
+    // this step asks for the organization's name, not a person's name —
+    // unlike ReaderSignUpView, which asks "What should we call you?".
+    @State private var libraryName: String = ""
     @State private var username: String = ""
     @State private var password: String = ""
+    @State private var confirmPassword: String = ""
 
     var body: some View {
         VStack {
@@ -254,26 +264,49 @@ struct LibrarySignUpView: View {
                 .bold()
                 .padding()
 
-            TextField("What should we call you?", text: $name)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal)
+            Text("Step \(step + 1) of 3")
+                .foregroundStyle(.secondary)
+                .padding(.bottom)
 
-            TextField("Username", text: $username)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal)
+            if step == 0 {
+                TextField("What's your library called?", text: $libraryName)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal)
+            } else if step == 1 {
+                TextField("Choose a username", text: $username)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal)
+            } else {
+                SecureField("Password", text: $password)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal)
 
-            SecureField("Password", text: $password)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal)
+                SecureField("Confirm Password", text: $confirmPassword)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal)
+            }
 
-            Button(action: {}, label: {
-                Text("Sign Up")
+            // On the last step this is the actual (still non-functional)
+            // "Sign Up" submit; on earlier steps it just moves forward.
+            Button(action: {
+                if step < 2 {
+                    step += 1
+                }
+            }, label: {
+                Text(step < 2 ? "Next" : "Sign Up")
             })
             .buttonStyle(.glassProminent)
             .padding(.top)
 
+            // On the first step, "Go Back" leaves the wizard entirely, back
+            // to the log in/sign up picker; on later steps it just moves
+            // back one step instead.
             Button(action: {
-                authMode = nil
+                if step > 0 {
+                    step -= 1
+                } else {
+                    authMode = nil
+                }
             }, label: {
                 Text("Go Back")
             })
@@ -368,10 +401,16 @@ struct ReaderLoginView: View {
     }
 }
 
-// Signing up for a new reader account. Same six-digit-code field as
-// ReaderLoginView, plus a name — same reasoning as LibrarySignUpView.
+// Signing up for a new reader account, one step at a time: the reader's
+// name, then their library/org code (the same six-digit code
+// ReaderLoginView uses). "Sign Up" still doesn't do anything yet.
 struct ReaderSignUpView: View {
     @Binding var authMode: AuthMode?
+
+    // Which step is showing: 0 = name, 1 = library/org code. Only two steps
+    // here (vs. LibrarySignUpView's three) since readers just need a name
+    // and a code, not a username/password.
+    @State private var step: Int = 0
 
     @State private var name: String = ""
     @State private var code: String = ""
@@ -383,24 +422,45 @@ struct ReaderSignUpView: View {
                 .bold()
                 .padding()
 
-            TextField("What should we call you?", text: $name)
-                .textFieldStyle(.roundedBorder)
-                .padding(.horizontal)
+            Text("Step \(step + 1) of 2")
+                .foregroundStyle(.secondary)
+                .padding(.bottom)
 
-            TextField("6-digit code", text: $code)
-                .textFieldStyle(.roundedBorder)
-                .keyboardType(.numberPad)
-                .multilineTextAlignment(.center)
-                .padding(.horizontal)
+            if step == 0 {
+                TextField("What should we call you?", text: $name)
+                    .textFieldStyle(.roundedBorder)
+                    .padding(.horizontal)
+            } else {
+                // .numberPad brings up a digit-only keyboard, since the
+                // code is always six digits.
+                TextField("Library/Org Code", text: $code)
+                    .textFieldStyle(.roundedBorder)
+                    .keyboardType(.numberPad)
+                    .multilineTextAlignment(.center)
+                    .padding(.horizontal)
+            }
 
-            Button(action: {}, label: {
-                Text("Sign Up")
+            // On the last step this is the actual (still non-functional)
+            // "Sign Up" submit; on the first step it just moves forward.
+            Button(action: {
+                if step < 1 {
+                    step += 1
+                }
+            }, label: {
+                Text(step < 1 ? "Next" : "Sign Up")
             })
             .buttonStyle(.glassProminent)
             .padding(.top)
 
+            // On the first step, "Go Back" leaves the wizard entirely, back
+            // to the log in/sign up picker; on the second step it just
+            // moves back to the first step instead.
             Button(action: {
-                authMode = nil
+                if step > 0 {
+                    step -= 1
+                } else {
+                    authMode = nil
+                }
             }, label: {
                 Text("Go Back")
             })
