@@ -611,7 +611,8 @@ export class ChangelogScripts {
                 text([
                     "Tapping an item on the choose screen now opens its detail view as a modal instead of trying",
                     "to push a new screen, which never worked since the app has no navigation stack."
-                ])
+                ]),
+                "Added short explanatory comments throughout ios_accessible's ContentView.swift for a Swift newcomer, and switched to the more explicit Button(action:label:) form in place of the shorthand initializer."
             ]
         )
     ]

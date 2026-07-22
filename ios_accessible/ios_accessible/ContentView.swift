@@ -1,22 +1,24 @@
-import SwiftUI
+import SwiftUI // brings in Apple's UI framework
 
+// "struct" = value type. ": View" means it must provide a "body" describing its UI.
 struct ContentView: View {
-    
-    // an enum to manage each of the pages on the app
+
+    // enum = a fixed set of named cases; used here as a simple "which page" switch.
     enum Page {
         case home
         case choose
         case orientScreen
         case read
     }
-    
-    // save the current page in a state var
+
+    // @State makes SwiftUI track this value and redraw when it changes.
     @State private var currentPage: Page = .home
 
-    // the content tapped in the list, shown in a modal when non-nil
+    // Optional (the "?") means this can be a ReadableContent OR nil (nothing yet).
+    // nil = no row tapped, so the modal below stays hidden.
     @State private var selectedContent: ReadableContent? = nil
-    
-    // different content to choose from
+
+    // Array literal of sample content, built via ReadableContent's initializer.
     var content: [ReadableContent] = [
         ReadableContent(
             title: "Welcome to Fast Lit",
@@ -44,62 +46,65 @@ struct ContentView: View {
             text: "Most meaningful progress doesn't arrive as a single breakthrough. It arrives as a string of small, unremarkable steps taken consistently over time, long after the initial motivation has faded. The people who improve the most aren't necessarily the most talented; they're the ones who kept showing up on the ordinary days, when nothing exciting was happening and no one was watching. Trust the process, focus on today's step instead of the whole staircase, and let the results accumulate quietly in the background."
         )
     ]
-    
-    var body: some View {
-        VStack {
-            
-            // home page
 
+    // Computed property SwiftUI calls whenever it needs to redraw the screen.
+    // "some View" = "returns some type conforming to View, exact type not spelled out."
+    var body: some View {
+        VStack { // stacks children vertically
+
+            // We manually swap "pages" by comparing the enum with "==".
             if currentPage == Page.home {
-                // title
                 Text("Welcome to Fast Lit.")
-                    .font(.system(size: 30))
+                    .font(.system(size: 30)) // modifiers chain, each wrapping the last
                     .bold()
                     .padding()
-                
-                // subtitle
+
                 Text("You're on the accessible version, made to make reading easy for everyone.")
                     .multilineTextAlignment(.center)
                     .padding()
-                
-                // action button to move to next page
-                Button("Start Reading") {
+
+                // Button(action:label:) spells out both parts: what runs on tap,
+                // and what view is drawn as the button.
+                Button(action: {
                     currentPage = .choose
-                }
+                }, label: {
+                    Text("Start Reading")
+                })
                 .buttonStyle(.glassProminent)
             }
-            
-            // page to choose something to read
-            
+
             else if currentPage == Page.choose {
                 List {
-                    ForEach(content) { text in
-                        Button(text.title) {
-                            selectedContent = text
-                        }
+                    // ForEach loops over content, needing Identifiable (below) to
+                    // track each row. "item" avoids clashing with the Text view type.
+                    ForEach(content) { item in
+                        Button(action: {
+                            selectedContent = item // triggers the .sheet below
+                        }, label: {
+                            Text(item.title)
+                        })
                     }
                 }
-                .sheet(item: $selectedContent) { text in
+                // .sheet(item:) shows a modal whenever the bound value is non-nil,
+                // passing the unwrapped value in. "$" turns @State into a two-way Binding.
+                .sheet(item: $selectedContent) { item in
+                    // NavigationStack lets .navigationTitle/.toolbar below work.
                     NavigationStack {
-                        ReadableContentDetailView(content: text)
+                        ReadableContentDetailView(content: item)
                     }
                 }
 
-                Button("Go Back") {
+                Button(action: {
                     currentPage = .home
-                }
+                }, label: {
+                    Text("Go Back")
+                })
                 .buttonStyle(.glassProminent)
             }
-            
-            // an intermediary page to make sure that the screen is in landscape
-            // this makes sure that viewing is easy
-            
+
             else if currentPage == Page.orientScreen {
             }
-            
-            // the page with the reader
-            // that lets the user actually read the content they selected
-            
+
             else if currentPage == Page.read {
             }
         }
@@ -107,12 +112,15 @@ struct ContentView: View {
     }
 }
 
+// Shown inside the modal sheet for whichever content was tapped.
 struct ReadableContentDetailView: View {
-    let content: ReadableContent
+    let content: ReadableContent // fixed for this view's lifetime
+
+    // @Environment reads a value the system provides; \.dismiss closes this sheet.
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ScrollView {
+        ScrollView { // lets long passages scroll
             VStack(alignment: .leading, spacing: 16) {
                 Text(content.description)
                     .foregroundStyle(.secondary)
@@ -123,22 +131,27 @@ struct ReadableContentDetailView: View {
         .navigationTitle(content.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
+            // .cancellationAction is the standard "close this screen" spot.
             ToolbarItem(placement: .cancellationAction) {
-                Button("Done") {
+                Button(action: {
                     dismiss()
-                }
+                }, label: {
+                    Text("Done")
+                })
             }
         }
     }
 }
 
+// Identifiable requires an "id" so List/ForEach/.sheet(item:) can tell rows apart.
 struct ReadableContent: Identifiable {
-    let id = UUID()
+    let id = UUID() // random unique value, fixed per instance
     let title: String
     let description: String
     let text: String
 }
 
+// #Preview drives Xcode's live canvas preview.
 #Preview {
     ContentView()
 }
