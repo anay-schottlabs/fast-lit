@@ -1,4 +1,5 @@
 import SwiftUI // brings in Apple's UI framework
+import FirebaseCore
 
 // enum = a fixed set of named cases; used here as a simple "which page" switch.
 enum Page {
@@ -1006,7 +1007,27 @@ struct ReadableContent: Identifiable {
     ]
 }
 
+// Unlike the real app, #Preview below instantiates ContentView() directly
+// rather than going through ios_accessibleApp's WindowGroup — so neither
+// FirebaseApp.configure() nor .environment(authService) has happened yet
+// by the time it runs, and any view reading @Environment(AuthService.self)
+// (e.g. LibraryLoginView) would otherwise crash. Pulled out into its own
+// plain function (rather than inline in the #Preview closure) since a
+// ViewBuilder closure mixing a bare "if" with view-building expressions
+// hits a Swift compiler bug ("failed to produce diagnostic for
+// expression") — a plain function has no such restriction. The
+// FirebaseApp.app() == nil guard is for Xcode's preview host process
+// reusing state across a live preview's recompiles, which would otherwise
+// risk configuring twice (which crashes on its own).
+private func previewAuthService() -> AuthService {
+    if FirebaseApp.app() == nil {
+        FirebaseApp.configure()
+    }
+    return AuthService()
+}
+
 // #Preview drives Xcode's live canvas preview.
 #Preview {
     ContentView()
+        .environment(previewAuthService())
 }
