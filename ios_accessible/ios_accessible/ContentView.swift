@@ -90,7 +90,11 @@ struct ContentView: View {
                 .sheet(item: $selectedContent) { item in
                     // NavigationStack lets .navigationTitle/.toolbar below work.
                     NavigationStack {
-                        ReadableContentDetailView(content: item)
+                        // onAccept is a closure we pass in; the detail view calls it
+                        // without knowing what it does here on our side.
+                        ReadableContentDetailView(content: item, onAccept: {
+                            currentPage = .orientScreen
+                        })
                     }
                 }
 
@@ -116,6 +120,10 @@ struct ContentView: View {
 struct ReadableContentDetailView: View {
     let content: ReadableContent // fixed for this view's lifetime
 
+    // "() -> Void" is a closure type: a function taking no arguments, returning
+    // nothing. The caller (ContentView) decides what this actually does.
+    let onAccept: () -> Void
+
     // @Environment reads a value the system provides; \.dismiss closes this sheet.
     @Environment(\.dismiss) private var dismiss
 
@@ -131,12 +139,21 @@ struct ReadableContentDetailView: View {
         .navigationTitle(content.title)
         .navigationBarTitleDisplayMode(.inline)
         .toolbar {
-            // .cancellationAction is the standard "close this screen" spot.
+            // .cancellationAction is the standard "close this screen" spot (left side).
             ToolbarItem(placement: .cancellationAction) {
                 Button(action: {
                     dismiss()
                 }, label: {
                     Text("Done")
+                })
+            }
+            // .confirmationAction is the standard "confirm/accept" spot (right side).
+            ToolbarItem(placement: .confirmationAction) {
+                Button(action: {
+                    onAccept() // tell ContentView to move to the orient screen
+                    dismiss() // then close this sheet
+                }, label: {
+                    Text("Accept")
                 })
             }
         }
