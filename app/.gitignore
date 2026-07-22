@@ -30,6 +30,24 @@ coverage
 
 .eslintcache
 
+# Environment variables / secrets — *.local above already catches Vite's
+# .env.local convention, but not a plain .env or .env.production etc.
+.env
+.env.*
+!.env.example
+
+# Firebase Admin SDK service account keys, if server-side/Functions code
+# gets added later — unlike the client config in src/firebase, these grant
+# full admin access and must never be committed.
+*serviceAccountKey*.json
+*service-account*.json
+
+# Firebase Local Emulator Suite, if it gets used later
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log
+
 # Cypress
 /cypress/videos/
 /cypress/screenshots/

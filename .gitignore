@@ -1,0 +1,36 @@
+# Repo-wide safety net. app/, ios_accessible/, and extension/ each have (or
+# should have) their own .gitignore for project-specific build artifacts —
+# this file only covers things that could land anywhere in the repo:
+# OS cruft, editor state, and anything that looks like a secret.
+
+# macOS
+.DS_Store
+
+# Editor/IDE
+.vscode/
+.idea/
+
+# Environment variables / secrets, wherever they show up
+.env
+.env.*
+!.env.example
+
+# Private keys, certs, and other credential files
+*.pem
+*.key
+*.p8
+*.p12
+*.pfx
+*.keystore
+*.jks
+*serviceAccountKey*.json
+*service-account*.json
+GoogleService-Info.plist
+GoogleService-Info-*.plist
+google-services.json
+
+# Firebase Local Emulator Suite
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log

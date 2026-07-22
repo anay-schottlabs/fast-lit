@@ -20,4 +20,21 @@ Package.pins
 Package.resolved
 *.xcodeproj/project.xcworkspace/xcshareddata/swiftpm
 
+# Firebase — this is project/environment-specific config (API keys, app IDs),
+# not something that should be duplicated in version control. Each developer
+# or build environment should drop their own copy in place locally instead.
+GoogleService-Info.plist
+GoogleService-Info-*.plist
+google-services.json
+
+# APNs auth key, if push notifications (e.g. via Firebase Cloud Messaging)
+# get added later — grants push-sending privileges for the whole account.
+*.p8
+
+# Firebase Local Emulator Suite, if it gets used later
+.firebase/
+firebase-debug.log
+firebase-debug.*.log
+ui-debug.log
+
 .DS_Store
