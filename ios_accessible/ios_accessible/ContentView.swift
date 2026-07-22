@@ -16,6 +16,15 @@ enum AccountType {
     case reader
 }
 
+// Whether the user wants to log into an existing account or create a new
+// one — chosen on each account type's screen before its actual form shows.
+// Kept separate from AccountType since sign up asks for a name that log in
+// doesn't need, so the two need different fields, not just different titles.
+enum AuthMode {
+    case login
+    case signUp
+}
+
 // "struct" = value type. ": View" means it must provide a "body" describing its UI.
 // This view just decides which page to show; each page's own UI lives in its
 // own struct below, for simplicity.
@@ -147,19 +156,69 @@ struct AccountView: View {
     }
 }
 
-// Library accounts log in with a username and password. Nothing happens yet
-// when "Log In" or "Sign Up" is tapped — these are just empty fields for now.
+// Lets the user choose whether to log into an existing library account or
+// sign up for a new one, then shows that specific form. Library accounts
+// use a username and password either way.
 struct LibraryAccountView: View {
     // @Binding (not "let") so "Go Back" below can clear it, returning to
     // AccountView's picker the same way it got here.
     @Binding var accountType: AccountType?
+
+    // nil until the user picks log in or sign up below; once set, that
+    // form replaces this picker.
+    @State private var authMode: AuthMode? = nil
+
+    var body: some View {
+        if authMode == .login {
+            LibraryLoginView(authMode: $authMode)
+        } else if authMode == .signUp {
+            LibrarySignUpView(authMode: $authMode)
+        } else {
+            VStack {
+                Text("Library Account")
+                    .font(.system(size: 24))
+                    .bold()
+                    .padding()
+
+                Button(action: {
+                    authMode = .login
+                }, label: {
+                    Text("Log In")
+                })
+                .buttonStyle(.glassProminent)
+
+                Button(action: {
+                    authMode = .signUp
+                }, label: {
+                    Text("Sign Up")
+                })
+                .buttonStyle(.glassProminent)
+
+                Button(action: {
+                    accountType = nil
+                }, label: {
+                    Text("Go Back")
+                })
+                .buttonStyle(.glass)
+            }
+            .padding()
+        }
+    }
+}
+
+// Logging into an existing library account. Doesn't do anything yet when
+// "Log In" is tapped — just the empty fields for now.
+struct LibraryLoginView: View {
+    // @Binding so "Go Back" can clear it, returning to LibraryAccountView's
+    // log in/sign up picker.
+    @Binding var authMode: AuthMode?
 
     @State private var username: String = ""
     @State private var password: String = ""
 
     var body: some View {
         VStack {
-            Text("Library Account")
+            Text("Library Log In")
                 .font(.system(size: 24))
                 .bold()
                 .padding()
@@ -180,13 +239,8 @@ struct LibraryAccountView: View {
             .buttonStyle(.glassProminent)
             .padding(.top)
 
-            Button(action: {}, label: {
-                Text("Sign Up")
-            })
-            .buttonStyle(.glass)
-
             Button(action: {
-                accountType = nil
+                authMode = nil
             }, label: {
                 Text("Go Back")
             })
@@ -196,16 +250,109 @@ struct LibraryAccountView: View {
     }
 }
 
-// Reader accounts just need a six-digit code — no username/password. Like
-// LibraryAccountView, "Log In"/"Sign Up" don't do anything yet.
+// Signing up for a new library account. Same fields as LibraryLoginView,
+// plus a name, since sign up (unlike log in) is creating a new person's
+// account rather than authenticating one that already exists. "Sign Up"
+// doesn't do anything yet, same as everywhere else in this flow.
+struct LibrarySignUpView: View {
+    @Binding var authMode: AuthMode?
+
+    @State private var name: String = ""
+    @State private var username: String = ""
+    @State private var password: String = ""
+
+    var body: some View {
+        VStack {
+            Text("Library Sign Up")
+                .font(.system(size: 24))
+                .bold()
+                .padding()
+
+            TextField("What should we call you?", text: $name)
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal)
+
+            TextField("Username", text: $username)
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal)
+
+            SecureField("Password", text: $password)
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal)
+
+            Button(action: {}, label: {
+                Text("Sign Up")
+            })
+            .buttonStyle(.glassProminent)
+            .padding(.top)
+
+            Button(action: {
+                authMode = nil
+            }, label: {
+                Text("Go Back")
+            })
+            .buttonStyle(.glass)
+        }
+        .padding()
+    }
+}
+
+// Lets the user choose whether to log into an existing reader account or
+// sign up for a new one, then shows that specific form. Reader accounts
+// use a six-digit code either way, instead of a username/password.
 struct ReaderAccountView: View {
     @Binding var accountType: AccountType?
+
+    @State private var authMode: AuthMode? = nil
+
+    var body: some View {
+        if authMode == .login {
+            ReaderLoginView(authMode: $authMode)
+        } else if authMode == .signUp {
+            ReaderSignUpView(authMode: $authMode)
+        } else {
+            VStack {
+                Text("Reader Account")
+                    .font(.system(size: 24))
+                    .bold()
+                    .padding()
+
+                Button(action: {
+                    authMode = .login
+                }, label: {
+                    Text("Log In")
+                })
+                .buttonStyle(.glassProminent)
+
+                Button(action: {
+                    authMode = .signUp
+                }, label: {
+                    Text("Sign Up")
+                })
+                .buttonStyle(.glassProminent)
+
+                Button(action: {
+                    accountType = nil
+                }, label: {
+                    Text("Go Back")
+                })
+                .buttonStyle(.glass)
+            }
+            .padding()
+        }
+    }
+}
+
+// Logging into an existing reader account. Doesn't do anything yet when
+// "Log In" is tapped — just the empty field for now.
+struct ReaderLoginView: View {
+    @Binding var authMode: AuthMode?
 
     @State private var code: String = ""
 
     var body: some View {
         VStack {
-            Text("Reader Account")
+            Text("Reader Log In")
                 .font(.system(size: 24))
                 .bold()
                 .padding()
@@ -224,13 +371,50 @@ struct ReaderAccountView: View {
             .buttonStyle(.glassProminent)
             .padding(.top)
 
+            Button(action: {
+                authMode = nil
+            }, label: {
+                Text("Go Back")
+            })
+            .buttonStyle(.glass)
+        }
+        .padding()
+    }
+}
+
+// Signing up for a new reader account. Same six-digit-code field as
+// ReaderLoginView, plus a name — same reasoning as LibrarySignUpView.
+struct ReaderSignUpView: View {
+    @Binding var authMode: AuthMode?
+
+    @State private var name: String = ""
+    @State private var code: String = ""
+
+    var body: some View {
+        VStack {
+            Text("Reader Sign Up")
+                .font(.system(size: 24))
+                .bold()
+                .padding()
+
+            TextField("What should we call you?", text: $name)
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal)
+
+            TextField("6-digit code", text: $code)
+                .textFieldStyle(.roundedBorder)
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
             Button(action: {}, label: {
                 Text("Sign Up")
             })
-            .buttonStyle(.glass)
+            .buttonStyle(.glassProminent)
+            .padding(.top)
 
             Button(action: {
-                accountType = nil
+                authMode = nil
             }, label: {
                 Text("Go Back")
             })
