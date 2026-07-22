@@ -12,6 +12,9 @@ struct ContentView: View {
     
     // save the current page in a state var
     @State private var currentPage: Page = .home
+
+    // the content tapped in the list, shown in a modal when non-nil
+    @State private var selectedContent: ReadableContent? = nil
     
     // different content to choose from
     var content: [ReadableContent] = [
@@ -71,12 +74,17 @@ struct ContentView: View {
             else if currentPage == Page.choose {
                 List {
                     ForEach(content) { text in
-                        NavigationLink(text.title) {
-                            ReadableContentDetailView()
+                        Button(text.title) {
+                            selectedContent = text
                         }
                     }
                 }
-                
+                .sheet(item: $selectedContent) { text in
+                    NavigationStack {
+                        ReadableContentDetailView(content: text)
+                    }
+                }
+
                 Button("Go Back") {
                     currentPage = .home
                 }
@@ -100,10 +108,27 @@ struct ContentView: View {
 }
 
 struct ReadableContentDetailView: View {
+    let content: ReadableContent
+    @Environment(\.dismiss) private var dismiss
+
     var body: some View {
-        Text("Hello, World!")
-            .font(.title)
-            .navigationTitle("ABCDEFG")
+        ScrollView {
+            VStack(alignment: .leading, spacing: 16) {
+                Text(content.description)
+                    .foregroundStyle(.secondary)
+                Text(content.text)
+            }
+            .padding()
+        }
+        .navigationTitle(content.title)
+        .navigationBarTitleDisplayMode(.inline)
+        .toolbar {
+            ToolbarItem(placement: .cancellationAction) {
+                Button("Done") {
+                    dismiss()
+                }
+            }
+        }
     }
 }
 
