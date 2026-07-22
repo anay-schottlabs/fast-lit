@@ -615,9 +615,9 @@ export class ChangelogScripts {
                 "Added short explanatory comments throughout ios_accessible's ContentView.swift for a Swift newcomer, and switched to the more explicit Button(action:label:) form in place of the shorthand initializer.",
                 "Added an Accept button to the content detail modal's top-right toolbar, which moves the app on to the orient-screen step.",
                 text([
-                    "Fixed the orient screen never advancing to the read screen after rotating to landscape:",
-                    "iOS doesn't track device orientation changes unless you explicitly turn on orientation",
-                    "notifications, and the previous check only ran once when the screen first appeared."
+                    "Fixed the orient screen never advancing to the read screen, including the case where the",
+                    "device was already in landscape on arrival. Detection now reads the screen's actual current",
+                    "size instead of the device's orientation sensor, which was unreliable right as the screen appeared."
                 ])
             ]
         )

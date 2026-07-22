@@ -47,8 +47,6 @@ struct ContentView: View {
         )
     ]
     
-    @State private var orientation = UIDevice.current.orientation
-
     // Computed property SwiftUI calls whenever it needs to redraw the screen.
     // "some View" = "returns some type conforming to View, exact type not spelled out."
     var body: some View {
@@ -109,31 +107,38 @@ struct ContentView: View {
             }
 
             else if currentPage == Page.orient {
-                Text("You're in portrait mode, rotate your device into landscape.")
-                    // iOS doesn't track orientation changes by default (battery
-                    // saving); this switches tracking on while this page is shown.
-                    .onAppear {
-                        UIDevice.current.beginGeneratingDeviceOrientationNotifications()
-                        orientation = UIDevice.current.orientation // check right away
-                        if orientation.isLandscape {
-                            currentPage = .read
+                // GeometryReader hands us this view's actual current size, which is
+                // correct immediately (even on first appearance) and updates the
+                // instant the view is redrawn after a rotation. This sidesteps
+                // UIDevice.current.orientation, whose sensor reading can still be
+                // stale or .unknown right when a screen first appears, which is
+                // exactly why starting already in landscape didn't work before.
+                GeometryReader { geometry in
+                    Text("You're in portrait mode, rotate your device into landscape.")
+                        // width > height means landscape; check as soon as we appear...
+                        .onAppear {
+                            if geometry.size.width > geometry.size.height {
+                                currentPage = .read
+                            }
                         }
-                    }
-                    .onDisappear {
-                        UIDevice.current.endGeneratingDeviceOrientationNotifications()
-                    }
-                    // .onReceive runs every time this notification fires (unlike
-                    // .onAppear, which only runs once), so rotating after arriving
-                    // on this page is what actually gets caught here.
-                    .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
-                        orientation = UIDevice.current.orientation
-                        if orientation.isLandscape {
-                            currentPage = .read
+                        // ...and again every time the size changes (i.e. every rotation).
+                        .onChange(of: geometry.size) { _, newSize in
+                            if newSize.width > newSize.height {
+                                currentPage = .read
+                            }
                         }
-                    }
+                }
+
+                Button(action: {
+                    currentPage = .choose
+                }, label: {
+                    Text("Go Back")
+                })
+                .buttonStyle(.glassProminent)
             }
             
             else if currentPage == Page.read {
+                Text("CURRENT WORD")
             }
         }
         .padding()
