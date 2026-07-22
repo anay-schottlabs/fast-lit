@@ -1,28 +1,34 @@
 import SwiftUI
 import FirebaseCore
 
-// The App protocol has no launch hook of its own, so this bridges in the
-// old UIKit AppDelegate lifecycle just to get one — FirebaseApp.configure()
-// has to run once, before anything touches Firebase, and this is where the
-// Firebase docs say to put it.
-class AppDelegate: NSObject, UIApplicationDelegate {
-    func application(_ application: UIApplication,
-                      didFinishLaunchingWithOptions launchOptions: [UIApplication.LaunchOptionsKey: Any]? = nil) -> Bool {
-        FirebaseApp.configure()
-
-        return true
-    }
-}
-
 @main
 struct ios_accessibleApp: App {
-    // Registers AppDelegate above so its didFinishLaunchingWithOptions
-    // actually runs as part of this SwiftUI app's launch.
-    @UIApplicationDelegateAdaptor(AppDelegate.self) var delegate
+    // Owns the one AuthService for the app's lifetime; handed down to every
+    // view via .environment so nothing has to create its own instance. Not
+    // read anywhere yet — that's for whenever the login/signup screens get
+    // wired up to it.
+    @State private var authService: AuthService
+
+    // A custom init (rather than a plain "= AuthService()" default above)
+    // so FirebaseApp.configure() is guaranteed to run before AuthService's
+    // own init, which touches Auth.auth() and crashes if Firebase isn't
+    // configured yet. This isn't hypothetical: an AppDelegate +
+    // @UIApplicationDelegateAdaptor calling configure() from
+    // didFinishLaunchingWithOptions (the usual Firebase-docs pattern) was
+    // tried first, but this struct's own @State default value ran before
+    // that delegate callback fired — so the ordering between a property
+    // wrapper's default and an adapted UIKit delegate method isn't
+    // something to rely on. A custom init sidesteps the question entirely:
+    // its statements just run in the order written.
+    init() {
+        FirebaseApp.configure()
+        _authService = State(initialValue: AuthService())
+    }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
+                .environment(authService)
         }
     }
 }

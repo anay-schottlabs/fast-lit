@@ -18,8 +18,6 @@
 /* Begin PBXFileSystemSynchronizedRootGroup section */
 		0B9A6E6B30105B6000C0B264 /* ios_accessible */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-			);
 			path = ios_accessible;
 			sourceTree = "<group>";
 		};
