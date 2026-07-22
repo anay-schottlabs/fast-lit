@@ -1,24 +1,73 @@
 import SwiftUI // brings in Apple's UI framework
 
+// enum = a fixed set of named cases; used here as a simple "which page" switch.
+enum Page {
+    case home
+    case choose
+    case orient
+    case read
+}
+
 // "struct" = value type. ": View" means it must provide a "body" describing its UI.
+// This view just decides which page to show; each page's own UI lives in its
+// own struct below, for simplicity.
 struct ContentView: View {
-
-    // enum = a fixed set of named cases; used here as a simple "which page" switch.
-    enum Page {
-        case home
-        case choose
-        case orient
-        case read
-    }
-
     // @State makes SwiftUI track this value and redraw when it changes.
     @State private var currentPage: Page = .home
 
-    // Optional (the "?") means this can be a ReadableContent OR nil (nothing yet).
-    // nil = no row tapped, so the modal below stays hidden.
+    // Computed property SwiftUI calls whenever it needs to redraw the screen.
+    // "some View" = "returns some type conforming to View, exact type not spelled out."
+    var body: some View {
+        // We manually swap "pages" by comparing the enum with "==". Each branch
+        // hands the $currentPage binding down so that page can change it.
+        if currentPage == .home {
+            HomeView(currentPage: $currentPage)
+        } else if currentPage == .choose {
+            ChooseView(currentPage: $currentPage)
+        } else if currentPage == .orient {
+            OrientView(currentPage: $currentPage)
+        } else if currentPage == .read {
+            ReadView()
+        }
+    }
+}
+
+// The first screen shown when the app launches.
+struct HomeView: View {
+    // @Binding links to a @State var owned by a parent view (ContentView's
+    // currentPage), so changing it here updates the parent's value too.
+    @Binding var currentPage: Page
+
+    var body: some View {
+        VStack {
+            Text("Welcome to Fast Lit.")
+                .font(.system(size: 30))
+                .bold()
+                .padding()
+
+            Text("You're on the accessible version, made to make reading easy for everyone.")
+                .multilineTextAlignment(.center)
+                .padding()
+
+            Button(action: {
+                currentPage = .choose
+            }, label: {
+                Text("Start Reading")
+            })
+            .buttonStyle(.glassProminent)
+        }
+        .padding()
+    }
+}
+
+// The screen listing sample content to pick from.
+struct ChooseView: View {
+    @Binding var currentPage: Page
+
+    // Holds whichever row was tapped, so the .sheet below knows what to show.
     @State private var selectedContent: ReadableContent? = nil
 
-    // Array literal of sample content, built via ReadableContent's initializer.
+    // Sample content — only needed here, since this is the only screen that uses it.
     var content: [ReadableContent] = [
         ReadableContent(
             title: "Welcome to Fast Lit",
@@ -46,100 +95,90 @@ struct ContentView: View {
             text: "Most meaningful progress doesn't arrive as a single breakthrough. It arrives as a string of small, unremarkable steps taken consistently over time, long after the initial motivation has faded. The people who improve the most aren't necessarily the most talented; they're the ones who kept showing up on the ordinary days, when nothing exciting was happening and no one was watching. Trust the process, focus on today's step instead of the whole staircase, and let the results accumulate quietly in the background."
         )
     ]
-    
-    // Computed property SwiftUI calls whenever it needs to redraw the screen.
-    // "some View" = "returns some type conforming to View, exact type not spelled out."
+
     var body: some View {
-        VStack { // stacks children vertically
-
-            // We manually swap "pages" by comparing the enum with "==".
-            if currentPage == Page.home {
-                Text("Welcome to Fast Lit.")
-                    .font(.system(size: 30)) // modifiers chain, each wrapping the last
-                    .bold()
-                    .padding()
-
-                Text("You're on the accessible version, made to make reading easy for everyone.")
-                    .multilineTextAlignment(.center)
-                    .padding()
-
-                // Button(action:label:) spells out both parts: what runs on tap,
-                // and what view is drawn as the button.
-                Button(action: {
-                    currentPage = .choose
-                }, label: {
-                    Text("Start Reading")
-                })
-                .buttonStyle(.glassProminent)
+        VStack {
+            List {
+                // ForEach loops over content, needing Identifiable (in ReadableContent)
+                // to track each row. "item" avoids clashing with the Text view type.
+                ForEach(content) { item in
+                    Button(action: {
+                        selectedContent = item // triggers the .sheet below
+                    }, label: {
+                        Text(item.title)
+                    })
+                }
+            }
+            // .sheet(item:) shows a modal whenever the bound value is non-nil,
+            // passing the unwrapped value in. "$" turns @State into a two-way Binding.
+            .sheet(item: $selectedContent) { item in
+                // NavigationStack lets .navigationTitle/.toolbar inside the detail
+                // view work.
+                NavigationStack {
+                    // onAccept is a closure we pass in; the detail view calls it
+                    // without knowing what it does here on our side.
+                    ReadableContentDetailView(content: item, onAccept: {
+                        currentPage = .orient
+                    })
+                }
             }
 
-            else if currentPage == Page.choose {
-                List {
-                    // ForEach loops over content, needing Identifiable (below) to
-                    // track each row. "item" avoids clashing with the Text view type.
-                    ForEach(content) { item in
-                        Button(action: {
-                            selectedContent = item // triggers the .sheet below
-                        }, label: {
-                            Text(item.title)
-                        })
-                    }
-                }
-                // .sheet(item:) shows a modal whenever the bound value is non-nil,
-                // passing the unwrapped value in. "$" turns @State into a two-way Binding.
-                .sheet(item: $selectedContent) { item in
-                    // NavigationStack lets .navigationTitle/.toolbar below work.
-                    NavigationStack {
-                        // onAccept is a closure we pass in; the detail view calls it
-                        // without knowing what it does here on our side.
-                        ReadableContentDetailView(content: item, onAccept: {
-                            currentPage = .orient
-                        })
-                    }
-                }
+            Button(action: {
+                currentPage = .home
+            }, label: {
+                Text("Go Back")
+            })
+            .buttonStyle(.glassProminent)
+        }
+        .padding()
+    }
+}
 
-                Button(action: {
-                    currentPage = .home
-                }, label: {
-                    Text("Go Back")
-                })
-                .buttonStyle(.glassProminent)
-            }
+// Intermediary screen: makes sure the device is in landscape before reading.
+struct OrientView: View {
+    @Binding var currentPage: Page
 
-            else if currentPage == Page.orient {
-                // GeometryReader hands us this view's actual current size, which is
-                // correct immediately (even on first appearance) and updates the
-                // instant the view is redrawn after a rotation. This sidesteps
-                // UIDevice.current.orientation, whose sensor reading can still be
-                // stale or .unknown right when a screen first appears, which is
-                // exactly why starting already in landscape didn't work before.
-                GeometryReader { geometry in
-                    Text("You're in portrait mode, rotate your device into landscape.")
-                        // width > height means landscape; check as soon as we appear...
-                        .onAppear {
-                            if geometry.size.width > geometry.size.height {
-                                currentPage = .read
-                            }
+    var body: some View {
+        VStack {
+            // GeometryReader hands us this view's actual current size, which is
+            // correct immediately (even on first appearance) and updates the
+            // instant the view is redrawn after a rotation. This sidesteps
+            // UIDevice.current.orientation, whose sensor reading can be stale
+            // or .unknown right when a screen first appears.
+            GeometryReader { geometry in
+                Text("You're in portrait mode, rotate your device into landscape.")
+                    // width > height means landscape; check as soon as we appear...
+                    .onAppear {
+                        if geometry.size.width > geometry.size.height {
+                            currentPage = .read
                         }
-                        // ...and again every time the size changes (i.e. every rotation).
-                        .onChange(of: geometry.size) { _, newSize in
-                            if newSize.width > newSize.height {
-                                currentPage = .read
-                            }
+                    }
+                    // ...and again every time the size changes (i.e. every rotation).
+                    .onChange(of: geometry.size) { _, newSize in
+                        if newSize.width > newSize.height {
+                            currentPage = .read
                         }
-                }
+                    }
+            }
 
-                Button(action: {
-                    currentPage = .choose
-                }, label: {
-                    Text("Go Back")
-                })
-                .buttonStyle(.glassProminent)
-            }
-            
-            else if currentPage == Page.read {
-                Text("CURRENT WORD")
-            }
+            Button(action: {
+                currentPage = .choose
+            }, label: {
+                Text("Go Back")
+            })
+            .buttonStyle(.glassProminent)
+        }
+        .padding()
+    }
+}
+
+// The actual reading screen — placeholder for now.
+struct ReadView: View {
+    
+    
+    var body: some View {
+        VStack {
+            Text("CURRENT WORD")
         }
         .padding()
     }
@@ -150,7 +189,7 @@ struct ReadableContentDetailView: View {
     let content: ReadableContent // fixed for this view's lifetime
 
     // "() -> Void" is a closure type: a function taking no arguments, returning
-    // nothing. The caller (ContentView) decides what this actually does.
+    // nothing. The caller (ChooseView) decides what this actually does.
     let onAccept: () -> Void
 
     // @Environment reads a value the system provides; \.dismiss closes this sheet.
@@ -179,7 +218,7 @@ struct ReadableContentDetailView: View {
             // .confirmationAction is the standard "confirm/accept" spot (right side).
             ToolbarItem(placement: .confirmationAction) {
                 Button(action: {
-                    onAccept() // tell ContentView to move to the orient screen
+                    onAccept() // tell ChooseView to move to the orient screen
                     dismiss() // then close this sheet
                 }, label: {
                     Text("Accept")

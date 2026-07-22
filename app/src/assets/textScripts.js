@@ -618,6 +618,10 @@ export class ChangelogScripts {
                     "Fixed the orient screen never advancing to the read screen, including the case where the",
                     "device was already in landscape on arrival. Detection now reads the screen's actual current",
                     "size instead of the device's orientation sensor, which was unreliable right as the screen appeared."
+                ]),
+                text([
+                    "Split ios_accessible's single body into separate HomeView, ChooseView, OrientView, and",
+                    "ReadView structs, each owning just the state and layout it actually needs, for simplicity."
                 ])
             ]
         )
