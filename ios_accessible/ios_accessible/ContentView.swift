@@ -71,10 +71,16 @@ struct ContentView: View {
             else if currentPage == Page.choose {
                 List {
                     ForEach(content) { text in
-                        Text(text.title)
+                        NavigationLink(text.title) {
+                            ReadableContentDetailView()
+                        }
                     }
                 }
                 
+                Button("Go Back") {
+                    currentPage = .home
+                }
+                .buttonStyle(.glassProminent)
             }
             
             // an intermediary page to make sure that the screen is in landscape
@@ -90,6 +96,14 @@ struct ContentView: View {
             }
         }
         .padding()
+    }
+}
+
+struct ReadableContentDetailView: View {
+    var body: some View {
+        Text("Hello, World!")
+            .font(.title)
+            .navigationTitle("ABCDEFG")
     }
 }
 
