@@ -43,7 +43,7 @@ struct ContentView: View {
         // We manually swap "pages" by comparing the enum with "==". Each branch
         // hands the $currentPage binding down so that page can change it.
         if currentPage == .home {
-            HomeView(currentPage: $currentPage, contentToRead: $contentToRead)
+            HomeView(currentPage: $currentPage)
         } else if currentPage == .choose {
             ChooseView(currentPage: $currentPage, contentToRead: $contentToRead)
         } else if currentPage == .orient {
@@ -66,10 +66,6 @@ struct HomeView: View {
     // currentPage), so changing it here updates the parent's value too.
     @Binding var currentPage: Page
 
-    // Needed so the dev button below can set this directly, the same way
-    // ChooseView normally does after a user picks and accepts something.
-    @Binding var contentToRead: ReadableContent?
-
     var body: some View {
         VStack {
             Text("Welcome to Fast Lit.")
@@ -89,16 +85,6 @@ struct HomeView: View {
                 Text("Log In / Sign Up")
             })
             .buttonStyle(.glassProminent)
-
-            // Skips ChooseView and OrientView entirely — for quickly getting
-            // back to ReadView while testing, not part of the normal flow.
-            Button(action: {
-                contentToRead = ReadableContent.samples.first
-                currentPage = .read
-            }, label: {
-                Text("Dev: Skip to Read")
-            })
-            .buttonStyle(.glass)
         }
         .padding()
     }
