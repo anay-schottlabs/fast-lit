@@ -254,6 +254,12 @@ struct ReadView: View {
 
     var body: some View {
         VStack {
+            // "indexNum + 1" (not indexNum) so the bar reads as "words shown
+            // so far out of the total" — it starts at a sliver of progress
+            // on the very first word, rather than at empty.
+            ProgressView(value: Double(indexNum + 1), total: Double(words.count))
+                .padding(.horizontal)
+
             Text(words[indexNum])
 
             // Side-by-side left/right buttons to step through words one at a time.
