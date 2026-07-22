@@ -367,6 +367,9 @@ struct LibrarySignUpView: View {
                     .textInputAutocapitalization(.never)
                     .onChange(of: username) { _, newValue in
                         username = sanitizedUsername(newValue)
+                        // Clears a stale "already taken" error left over
+                        // from a previous username typed on this step.
+                        errorMessage = nil
                     }
             } else {
                 SecureField("Password", text: $password)
@@ -385,10 +388,14 @@ struct LibrarySignUpView: View {
                     .padding(.horizontal)
             }
 
-            // On the last step this is the actual "Sign Up" submit; on
-            // earlier steps it just moves forward.
+            // On the last step this is the actual "Sign Up" submit. Leaving
+            // the username step (1) needs a network check first — see
+            // advancePastUsernameStep() — so it can't just increment step
+            // the way leaving step 0 does.
             Button(action: {
-                if step < 2 {
+                if step == 1 {
+                    advancePastUsernameStep()
+                } else if step < 2 {
                     step += 1
                 } else {
                     signUp()
@@ -423,6 +430,30 @@ struct LibrarySignUpView: View {
         "\(username)@fastlit-library.app"
     }
 
+    // Only advances from the username step (1) to the password step (2)
+    // once a check against Firestore's libraryUsernames registry confirms
+    // the username isn't already taken — the whole point being that no one
+    // should even reach the password step for a username that can't be
+    // signed up with. (See AuthService.isUsernameTaken for why this goes
+    // through Firestore rather than asking Firebase Auth directly.)
+    private func advancePastUsernameStep() {
+        errorMessage = nil
+        isSubmitting = true
+        Task {
+            do {
+                let taken = try await authService.isUsernameTaken(username)
+                if taken {
+                    errorMessage = "That username is already taken."
+                } else {
+                    step += 1
+                }
+            } catch {
+                errorMessage = error.localizedDescription
+            }
+            isSubmitting = false
+        }
+    }
+
     private func signUp() {
         guard password == confirmPassword else {
             errorMessage = "Passwords don't match."
@@ -438,6 +469,13 @@ struct LibrarySignUpView: View {
                     password: password,
                     displayName: libraryName
                 )
+                // Best-effort: the Auth account above is what actually
+                // makes this account real, and is already created by this
+                // point — a network blip here shouldn't undo that or block
+                // this person from continuing, it would just mean the
+                // registry is briefly out of date for the next person's
+                // "is this taken" check.
+                try? await authService.registerUsername(username)
                 currentPage = .library
             } catch {
                 errorMessage = error.localizedDescription

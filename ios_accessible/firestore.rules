@@ -1,0 +1,40 @@
+rules_version = '2';
+
+// Firestore Security Rules for the fast-lit-ios Firebase project. Not
+// deployed automatically — apply this via the Firebase Console
+// (Firestore Database > Rules) or `firebase deploy --only firestore:rules`
+// with the Firebase CLI logged into this project.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Registry of taken library usernames (see AuthService.isUsernameTaken
+    // / registerUsername in the iOS app). Each doc's ID is the username
+    // itself; its mere existence means that username is taken. The real,
+    // authoritative uniqueness guarantee is still the Firebase Auth
+    // account created alongside it — this collection only exists so a
+    // sign-up in progress can check "is this taken?" before an Auth
+    // account exists to check against, since Auth's own equivalent check
+    // (fetchSignInMethods) is blocked by email enumeration protection.
+    match /libraryUsernames/{username} {
+      // Anyone can check whether a username is taken — the stored fields
+      // (uid, createdAt) aren't sensitive, and the whole point of this
+      // collection is that its existence is checkable pre-sign-up, before
+      // the checker has an account of their own.
+      allow get: if true;
+
+      // Only a signed-in user can register a username, and only as their
+      // own account (uid must match the caller) — stops someone else
+      // squatting on a name or overwriting an existing registration.
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasOnly(['uid', 'createdAt']);
+
+      // Registrations are permanent from the client's side — no editing
+      // or freeing up a username once it's taken.
+      allow update, delete: if false;
+
+      // No reason for a client to need the full list of taken usernames.
+      allow list: if false;
+    }
+  }
+}

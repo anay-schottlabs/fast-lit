@@ -1,6 +1,7 @@
 import Foundation
 import Observation
 import FirebaseAuth
+import FirebaseFirestore
 
 // Wraps FirebaseAuth so the rest of the app talks to this instead of the
 // Auth SDK directly — one place to change later if the auth approach
@@ -56,6 +57,39 @@ class AuthService {
     // Signs into an existing email/password account.
     func signIn(email: String, password: String) async throws {
         _ = try await Auth.auth().signIn(withEmail: email, password: password)
+    }
+
+    // Firestore doc IDs double as a uniqueness registry: each library
+    // username gets one doc at libraryUsernames/{username}, and its mere
+    // existence means that username is taken. This exists because Firebase
+    // Auth's own equivalent check — fetchSignInMethods(forEmail:) — always
+    // returns an empty array on projects with email enumeration protection
+    // enabled (the Firebase-recommended, more secure default), making it
+    // useless for exactly this "is it taken" question. The actual Auth
+    // account (created in signUp above) remains the real, atomic
+    // uniqueness guarantee; this registry only powers the early "already
+    // taken" check on the sign-up username step, before an account exists
+    // to check against.
+    private var libraryUsernames: CollectionReference {
+        Firestore.firestore().collection("libraryUsernames")
+    }
+
+    // Checks whether a library username is already registered.
+    func isUsernameTaken(_ username: String) async throws -> Bool {
+        let document = try await libraryUsernames.document(username).getDocument()
+        return document.exists
+    }
+
+    // Registers a username as taken, so later sign-ups see it via
+    // isUsernameTaken. Only meaningful to call after the matching Firebase
+    // Auth account was actually created — see the signUp caller's comment
+    // in LibrarySignUpView for why a failure here shouldn't block that
+    // already-successful sign-up.
+    func registerUsername(_ username: String) async throws {
+        try await libraryUsernames.document(username).setData([
+            "uid": currentUser?.uid ?? "",
+            "createdAt": FieldValue.serverTimestamp(),
+        ])
     }
 
     // Signs in with no credentials at all — Firebase still issues a real
