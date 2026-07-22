@@ -207,23 +207,22 @@ struct ReadView: View {
         content.text.split(whereSeparator: { $0.isWhitespace }).map(String.init)
     }
 
-    // Builds the current word as an AttributedString with its middle letter
-    // colored blue — the "focal letter" RSVP readers center each word on to
-    // help the eye anchor in the same horizontal spot for every word.
-    // AttributedString has its own index type, so rather than translating a
-    // String.Index into it, this just slices the plain String into
-    // before/center/after pieces first and wraps each piece separately.
-    var styledWord: AttributedString {
+    // Splits the current word into the letters before its middle letter (the
+    // "focal letter" RSVP readers center each word on), the middle letter
+    // itself, and the letters after it. Kept as three separate pieces (rather
+    // than one combined string) so body can lay each one out in its own
+    // flexible-width container — that's what keeps the middle letter fixed
+    // at screen-center regardless of how many letters sit on either side of it.
+    var wordParts: (before: String, center: String, after: String) {
         let word = words[indexNum]
         let centerIndex = word.index(word.startIndex, offsetBy: word.count / 2)
         let afterCenterIndex = word.index(after: centerIndex)
 
-        let before = AttributedString(word[word.startIndex..<centerIndex])
-        var center = AttributedString(word[centerIndex..<afterCenterIndex])
-        center.foregroundColor = .blue
-        let after = AttributedString(word[afterCenterIndex...])
-
-        return before + center + after
+        return (
+            before: String(word[word.startIndex..<centerIndex]),
+            center: String(word[centerIndex..<afterCenterIndex]),
+            after: String(word[afterCenterIndex...])
+        )
     }
 
     // Moves the reading position forward (or back, with a negative increment).
@@ -274,11 +273,28 @@ struct ReadView: View {
             ProgressView(value: Double(indexNum + 1), total: Double(words.count))
                 .padding(.horizontal)
 
-            Text(styledWord)
-                // Large and bold, since this word is the whole point of the
-                // screen — everything else (progress bar, controls) is
-                // secondary to it.
-                .font(.system(size: 60, weight: .bold))
+            // Rather than one Text centered as a block (which would put the
+            // blue letter in a different screen position for every word,
+            // depending on how many letters come before/after it), "before"
+            // and "after" each get a flexible container of equal width via
+            // .frame(maxWidth: .infinity) and pull their text toward the
+            // middle with alignment. Since both containers always claim the
+            // same share of the remaining space, "center" (a fixed size, so
+            // it's never squeezed) ends up fixed at screen-center every time.
+            HStack(spacing: 0) {
+                Text(wordParts.before)
+                    .frame(maxWidth: .infinity, alignment: .trailing)
+                Text(wordParts.center)
+                    .foregroundColor(.blue)
+                    .fixedSize()
+                Text(wordParts.after)
+                    .frame(maxWidth: .infinity, alignment: .leading)
+            }
+            // Large and bold, since this word is the whole point of the
+            // screen — everything else (progress bar, controls) is
+            // secondary to it. Applied to the HStack (rather than each Text)
+            // since font is an environment value that flows down to all three.
+            .font(.system(size: 60, weight: .bold))
 
             // Side-by-side left/right buttons to step through words one at a time.
             HStack {
