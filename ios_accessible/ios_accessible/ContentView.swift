@@ -264,6 +264,9 @@ struct ReadView: View {
                     Image(systemName: "arrow.left")
                 })
                 .buttonStyle(.glassProminent)
+                // Manually stepping while the timer is also advancing indexNum
+                // would fight with playback, so stepping is disabled while playing.
+                .disabled(isPlaying)
 
                 // Same button throughout — only its icon and action change
                 // depending on isPlaying, rather than showing two buttons and
@@ -285,6 +288,7 @@ struct ReadView: View {
                     Image(systemName: "arrow.right")
                 })
                 .buttonStyle(.glassProminent)
+                .disabled(isPlaying)
             }
         }
         .padding()
