@@ -200,6 +200,17 @@ struct LibraryAccountView: View {
     }
 }
 
+// Normalizes a library username as it's typed: no capitals (lowercased,
+// rather than rejected) and no spaces (turned into hyphens, rather than
+// rejected). Shared by LibraryLoginView and LibrarySignUpView so the same
+// typed input always produces the same username in both places — a
+// username signed up as "Test User" becomes "test-user", and logging in
+// with "Test User" (or "TEST USER", or "test-user") all need to normalize
+// to that same thing to find the account.
+private func sanitizedUsername(_ input: String) -> String {
+    input.lowercased().replacingOccurrences(of: " ", with: "-")
+}
+
 // Logging into an existing library account, for real now via AuthService.
 struct LibraryLoginView: View {
     // @Binding so "Go Back" can clear it, returning to LibraryAccountView's
@@ -232,6 +243,12 @@ struct LibraryLoginView: View {
             TextField("Username", text: $username)
                 .textFieldStyle(.roundedBorder)
                 .padding(.horizontal)
+                // Stops the keyboard from auto-capitalizing the first
+                // letter, since capitals get stripped right back out anyway.
+                .textInputAutocapitalization(.never)
+                .onChange(of: username) { _, newValue in
+                    username = sanitizedUsername(newValue)
+                }
 
             // SecureField (not TextField) hides what's typed, the way
             // password fields normally work.
@@ -344,6 +361,13 @@ struct LibrarySignUpView: View {
                 TextField("Choose a username", text: $username)
                     .textFieldStyle(.roundedBorder)
                     .padding(.horizontal)
+                    // Stops the keyboard from auto-capitalizing the first
+                    // letter, since capitals get stripped right back out
+                    // anyway.
+                    .textInputAutocapitalization(.never)
+                    .onChange(of: username) { _, newValue in
+                        username = sanitizedUsername(newValue)
+                    }
             } else {
                 SecureField("Password", text: $password)
                     .textFieldStyle(.roundedBorder)
