@@ -221,6 +221,25 @@ struct ReadView: View {
         content.text.split(whereSeparator: { $0.isWhitespace }).map(String.init)
     }
 
+    // Builds the current word as an AttributedString with its middle letter
+    // colored blue — the "focal letter" RSVP readers center each word on to
+    // help the eye anchor in the same horizontal spot for every word.
+    // AttributedString has its own index type, so rather than translating a
+    // String.Index into it, this just slices the plain String into
+    // before/center/after pieces first and wraps each piece separately.
+    var styledWord: AttributedString {
+        let word = words[indexNum]
+        let centerIndex = word.index(word.startIndex, offsetBy: word.count / 2)
+        let afterCenterIndex = word.index(after: centerIndex)
+
+        let before = AttributedString(word[word.startIndex..<centerIndex])
+        var center = AttributedString(word[centerIndex..<afterCenterIndex])
+        center.foregroundColor = .blue
+        let after = AttributedString(word[afterCenterIndex...])
+
+        return before + center + after
+    }
+
     // Moves the reading position forward (or back, with a negative increment).
     // No "mutating" keyword needed: @State's setter works even from a
     // non-mutating method, since the actual storage lives outside this struct.
@@ -269,7 +288,7 @@ struct ReadView: View {
             ProgressView(value: Double(indexNum + 1), total: Double(words.count))
                 .padding(.horizontal)
 
-            Text(words[indexNum])
+            Text(styledWord)
 
             // Side-by-side left/right buttons to step through words one at a time.
             HStack {
