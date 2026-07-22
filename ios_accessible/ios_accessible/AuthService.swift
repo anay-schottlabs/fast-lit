@@ -85,9 +85,18 @@ class AuthService {
     // Auth account was actually created — see the signUp caller's comment
     // in LibrarySignUpView for why a failure here shouldn't block that
     // already-successful sign-up.
+    //
+    // Reads Auth.auth().currentUser directly here rather than this class's
+    // own currentUser property: that property only updates once Firebase's
+    // addStateDidChangeListener callback fires, which isn't guaranteed to
+    // have happened yet by the time this runs (immediately after signUp()
+    // returns) — writing self.currentUser?.uid could send an empty string
+    // as uid while Firestore's own request.auth.uid (evaluated fresh,
+    // against the real current session) is already the new account's real
+    // ID, failing the security rule that requires them to match.
     func registerUsername(_ username: String) async throws {
         try await libraryUsernames.document(username).setData([
-            "uid": currentUser?.uid ?? "",
+            "uid": Auth.auth().currentUser?.uid ?? "",
             "createdAt": FieldValue.serverTimestamp(),
         ])
     }
