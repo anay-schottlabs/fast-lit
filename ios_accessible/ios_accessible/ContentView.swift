@@ -212,13 +212,32 @@ struct ReadView: View {
     // Moves the reading position forward (or back, with a negative increment).
     // No "mutating" keyword needed: @State's setter works even from a
     // non-mutating method, since the actual storage lives outside this struct.
+    // Clamped to 0...words.count - 1 so a tap at either end can't push
+    // indexNum out of range, which would crash the words[indexNum] lookup below.
     func updateIndex(increment: Int) -> Void {
-        indexNum += increment
+        indexNum = min(max(indexNum + increment, 0), words.count - 1)
     }
 
     var body: some View {
         VStack {
             Text(words[indexNum])
+
+            // Side-by-side left/right buttons to step through words one at a time.
+            HStack {
+                Button(action: {
+                    updateIndex(increment: -1)
+                }, label: {
+                    Image(systemName: "arrow.left")
+                })
+                .buttonStyle(.glassProminent)
+
+                Button(action: {
+                    updateIndex(increment: 1)
+                }, label: {
+                    Image(systemName: "arrow.right")
+                })
+                .buttonStyle(.glassProminent)
+            }
         }
         .padding()
     }
