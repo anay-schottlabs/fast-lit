@@ -202,9 +202,11 @@ struct ReadView: View {
     // A computed property, not a stored one: a stored property's initial
     // value runs before "self" exists, so it can't reference "content" (another
     // stored property) the way the old code tried to. Computing it fresh each
-    // time from indexNum also means there's nothing to manually keep in sync.
-    var index: String.Index {
-        content.text.index(content.text.startIndex, offsetBy: indexNum)
+    // time also means there's nothing to manually keep in sync.
+    // "whereSeparator: { $0.isWhitespace }" splits on any run of spaces,
+    // tabs, or newlines, not just a single literal " ".
+    var words: [String] {
+        content.text.split(whereSeparator: { $0.isWhitespace }).map(String.init)
     }
 
     // Moves the reading position forward (or back, with a negative increment).
@@ -216,13 +218,7 @@ struct ReadView: View {
 
     var body: some View {
         VStack {
-            // Shows the picked content is actually here; the real RSVP word
-            // display will replace this once that feature is built.
-            Text(content.title)
-                .font(.headline)
-            // content.text[index] yields a single Character, and Text has no
-            // initializer for that, so it's wrapped in String(...).
-            Text(String(content.text[index]))
+            Text(words[indexNum])
         }
         .padding()
     }
