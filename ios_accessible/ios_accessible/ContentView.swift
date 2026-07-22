@@ -6,6 +6,14 @@ enum Page {
     case choose
     case orient
     case read
+    case account
+}
+
+// Which kind of account the user is logging into or signing up for, chosen
+// on AccountView before its username/password or six-digit-code form shows.
+enum AccountType {
+    case library
+    case reader
 }
 
 // "struct" = value type. ": View" means it must provide a "body" describing its UI.
@@ -31,6 +39,8 @@ struct ContentView: View {
             ChooseView(currentPage: $currentPage, contentToRead: $contentToRead)
         } else if currentPage == .orient {
             OrientView(currentPage: $currentPage)
+        } else if currentPage == .account {
+            AccountView(currentPage: $currentPage)
         } else if currentPage == .read {
             // "if let" only unwraps and shows ReadView once contentToRead is
             // actually set, which it always is by the time we reach this page.
@@ -69,6 +79,13 @@ struct HomeView: View {
             })
             .buttonStyle(.glassProminent)
 
+            Button(action: {
+                currentPage = .account
+            }, label: {
+                Text("Log In / Sign Up")
+            })
+            .buttonStyle(.glass)
+
             // Skips ChooseView and OrientView entirely — for quickly getting
             // back to ReadView while testing, not part of the normal flow.
             Button(action: {
@@ -76,6 +93,151 @@ struct HomeView: View {
                 currentPage = .read
             }, label: {
                 Text("Dev: Skip to Read")
+            })
+            .buttonStyle(.glass)
+        }
+        .padding()
+    }
+}
+
+// Lets the user choose which kind of account to log into or sign up for,
+// then shows that account type's form.
+struct AccountView: View {
+    @Binding var currentPage: Page
+
+    // nil until an account type is picked below; once set, its form replaces
+    // the picker. This sub-choice doesn't need to survive anywhere outside
+    // this screen, so — unlike currentPage — it doesn't need to live any
+    // higher up than right here.
+    @State private var accountType: AccountType? = nil
+
+    var body: some View {
+        if accountType == .library {
+            LibraryAccountView(accountType: $accountType)
+        } else if accountType == .reader {
+            ReaderAccountView(accountType: $accountType)
+        } else {
+            VStack {
+                Text("Log In / Sign Up")
+                    .font(.system(size: 30))
+                    .bold()
+                    .padding()
+
+                Text("What kind of account do you have?")
+                    .padding()
+
+                Button(action: {
+                    accountType = .library
+                }, label: {
+                    Text("Library")
+                })
+                .buttonStyle(.glassProminent)
+
+                Button(action: {
+                    accountType = .reader
+                }, label: {
+                    Text("Reader")
+                })
+                .buttonStyle(.glassProminent)
+
+                Button(action: {
+                    currentPage = .home
+                }, label: {
+                    Text("Go Back")
+                })
+                .buttonStyle(.glass)
+            }
+            .padding()
+        }
+    }
+}
+
+// Library accounts log in with a username and password. Nothing happens yet
+// when "Log In" or "Sign Up" is tapped — these are just empty fields for now.
+struct LibraryAccountView: View {
+    // @Binding (not "let") so "Go Back" below can clear it, returning to
+    // AccountView's picker the same way it got here.
+    @Binding var accountType: AccountType?
+
+    @State private var username: String = ""
+    @State private var password: String = ""
+
+    var body: some View {
+        VStack {
+            Text("Library Account")
+                .font(.system(size: 24))
+                .bold()
+                .padding()
+
+            TextField("Username", text: $username)
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal)
+
+            // SecureField (not TextField) hides what's typed, the way
+            // password fields normally work.
+            SecureField("Password", text: $password)
+                .textFieldStyle(.roundedBorder)
+                .padding(.horizontal)
+
+            Button(action: {}, label: {
+                Text("Log In")
+            })
+            .buttonStyle(.glassProminent)
+            .padding(.top)
+
+            Button(action: {}, label: {
+                Text("Sign Up")
+            })
+            .buttonStyle(.glass)
+
+            Button(action: {
+                accountType = nil
+            }, label: {
+                Text("Go Back")
+            })
+            .buttonStyle(.glass)
+        }
+        .padding()
+    }
+}
+
+// Reader accounts just need a six-digit code — no username/password. Like
+// LibraryAccountView, "Log In"/"Sign Up" don't do anything yet.
+struct ReaderAccountView: View {
+    @Binding var accountType: AccountType?
+
+    @State private var code: String = ""
+
+    var body: some View {
+        VStack {
+            Text("Reader Account")
+                .font(.system(size: 24))
+                .bold()
+                .padding()
+
+            // .numberPad brings up a digit-only keyboard, since the code is
+            // always six digits.
+            TextField("6-digit code", text: $code)
+                .textFieldStyle(.roundedBorder)
+                .keyboardType(.numberPad)
+                .multilineTextAlignment(.center)
+                .padding(.horizontal)
+
+            Button(action: {}, label: {
+                Text("Log In")
+            })
+            .buttonStyle(.glassProminent)
+            .padding(.top)
+
+            Button(action: {}, label: {
+                Text("Sign Up")
+            })
+            .buttonStyle(.glass)
+
+            Button(action: {
+                accountType = nil
+            }, label: {
+                Text("Go Back")
             })
             .buttonStyle(.glass)
         }
