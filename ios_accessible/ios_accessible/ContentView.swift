@@ -192,7 +192,27 @@ struct ReadView: View {
     // changes it — a plain stored property is all that's needed here.
     let content: ReadableContent
     
-    let currentIndex: Int = 0
+    // @State lets this value change and trigger a redraw. It can't be a plain
+    // "let" (can't reassign it) or even a plain "var" (SwiftUI throws this
+    // whole struct away and rebuilds it on every redraw, so a plain "var"
+    // would reset to 0 each time) — @State is what actually survives across
+    // those redraws.
+    @State private var indexNum: Int = 0
+
+    // A computed property, not a stored one: a stored property's initial
+    // value runs before "self" exists, so it can't reference "content" (another
+    // stored property) the way the old code tried to. Computing it fresh each
+    // time from indexNum also means there's nothing to manually keep in sync.
+    var index: String.Index {
+        content.text.index(content.text.startIndex, offsetBy: indexNum)
+    }
+
+    // Moves the reading position forward (or back, with a negative increment).
+    // No "mutating" keyword needed: @State's setter works even from a
+    // non-mutating method, since the actual storage lives outside this struct.
+    func updateIndex(increment: Int) -> Void {
+        indexNum += increment
+    }
 
     var body: some View {
         VStack {
@@ -200,7 +220,9 @@ struct ReadView: View {
             // display will replace this once that feature is built.
             Text(content.title)
                 .font(.headline)
-            Text("CURRENT WORD")
+            // content.text[index] yields a single Character, and Text has no
+            // initializer for that, so it's wrapped in String(...).
+            Text(String(content.text[index]))
         }
         .padding()
     }
