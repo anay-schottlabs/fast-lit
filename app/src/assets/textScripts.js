@@ -613,7 +613,12 @@ export class ChangelogScripts {
                     "to push a new screen, which never worked since the app has no navigation stack."
                 ]),
                 "Added short explanatory comments throughout ios_accessible's ContentView.swift for a Swift newcomer, and switched to the more explicit Button(action:label:) form in place of the shorthand initializer.",
-                "Added an Accept button to the content detail modal's top-right toolbar, which moves the app on to the orient-screen step."
+                "Added an Accept button to the content detail modal's top-right toolbar, which moves the app on to the orient-screen step.",
+                text([
+                    "Fixed the orient screen never advancing to the read screen after rotating to landscape:",
+                    "iOS doesn't track device orientation changes unless you explicitly turn on orientation",
+                    "notifications, and the previous check only ran once when the screen first appeared."
+                ])
             ]
         )
     ]

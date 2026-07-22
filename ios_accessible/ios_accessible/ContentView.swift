@@ -7,7 +7,7 @@ struct ContentView: View {
     enum Page {
         case home
         case choose
-        case orientScreen
+        case orient
         case read
     }
 
@@ -46,6 +46,8 @@ struct ContentView: View {
             text: "Most meaningful progress doesn't arrive as a single breakthrough. It arrives as a string of small, unremarkable steps taken consistently over time, long after the initial motivation has faded. The people who improve the most aren't necessarily the most talented; they're the ones who kept showing up on the ordinary days, when nothing exciting was happening and no one was watching. Trust the process, focus on today's step instead of the whole staircase, and let the results accumulate quietly in the background."
         )
     ]
+    
+    @State private var orientation = UIDevice.current.orientation
 
     // Computed property SwiftUI calls whenever it needs to redraw the screen.
     // "some View" = "returns some type conforming to View, exact type not spelled out."
@@ -93,7 +95,7 @@ struct ContentView: View {
                         // onAccept is a closure we pass in; the detail view calls it
                         // without knowing what it does here on our side.
                         ReadableContentDetailView(content: item, onAccept: {
-                            currentPage = .orientScreen
+                            currentPage = .orient
                         })
                     }
                 }
@@ -106,9 +108,31 @@ struct ContentView: View {
                 .buttonStyle(.glassProminent)
             }
 
-            else if currentPage == Page.orientScreen {
+            else if currentPage == Page.orient {
+                Text("You're in portrait mode, rotate your device into landscape.")
+                    // iOS doesn't track orientation changes by default (battery
+                    // saving); this switches tracking on while this page is shown.
+                    .onAppear {
+                        UIDevice.current.beginGeneratingDeviceOrientationNotifications()
+                        orientation = UIDevice.current.orientation // check right away
+                        if orientation.isLandscape {
+                            currentPage = .read
+                        }
+                    }
+                    .onDisappear {
+                        UIDevice.current.endGeneratingDeviceOrientationNotifications()
+                    }
+                    // .onReceive runs every time this notification fires (unlike
+                    // .onAppear, which only runs once), so rotating after arriving
+                    // on this page is what actually gets caught here.
+                    .onReceive(NotificationCenter.default.publisher(for: UIDevice.orientationDidChangeNotification)) { _ in
+                        orientation = UIDevice.current.orientation
+                        if orientation.isLandscape {
+                            currentPage = .read
+                        }
+                    }
             }
-
+            
             else if currentPage == Page.read {
             }
         }
