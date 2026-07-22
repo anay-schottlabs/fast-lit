@@ -199,6 +199,18 @@ struct ReadView: View {
     // those redraws.
     @State private var indexNum: Int = 0
 
+    // Words per minute: how many words playback advances through per 60
+    // seconds. Used below to work out how long to wait between words.
+    @State private var wpm: Int = 300
+
+    // Whether playback is currently advancing through words on its own.
+    @State private var isPlaying: Bool = false
+
+    // Holds the currently-running Timer (if any), so play()/pause() can
+    // start and stop it. Timer is a class, so this property is just a
+    // reference to it, not the timer's own state.
+    @State private var timer: Timer? = nil
+
     // A computed property, not a stored one: a stored property's initial
     // value runs before "self" exists, so it can't reference "content" (another
     // stored property) the way the old code tried to. Computing it fresh each
@@ -218,6 +230,28 @@ struct ReadView: View {
         indexNum = min(max(indexNum + increment, 0), words.count - 1)
     }
 
+    // Starts advancing through words on its own, one word every 60/wpm
+    // seconds (e.g. 300 wpm = 60/300 = a fifth of a second per word).
+    func play() -> Void {
+        isPlaying = true
+        timer = Timer.scheduledTimer(withTimeInterval: 60.0 / Double(wpm), repeats: true) { _ in
+            // Stop instead of advancing once the last word is reached, so
+            // playback doesn't keep firing forever with nothing left to show.
+            if indexNum >= words.count - 1 {
+                pause()
+            } else {
+                updateIndex(increment: 1)
+            }
+        }
+    }
+
+    // Stops automatic advancing. Also called once the last word is reached.
+    func pause() -> Void {
+        isPlaying = false
+        timer?.invalidate()
+        timer = nil
+    }
+
     var body: some View {
         VStack {
             Text(words[indexNum])
@@ -231,6 +265,20 @@ struct ReadView: View {
                 })
                 .buttonStyle(.glassProminent)
 
+                // Same button throughout — only its icon and action change
+                // depending on isPlaying, rather than showing two buttons and
+                // hiding whichever one doesn't apply.
+                Button(action: {
+                    if isPlaying {
+                        pause()
+                    } else {
+                        play()
+                    }
+                }, label: {
+                    Image(systemName: isPlaying ? "pause.fill" : "play.fill")
+                })
+                .buttonStyle(.glassProminent)
+
                 Button(action: {
                     updateIndex(increment: 1)
                 }, label: {
@@ -240,6 +288,11 @@ struct ReadView: View {
             }
         }
         .padding()
+        // Stops any running timer if this view goes away while playing, so
+        // it doesn't keep firing pointlessly in the background.
+        .onDisappear {
+            pause()
+        }
     }
 }
 
