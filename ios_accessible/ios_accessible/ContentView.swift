@@ -690,6 +690,7 @@ private struct AccountChoiceScreen: View {
             })
             .buttonStyle(OnboardingPrimaryButtonStyle())
             .disabled(selection == nil)
+            .padding(.top, Spacing.small)
 
             OnboardingBackButton(action: onBack)
         }
