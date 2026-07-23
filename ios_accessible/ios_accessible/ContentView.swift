@@ -113,6 +113,7 @@ struct ContentView: View {
 enum OnboardingStep {
     case welcome
     case name
+    case greeting
     case theme
     case accountChoice
 }
@@ -171,6 +172,8 @@ struct HomeView: View {
                         welcomeStep
                     case .name:
                         nameStep
+                    case .greeting:
+                        greetingStep
                     case .theme:
                         themeStep
                     case .accountChoice:
@@ -238,7 +241,7 @@ struct HomeView: View {
     // LibraryLoginView/LibrarySignUpView), not skippable.
     private var nameStep: some View {
         VStack(spacing: Spacing.medium) {
-            OnboardingProgressBar(step: 1, total: 3)
+            OnboardingProgressBar(step: 1, total: 4)
                 .padding(.bottom, Spacing.small)
 
             Spacer()
@@ -291,7 +294,7 @@ struct HomeView: View {
             Spacer()
 
             Button(action: {
-                withAnimation { onboardingStep = .theme }
+                withAnimation { onboardingStep = .greeting }
             }, label: {
                 Text("Continue")
             })
@@ -300,6 +303,43 @@ struct HomeView: View {
 
             OnboardingBackButton(action: {
                 withAnimation { onboardingStep = .welcome }
+            })
+        }
+        .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
+    }
+
+    // Step 2b: a one-screen "Hi, {name}" greeting inserted between Name
+    // and Theme — counts as the SAME step (1 of 4) on the progress bar
+    // as Name itself, rather than its own step, since it's really just
+    // a warm beat acknowledging what was just typed before moving on to
+    // the next real question.
+    private var greetingStep: some View {
+        VStack(spacing: Spacing.medium) {
+            OnboardingProgressBar(step: 1, total: 4)
+                .padding(.bottom, Spacing.small)
+
+            Spacer()
+
+            OnboardingMascot(size: 110, sparkleCount: 1)
+
+            OnboardingPageHeader(
+                title: "Hi, \(readerName)",
+                titleSize: 40
+            )
+
+            Spacer()
+
+            Button(action: {
+                withAnimation { onboardingStep = .theme }
+            }, label: {
+                Text("Continue")
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+
+            OnboardingBackButton(action: {
+                withAnimation { onboardingStep = .name }
             })
         }
         .padding(Spacing.large)
@@ -329,7 +369,7 @@ struct HomeView: View {
     // Us?" step; it doesn't need to save anything itself anymore.
     private var themeStep: some View {
         VStack(spacing: Spacing.medium) {
-            OnboardingProgressBar(step: 2, total: 3)
+            OnboardingProgressBar(step: 2, total: 4)
                 .padding(.bottom, Spacing.small)
 
             OnboardingMascot(size: 96, sparkleCount: 1)
@@ -367,8 +407,14 @@ struct HomeView: View {
             .buttonStyle(OnboardingPrimaryButtonStyle())
             .padding(.top, Spacing.small)
 
+            // The design's own prototype has this button reusing the
+            // Greeting step's own "go back to Name" handler — almost
+            // certainly a leftover from before Greeting existed between
+            // Name and Theme, not deliberate; it contradicts the flow's
+            // own stated rule that Go Back always moves exactly one step.
+            // Goes to Greeting here instead, matching that rule.
             OnboardingBackButton(action: {
-                withAnimation { onboardingStep = .name }
+                withAnimation { onboardingStep = .greeting }
             })
         }
         .padding(Spacing.large)
@@ -644,7 +690,7 @@ private struct AccountChoiceScreen: View {
     var body: some View {
         VStack(spacing: Spacing.medium) {
             if showProgress {
-                OnboardingProgressBar(step: 3, total: 3)
+                OnboardingProgressBar(step: 3, total: 4)
                     .padding(.bottom, Spacing.small)
             }
 
@@ -790,13 +836,17 @@ private func sanitizedUsername(_ input: String) -> String {
 // above, with two stacked ghost fields (left-aligned, Quicksand — NOT
 // the single centered Baloo-2 field the sign-up steps use, since two
 // fields sharing one screen read better smaller and left-aligned than
-// centered and oversized).
+// centered and oversized). A successful sign-in now lands on the shared
+// OnboardingSuccessScreen (see didSignIn below) rather than jumping
+// straight to LibraryView the way this screen used to.
 struct LibraryLoginView: View {
     // @Binding so "Go Back" can clear it, returning to LibraryAccountView's
     // log in/sign up picker.
     @Binding var authMode: AuthMode?
 
-    // Set to .library on a successful sign-in.
+    // Set to .library once the reader taps Continue on the success
+    // screen below — not the instant sign-in itself succeeds (see
+    // didSignIn just below).
     @Binding var currentPage: Page
 
     @Environment(AuthService.self) private var authService
@@ -812,7 +862,31 @@ struct LibraryLoginView: View {
     // several sign-ins at once.
     @State private var isSubmitting: Bool = false
 
+    // Set once sign-in actually succeeds — the design's own flow always
+    // shows a confirmation screen before landing in the app proper, even
+    // here, where the old version of this screen used to skip straight
+    // to currentPage = .library the instant Firebase confirmed sign-in.
+    @State private var didSignIn: Bool = false
+
     var body: some View {
+        if didSignIn {
+            // The one shared OnboardingSuccessScreen every completion
+            // path in onboarding converges on (see OnboardingTheme.swift)
+            // — same copy as LibrarySignUpView's own success step, since
+            // this is the same library path just reached by logging in
+            // to an existing account instead of creating a new one.
+            OnboardingSuccessScreen(
+                subtitle: "Your library is ready. Time to start building your collection.",
+                buttonLabel: "Continue"
+            ) {
+                currentPage = .library
+            }
+        } else {
+            loginForm
+        }
+    }
+
+    private var loginForm: some View {
         VStack(spacing: Spacing.medium) {
             OnboardingProgressBar(step: 4, total: 4)
                 .padding(.bottom, Spacing.small)
@@ -914,7 +988,7 @@ struct LibraryLoginView: View {
         Task {
             do {
                 try await authService.signIn(email: libraryEmail(for: username), password: password)
-                currentPage = .library
+                didSignIn = true
             } catch {
                 errorMessage = error.localizedDescription
             }
@@ -946,10 +1020,10 @@ private enum LibrarySignUpStep {
 struct LibrarySignUpView: View {
     @Binding var authMode: AuthMode?
 
-    // Set to .library once the reader taps "Continue" on this flow's own
-    // success step — not the instant the account is actually created —
-    // so there's always a clear confirmation moment first, the same
-    // pattern ReaderAccountView's own "You're All Set!" screen uses.
+    // Set to .library once the reader taps "Continue" on the shared
+    // OnboardingSuccessScreen below — not the instant the account is
+    // actually created — so there's always a clear confirmation moment
+    // first.
     @Binding var currentPage: Page
 
     @Environment(AuthService.self) private var authService
@@ -1255,36 +1329,16 @@ struct LibrarySignUpView: View {
         .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
-    // The terminal step, once the account is actually created — the same
-    // "You're All Set!" pattern ReaderAccountView shows after a
-    // successful join, adapted here for a library owner instead of a
-    // joining reader. No progress bar, matching Welcome's own lack of one
-    // — there's nothing left to show progress through.
+    // The terminal step, once the account is actually created — the one
+    // shared OnboardingSuccessScreen every completion path in onboarding
+    // converges on (see OnboardingTheme.swift), not a screen of its own.
     private var successStep: some View {
-        VStack(spacing: Spacing.large) {
-            Spacer()
-
-            OnboardingMascot(size: 130, sparkleCount: 2)
-
-            OnboardingPageHeader(
-                title: "You're All Set!",
-                titleSize: 44,
-                subtitle: "Your library is ready. Time to start building your collection.",
-                subtitleSize: 18
-            )
-
-            Spacer()
-
-            Button(action: {
-                currentPage = .library
-            }, label: {
-                Text("Continue")
-            })
-            .buttonStyle(OnboardingPrimaryButtonStyle())
+        OnboardingSuccessScreen(
+            subtitle: "Your library is ready. Time to start building your collection.",
+            buttonLabel: "Continue"
+        ) {
+            currentPage = .library
         }
-        .padding(Spacing.large)
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
     // Same fixed-domain trick LibraryLoginView uses, so a username signed
@@ -1573,17 +1627,9 @@ struct LibraryCatalogManagementView: View {
 
 // Lets a reader join an organization/library with just its join code — no
 // account, no name, no log in/sign up split. Once a code resolves to a real
-// library (via AuthService.fetchLibraryName), shows that library's name on
-// its own page instead of the join form.
-// Rebuilt to match the onboarding redesign — both the join-code entry
-// and the terminal "You're All Set!" screen it leads to now use
-// OnboardingTheme.swift's components, matching LibrarySignUpView's own
-// successStep pattern (mascot 130, glow+2 sparkles, "You're All Set!"
-// at 44px) for the same terminal moment on this path. The joined
-// library's actual NAME — real, useful information the static design
-// mockup has no equivalent of — is folded into that screen's own
-// subtitle rather than shown as a separate line in the old accent color,
-// so it still reads as part of one cohesive message.
+// library (via AuthService.fetchLibraryName), hands off to the shared
+// OnboardingSuccessScreen (see joinedLibraryName below) instead of the
+// join form.
 struct ReaderAccountView: View {
     @Binding var accountType: AccountType?
 
@@ -1620,31 +1666,21 @@ struct ReaderAccountView: View {
     @State private var isSubmitting: Bool = false
 
     var body: some View {
-        if let joinedLibraryName {
-            VStack(spacing: Spacing.large) {
-                Spacer()
-
-                OnboardingMascot(size: 130, sparkleCount: 2)
-
-                OnboardingPageHeader(
-                    title: "You're All Set!",
-                    titleSize: 44,
-                    subtitle: "You've joined \(joinedLibraryName). Time to find your next great read.",
-                    subtitleSize: 18
-                )
-
-                Spacer()
-
-                Button(action: {
-                    currentPage = .choose
-                }, label: {
-                    Text("Start Reading")
-                })
-                .buttonStyle(OnboardingPrimaryButtonStyle())
+        if joinedLibraryName != nil {
+            // The one shared OnboardingSuccessScreen every completion
+            // path in onboarding converges on (see OnboardingTheme.swift)
+            // — matches the design's own generic reader-path copy
+            // exactly, rather than the joined library's actual name this
+            // screen used to show before (in the old accent color).
+            // Nothing downstream shows that name either now — a genuine,
+            // deliberate trade against pixel-for-pixel matching the
+            // shared screen the handoff doc specifies.
+            OnboardingSuccessScreen(
+                subtitle: "You're in. Time to find your next great read.",
+                buttonLabel: "Start Reading"
+            ) {
+                currentPage = .choose
             }
-            .padding(Spacing.large)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.onboardingBackground.ignoresSafeArea())
         } else {
             VStack(spacing: Spacing.medium) {
                 OnboardingProgressBar(step: 4, total: 4)

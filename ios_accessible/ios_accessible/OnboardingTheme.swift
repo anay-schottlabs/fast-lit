@@ -522,3 +522,45 @@ struct OnboardingIconTile: View {
             .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
     }
 }
+
+// MARK: - Success
+
+// The one shared terminal screen every completion path in this flow
+// converges on — Library Sign Up, Library Log In, and Reader Join Code
+// all end here now, instead of each drawing its own version of "you're
+// done." No progress bar (there's nothing left to show progress
+// through), and the title is always "You're all set!" (note the
+// lowercase "all set," matching the design exactly — NOT the "You're
+// All Set!" title-case wording the app's old per-flow landing screens
+// used). Subtitle, button label, and what tapping the button actually
+// does all vary by path, so those are the caller's job, not this view's.
+struct OnboardingSuccessScreen: View {
+    let subtitle: String
+    let buttonLabel: String
+    let action: () -> Void
+
+    var body: some View {
+        VStack(spacing: Spacing.large) {
+            Spacer()
+
+            OnboardingMascot(size: 130, sparkleCount: 2)
+
+            OnboardingPageHeader(
+                title: "You're all set!",
+                titleSize: 44,
+                subtitle: subtitle,
+                subtitleSize: 18
+            )
+
+            Spacer()
+
+            Button(action: action, label: {
+                Text(buttonLabel)
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+        }
+        .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
+    }
+}
