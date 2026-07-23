@@ -20,6 +20,14 @@ class AuthService {
         currentUser != nil
     }
 
+    // Convenience for views that need their own uid (e.g.
+    // LibraryCatalogManagementView, to fetch its own enabled catalog
+    // selections) without importing FirebaseAuth themselves just to read
+    // one property off currentUser's User type.
+    var currentUserUid: String? {
+        currentUser?.uid
+    }
+
     // Firebase calls this any time sign-in state changes (sign in, sign
     // out, token refresh) — keeps currentUser in sync without this class
     // having to poll or guess.
@@ -136,12 +144,103 @@ class AuthService {
     // registerUsername above for why Auth.auth().currentUser is read fresh
     // here rather than this class's own (possibly not-yet-updated)
     // currentUser property.
-    func createLibraryProfile(username: String, joinCode: String) async throws {
+    func createLibraryProfile(username: String, libraryName: String, joinCode: String) async throws {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         try await libraries.document(uid).setData([
             "username": username,
             "joinCode": joinCode,
             "createdAt": FieldValue.serverTimestamp(),
+        ])
+        // A second, join-code-keyed registry so a reader (who has no
+        // account and never signs in) can look up which library a code
+        // belongs to with a plain get-by-ID — the same trick libraryUsernames
+        // uses for the sign-up "is this taken" check, applied here instead
+        // to "what's this code" lookups.
+        try await libraryJoinCodes.document(joinCode).setData([
+            "uid": uid,
+            "libraryName": libraryName,
+            "createdAt": FieldValue.serverTimestamp(),
+        ])
+    }
+
+    // Keyed by join code (not uid) so a reader — who has no account at all —
+    // can resolve a typed-in code straight to the library's name via a
+    // single get-by-ID, no auth or query required.
+    private var libraryJoinCodes: CollectionReference {
+        Firestore.firestore().collection("libraryJoinCodes")
+    }
+
+    // What ReaderAccountView gets back from a successful join-code lookup —
+    // both the name (to show "You've Joined ___") and the uid (so ChooseView
+    // knows whose libraryCatalogSelections to filter the catalog against).
+    struct JoinedLibrary {
+        let uid: String
+        let name: String
+    }
+
+    // Looks up which library a join code a reader typed in belongs to. nil
+    // means the code doesn't match any library, rather than an error.
+    func fetchJoinedLibrary(forJoinCode joinCode: String) async throws -> JoinedLibrary? {
+        let document = try await libraryJoinCodes.document(joinCode).getDocument()
+        guard let uid = document.get("uid") as? String,
+              let libraryName = document.get("libraryName") as? String else {
+            return nil
+        }
+        return JoinedLibrary(uid: uid, name: libraryName)
+    }
+
+    // The shared reading catalog every library draws from — see
+    // scripts/import-catalog.js, the one-off admin script that's the only
+    // thing that ever writes here (see firestore.rules: clients can only
+    // read this collection, never write it).
+    private var catalog: CollectionReference {
+        Firestore.firestore().collection("catalog")
+    }
+
+    // Fetches every item in the catalog. Used both by ChooseView (which
+    // filters this down to whatever the reader's joined library has
+    // enabled) and by LibraryCatalogManagementView (which needs every item
+    // to build its toggle list).
+    func fetchCatalog() async throws -> [ReadableContent] {
+        let snapshot = try await catalog.getDocuments()
+        return snapshot.documents.compactMap { document in
+            guard let title = document.get("title") as? String,
+                  let description = document.get("description") as? String,
+                  let text = document.get("text") as? String else {
+                return nil
+            }
+            return ReadableContent(id: document.documentID, title: title, description: description, text: text)
+        }
+    }
+
+    // Keyed by library uid (not the library's own doc under libraries/{uid})
+    // since this needs to be publicly readable — a reader who just joined
+    // by code has no account and never signs in, but still needs to know
+    // which catalog items that library enabled.
+    private var libraryCatalogSelections: CollectionReference {
+        Firestore.firestore().collection("libraryCatalogSelections")
+    }
+
+    // Which catalog items a library has enabled for its readers. A missing
+    // doc (a library that's never visited its catalog management screen
+    // yet) means none are enabled yet, not an error.
+    func fetchEnabledContentIds(forLibraryUid uid: String) async throws -> Set<String> {
+        let document = try await libraryCatalogSelections.document(uid).getDocument()
+        guard let ids = document.get("enabledContentIds") as? [String] else {
+            return []
+        }
+        return Set(ids)
+    }
+
+    // Saves which catalog items the signed-in library's readers may
+    // access, replacing the entire enabled set each time rather than
+    // patching it incrementally — simplest to reason about for a toggle
+    // list this small.
+    func setEnabledContentIds(_ ids: Set<String>) async throws {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        try await libraryCatalogSelections.document(uid).setData([
+            "enabledContentIds": Array(ids),
+            "updatedAt": FieldValue.serverTimestamp(),
         ])
     }
 

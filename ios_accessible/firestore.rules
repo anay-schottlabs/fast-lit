@@ -59,5 +59,65 @@ service cloud.firestore {
       // No reason for a client to need every library's profile at once.
       allow list: if false;
     }
+
+    // A second registry alongside libraryUsernames above, keyed by join
+    // code instead of username. Readers have no account and never sign
+    // in — this is how ReaderAccountView resolves a typed-in code straight
+    // to a library's name via a single get-by-ID, no auth or query needed.
+    match /libraryJoinCodes/{joinCode} {
+      // Anyone can look up a code — that's the entire point, since readers
+      // are never signed in when they do this.
+      allow get: if true;
+
+      // Only a signed-in library account can register its own join code,
+      // and only as itself (uid must match the caller) — stops someone
+      // else claiming or overwriting another library's code.
+      allow create: if request.auth != null
+                    && request.resource.data.uid == request.auth.uid
+                    && request.resource.data.keys().hasOnly(['uid', 'libraryName', 'createdAt']);
+
+      // Permanent from the client's side — no editing or freeing up a join
+      // code once it's registered.
+      allow update, delete: if false;
+
+      // No reason for a client to need the full list of join codes.
+      allow list: if false;
+    }
+
+    // The shared reading catalog every library draws from. Reading
+    // material itself isn't sensitive or account-specific — both readers
+    // (who have no account at all) and library owners (building the
+    // "which parts are enabled" toggle list) need to list and read the
+    // whole thing.
+    match /catalog/{contentId} {
+      allow get: if true;
+      allow list: if true;
+
+      // Only ever written by the one-off admin import script
+      // (scripts/import-catalog.js), which uses the Admin SDK and so
+      // bypasses these rules entirely — nothing in the client app creates,
+      // edits, or removes catalog items.
+      allow create, update, delete: if false;
+    }
+
+    // Which catalog items a library has enabled for its own readers. Kept
+    // separate from libraries/{uid} above (rather than a field on it)
+    // since this needs to be publicly readable: readers have no account
+    // and never sign in, so they need to fetch this straight after
+    // joining a library by its code, without auth.
+    match /libraryCatalogSelections/{uid} {
+      allow get: if true;
+
+      // Only the library account itself can set which items are enabled,
+      // and only for its own uid.
+      allow create, update: if request.auth != null
+                            && request.auth.uid == uid
+                            && request.resource.data.keys().hasOnly(['enabledContentIds', 'updatedAt']);
+
+      allow delete: if false;
+
+      // No reason for a client to need every library's selections at once.
+      allow list: if false;
+    }
   }
 }
