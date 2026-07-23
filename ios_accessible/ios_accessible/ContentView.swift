@@ -270,6 +270,10 @@ struct HomeView: View {
                 .foregroundStyle(Color.onboardingText)
                 .multilineTextAlignment(.center)
                 .textInputAutocapitalization(.words)
+                // Without this, the cursor/selection tint falls back to
+                // the app-wide AccentColor (terracotta) — wrong here,
+                // since this flow uses no accent color at all.
+                .tint(Color.onboardingText)
 
                 Rectangle()
                     .fill(Color.onboardingBorder)
