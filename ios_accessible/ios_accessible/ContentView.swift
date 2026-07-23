@@ -241,7 +241,7 @@ struct HomeView: View {
     // LibraryLoginView/LibrarySignUpView), not skippable.
     private var nameStep: some View {
         VStack(spacing: Spacing.medium) {
-            OnboardingProgressBar(step: 1, total: 4)
+            OnboardingProgressBar(step: 1, total: 5)
                 .padding(.bottom, Spacing.small)
 
             Spacer()
@@ -310,14 +310,14 @@ struct HomeView: View {
         .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
-    // Step 2b: a one-screen "Hi, {name}" greeting inserted between Name
-    // and Theme — counts as the SAME step (1 of 4) on the progress bar
-    // as Name itself, rather than its own step, since it's really just
-    // a warm beat acknowledging what was just typed before moving on to
-    // the next real question.
+    // Step 3: a one-screen "Hi, {name}" greeting inserted between Name
+    // and Theme — the design's own reference has this sharing Name's
+    // step number rather than advancing the bar, but that reads as the
+    // bar stalling in place rather than the flow actually moving
+    // forward, so this gets its own step here instead.
     private var greetingStep: some View {
         VStack(spacing: Spacing.medium) {
-            OnboardingProgressBar(step: 1, total: 4)
+            OnboardingProgressBar(step: 2, total: 5)
                 .padding(.bottom, Spacing.small)
 
             Spacer()
@@ -369,7 +369,7 @@ struct HomeView: View {
     // Us?" step; it doesn't need to save anything itself anymore.
     private var themeStep: some View {
         VStack(spacing: Spacing.medium) {
-            OnboardingProgressBar(step: 2, total: 4)
+            OnboardingProgressBar(step: 3, total: 5)
                 .padding(.bottom, Spacing.small)
 
             OnboardingMascot(size: 96, sparkleCount: 1)
@@ -690,7 +690,7 @@ private struct AccountChoiceScreen: View {
     var body: some View {
         VStack(spacing: Spacing.medium) {
             if showProgress {
-                OnboardingProgressBar(step: 3, total: 4)
+                OnboardingProgressBar(step: 4, total: 5)
                     .padding(.bottom, Spacing.small)
             }
 
@@ -749,7 +749,7 @@ private struct AccountChoiceScreen: View {
 // Lets the user choose whether to log into an existing library account or
 // sign up for a new one, then shows that specific form. Library accounts
 // use a username and password either way. This picker itself — "Set up
-// your library" — is part of the onboarding redesign (it's step 4 of 4
+// your library" — is part of the onboarding redesign (it's step 5 of 5
 // in the overall onboarding flow's own progress count, same as Library
 // Log In and Reader Join Code, all of which share that final step),
 // built entirely from OnboardingTheme.swift's components rather than
@@ -774,7 +774,7 @@ struct LibraryAccountView: View {
             LibrarySignUpView(authMode: $authMode, currentPage: $currentPage)
         } else {
             VStack(spacing: Spacing.medium) {
-                OnboardingProgressBar(step: 4, total: 4)
+                OnboardingProgressBar(step: 5, total: 5)
                     .padding(.bottom, Spacing.small)
 
                 // No glow/sparkle at this size — same treatment
@@ -888,7 +888,7 @@ struct LibraryLoginView: View {
 
     private var loginForm: some View {
         VStack(spacing: Spacing.medium) {
-            OnboardingProgressBar(step: 4, total: 4)
+            OnboardingProgressBar(step: 5, total: 5)
                 .padding(.bottom, Spacing.small)
 
             OnboardingMascot(size: 96, sparkleCount: 0, showsGlow: false)
@@ -1683,7 +1683,7 @@ struct ReaderAccountView: View {
             }
         } else {
             VStack(spacing: Spacing.medium) {
-                OnboardingProgressBar(step: 4, total: 4)
+                OnboardingProgressBar(step: 5, total: 5)
                     .padding(.bottom, Spacing.small)
 
                 OnboardingMascot(size: 96, sparkleCount: 0, showsGlow: false)
