@@ -1663,7 +1663,7 @@ struct ReaderAccountView: View {
                     TextField(
                         "",
                         text: $joinCode,
-                        prompt: Text("ABC-123")
+                        prompt: Text("Join code")
                             .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
                     )
                     .textFieldStyle(.plain)
@@ -1681,10 +1681,6 @@ struct ReaderAccountView: View {
                     Rectangle()
                         .fill(Color.onboardingBorder)
                         .frame(height: 2)
-
-                    Text("e.g. ABC-123 — try that one")
-                        .font(OnboardingFont.body(14, weight: .semiBold))
-                        .foregroundStyle(Color.onboardingTextSecondary)
                 }
 
                 if let errorMessage {
