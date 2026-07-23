@@ -163,14 +163,15 @@ extension Font {
     static let eyebrow = Font.system(.caption, design: .rounded).weight(.bold)
 
     // The everyday body/label/paragraph text style used almost
-    // everywhere in this app. Deliberately one step larger than SwiftUI's
-    // default ".body" (17pt) — "comfortable" reading size is this app's
-    // baseline for every reader, not an opt-in accessibility extra.
-    static let comfortableBody = Font.system(.title3, design: .rounded)
+    // everywhere in this app. Deliberately several steps larger than
+    // SwiftUI's default ".body" (17pt) — "comfortable" reading size is
+    // this app's baseline for every reader, not an opt-in accessibility
+    // extra.
+    static let comfortableBody = Font.system(.title2, design: .rounded)
 
     // Text inside PrimaryButtonStyle/SecondaryButtonStyle buttons — large
     // and semibold so every button reads clearly at a glance.
-    static let buttonLabel = Font.system(.title2, design: .rounded).weight(.semibold)
+    static let buttonLabel = Font.system(.title, design: .rounded).weight(.semibold)
 
     // The small caption under an icon-only button (see ReadView's
     // transport controls) — smaller than buttonLabel since it sits below
@@ -320,18 +321,70 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
+// The "Go Back" action repeats across nearly every screen in this app —
+// pulling it into one shared button means it always gets the same
+// leading chevron icon (rather than being plain text), and any future
+// tweak to how "going back" looks/reads only needs to happen here once.
+struct BackButton: View {
+    let action: () -> Void
+
+    // HomeView's onboarding steps deliberately use the lighter,
+    // unbordered TextButtonStyle for "Go Back" (so it doesn't compete
+    // with that screen's own "Continue" pill) — everywhere else uses the
+    // outlined SecondaryButtonStyle pill, same as every other secondary
+    // action in the app.
+    var plain: Bool = false
+
+    var body: some View {
+        Button(action: action) {
+            Label("Go Back", systemImage: "chevron.left")
+        }
+        .buttonStyle(plain ? AnyButtonStyle(TextButtonStyle()) : AnyButtonStyle(SecondaryButtonStyle()))
+    }
+}
+
+// SwiftUI's ".buttonStyle(_:)" expects one single concrete type at each
+// call site — it can't take "either TextButtonStyle or
+// SecondaryButtonStyle depending on a condition" directly, since a
+// ternary needs both branches to already be the exact same type. This
+// small wrapper erases either one down to the same "AnyButtonStyle" type
+// so BackButton's own ternary above can compile.
+struct AnyButtonStyle: ButtonStyle {
+    private let makeBodyClosure: (Configuration) -> AnyView
+
+    init<S: ButtonStyle>(_ style: S) {
+        makeBodyClosure = { configuration in
+            AnyView(style.makeBody(configuration: configuration))
+        }
+    }
+
+    func makeBody(configuration: Configuration) -> some View {
+        makeBodyClosure(configuration)
+    }
+}
+
 // A minimal, text-only style — no fill, no outline, just the label
 // itself — for actions too light-touch for even SecondaryButtonStyle's
 // outlined pill, like stepping back one step in HomeView's onboarding
 // sequence. "Never mind, take me back" doesn't need to compete visually
 // with the actual forward-moving "Continue" button on the same screen.
+// Also used for toolbar buttons (see LibraryCatalogManagementView,
+// SettingsView, ReadableContentDetailView) — a toolbar slot is too
+// small/compact for even a pill-shaped button, but every button in this
+// app should still be one of ITS OWN custom styles rather than falling
+// back to the platform-default blue toolbar text.
 struct TextButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
+    // Toolbar "confirm" actions (e.g. "Accept") use this to read as
+    // bolder/accent-colored — a primary action, not a de-emphasized one
+    // like "Go Back" or a toolbar "Done"/"Cancel".
+    var emphasized: Bool = false
+
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
-            .font(.comfortableBody)
-            .foregroundStyle(Color.textSecondary)
+            .font(emphasized ? .buttonLabel : .comfortableBody)
+            .foregroundStyle(emphasized ? Color.accentPrimary : Color.textSecondary)
             .opacity(disabledAdjustedOpacity(pressed: configuration.isPressed))
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
     }
@@ -486,12 +539,9 @@ struct AppMascot: View {
     // Ember's own fixed palette — deliberately literal colors, not the
     // shared Color.accentPrimary/.flameGlow tokens the rest of the app
     // uses, since a hand-drawn character's own colors shouldn't retheme
-    // just because the reader picked a different app-wide accent. Golden
-    // yellow reads clearly on both the light and dark page backgrounds
-    // without needing separate light/dark variants the way a functional
-    // UI color would.
-    private let bodyColor = Color(red: 1.0, green: 0.780, blue: 0.212)
-    private let shadowColor = Color(red: 0.937, green: 0.663, blue: 0.196)
+    // just because the reader picked a different app-wide accent.
+    private let bodyColor = Color(red: 0.949, green: 0.502, blue: 0.110) // orange
+    private let innerColor = Color(red: 1.0, green: 0.824, blue: 0.247) // yellow
 
     private var currentRotationDegrees: Double {
         let amount = 2.5 * flickerIntensity
@@ -505,47 +555,50 @@ struct AppMascot: View {
 
     var body: some View {
         ZStack {
-            // The main flame body: a solid gold fill with a thick white
-            // "sticker" outline traced around the same shape — the
-            // outline is a second copy of FlameShape, stroked rather
-            // than filled, sized to match via .overlay (which proposes
-            // the SAME size to its content as the view it's attached to).
-            FlameShape()
-                .fill(bodyColor)
-                .frame(width: size * 0.86, height: size)
-                .overlay(
-                    FlameShape()
-                        .stroke(Color.white, lineWidth: size * 0.045)
-                )
-
-            // A subtly darker, softer-edged shape low in the body —
-            // suggesting gentle depth/shading rather than a bright inner
-            // flame — sized and positioned so it stays within the outer
-            // silhouette rather than poking past its edges.
-            FlameShape()
-                .fill(shadowColor.opacity(0.6))
-                .frame(width: size * 0.34, height: size * 0.42)
-                .offset(y: size * 0.27)
-
-            // A small glossy highlight streak in the upper-right, the
-            // way a sticker/icon suggests a light source and a glossy
-            // surface with one bright diagonal streak.
+            // A soft, static ground shadow — sits OUTSIDE the sway/breathe
+            // group below, so it stays put while the flame sways above
+            // it, the way a candle's shadow doesn't tilt along with the
+            // flame itself.
             Ellipse()
-                .fill(Color.white.opacity(0.75))
-                .frame(width: size * 0.11, height: size * 0.22)
-                .rotationEffect(.degrees(28))
-                .offset(x: size * 0.15, y: -size * 0.24)
+                .fill(Color.black.opacity(0.12))
+                .frame(width: size * 0.42, height: size * 0.07)
+                .offset(y: size * 0.5)
+
+            ZStack {
+                // The main body: a solid orange fill, with a thick white
+                // outline traced around the SAME compound shape (see
+                // FlameCompoundShape's own comment) — the outline is a
+                // second copy of the shape, stroked rather than filled,
+                // sized to match via .overlay (which proposes the SAME
+                // size to its content as the view it's attached to).
+                FlameCompoundShape()
+                    .fill(bodyColor)
+                    .frame(width: size * 0.8, height: size * 0.92)
+                    .overlay(
+                        FlameCompoundShape()
+                            .stroke(Color.white, style: StrokeStyle(lineWidth: size * 0.045, lineJoin: .round))
+                    )
+
+                // The inner teardrop, sitting inside the compound body —
+                // this is Ember's whole "face," in place of the
+                // eyes/smile earlier versions had.
+                DropletShape()
+                    .fill(innerColor)
+                    .frame(width: size * 0.28, height: size * 0.4)
+                    .offset(y: size * 0.1)
+            }
+            // Both the sway and the "breathe" pivot from the bottom, the
+            // way a real flame sways from its base while the tip drifts
+            // most — rotating/scaling from the center (SwiftUI's default
+            // anchor) would look like the whole shape wobbling in place
+            // instead. Each amount is computed as its own local constant
+            // first (rather than inline math inside the ternary) —
+            // partly for readability, partly because Swift's
+            // type-checker can be slow to resolve a ternary with
+            // arithmetic on both branches inline.
+            .rotationEffect(.degrees(currentRotationDegrees), anchor: .bottom)
+            .scaleEffect(currentScale, anchor: .bottom)
         }
-        // Both the sway and the "breathe" pivot from the bottom, the way
-        // a real flame sways from its base while the tip drifts most —
-        // rotating/scaling from the center (SwiftUI's default anchor)
-        // would look like the whole shape wobbling in place instead.
-        // Each amount is computed as its own local constant first (rather
-        // than inline math inside the ternary) — partly for readability,
-        // partly because Swift's type-checker can be slow to resolve a
-        // ternary with arithmetic on both branches inline.
-        .rotationEffect(.degrees(currentRotationDegrees), anchor: .bottom)
-        .scaleEffect(currentScale, anchor: .bottom)
         .onAppear {
             guard !reduceMotion else { return }
             // ".repeatForever(autoreverses: true)" keeps swinging back
@@ -564,47 +617,81 @@ struct AppMascot: View {
     }
 }
 
-// The flame silhouette AppMascot draws above (three times — the main
-// body, the white outline traced around it, and the smaller inner
-// shadow shape): a full, rounded body with a distinctive double-peaked
-// top — a shallow "valley" between a shorter left peak and a taller
-// right peak — rather than a single smooth point, which is what gives
-// Ember its particular silhouette instead of reading as a generic
-// teardrop.
-private struct FlameShape: Shape {
+// The main compound flame silhouette AppMascot fills and outlines: a
+// teardrop-shaped main body (point at top, rounded at bottom, same idea
+// as DropletShape below) PLUS one extra triangular prong jutting out
+// from the left side — drawn as a single continuous outline (a sharp
+// line-to-line vertex for the prong, not another smooth curve) rather
+// than two separate overlapping shapes, so the fill and the white
+// outline both trace the combined silhouette cleanly with no seam where
+// the prong meets the main body.
+private struct FlameCompoundShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let width = rect.width
         let height = rect.height
 
-        // Start at the bottom center and sweep up the left side to the
-        // shorter left peak.
-        path.move(to: CGPoint(x: width * 0.5, y: height))
+        // Top point of the main teardrop body.
+        path.move(to: CGPoint(x: width * 0.62, y: 0))
+
+        // Right side: smooth curve down to the bottom point.
         path.addCurve(
-            to: CGPoint(x: width * 0.28, y: height * 0.32),
-            control1: CGPoint(x: width * 0.02, y: height * 0.85),
-            control2: CGPoint(x: width * 0.04, y: height * 0.48)
+            to: CGPoint(x: width * 0.52, y: height),
+            control1: CGPoint(x: width * 1.0, y: height * 0.4),
+            control2: CGPoint(x: width * 0.86, y: height * 0.92)
         )
 
-        // Down into the shallow valley between the two peaks.
+        // Left side, bottom back up to the prong's base — higher up the
+        // body than before, so the prong that follows reads as a small
+        // accent near the top rather than a second lobe splitting the
+        // silhouette roughly in half.
         path.addCurve(
-            to: CGPoint(x: width * 0.52, y: height * 0.22),
-            control1: CGPoint(x: width * 0.38, y: height * 0.18),
-            control2: CGPoint(x: width * 0.42, y: height * 0.3)
+            to: CGPoint(x: width * 0.22, y: height * 0.5),
+            control1: CGPoint(x: width * 0.18, y: height * 0.92),
+            control2: CGPoint(x: width * 0.06, y: height * 0.72)
         )
 
-        // Up to the taller right peak, the highest point of the shape.
-        path.addCurve(
-            to: CGPoint(x: width * 0.66, y: 0),
-            control1: CGPoint(x: width * 0.58, y: height * 0.15),
-            control2: CGPoint(x: width * 0.6, y: height * 0.05)
-        )
+        // Straight line out to the prong's tip — a sharp vertex (not a
+        // curve) so it reads as a crisp triangular point sticking out,
+        // rather than another smooth lobe. Shorter and higher than the
+        // first attempt at this shape, which read as a beak rather than
+        // a flame-lick accent.
+        path.addLine(to: CGPoint(x: width * 0.08, y: height * 0.32))
 
-        // Down the right side, back to bottom center.
+        // Straight back in from the tip to a point partway up, then a
+        // smooth curve the rest of the way to rejoin the top point.
+        path.addLine(to: CGPoint(x: width * 0.28, y: height * 0.28))
+        path.addCurve(
+            to: CGPoint(x: width * 0.62, y: 0),
+            control1: CGPoint(x: width * 0.3, y: height * 0.1),
+            control2: CGPoint(x: width * 0.42, y: 0)
+        )
+        path.closeSubpath()
+        return path
+    }
+}
+
+// The small solid teardrop AppMascot fills inside its compound body — a
+// classic raindrop/petal shape: a point at the top, widening into a
+// smooth rounded body toward the bottom. Just two mirrored curves
+// (rather than a circle-plus-triangle construction), which is the
+// simplest way to draw this exact silhouette.
+private struct DropletShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let width = rect.width
+        let height = rect.height
+
+        path.move(to: CGPoint(x: width * 0.5, y: 0))
         path.addCurve(
             to: CGPoint(x: width * 0.5, y: height),
-            control1: CGPoint(x: width * 1.08, y: height * 0.42),
-            control2: CGPoint(x: width * 0.92, y: height * 0.88)
+            control1: CGPoint(x: width * 0.95, y: height * 0.4),
+            control2: CGPoint(x: width * 0.85, y: height)
+        )
+        path.addCurve(
+            to: CGPoint(x: width * 0.5, y: 0),
+            control1: CGPoint(x: width * 0.15, y: height),
+            control2: CGPoint(x: width * 0.05, y: height * 0.4)
         )
         path.closeSubpath()
         return path
