@@ -38,3 +38,8 @@ firebase-debug.*.log
 ui-debug.log
 
 .DS_Store
+
+# scripts/ uses firebase-admin (Node) for one-off Auth/Firestore cleanup —
+# dependencies are local, not part of the iOS app itself.
+scripts/node_modules/
+scripts/package-lock.json
