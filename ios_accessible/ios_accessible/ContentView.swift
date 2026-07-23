@@ -702,7 +702,12 @@ private struct AccountChoiceScreen: View {
 
 // Lets the user choose whether to log into an existing library account or
 // sign up for a new one, then shows that specific form. Library accounts
-// use a username and password either way.
+// use a username and password either way. This picker itself — "Set up
+// your library" — is part of the onboarding redesign (it's step 4 of 4
+// in the overall onboarding flow's own progress count, same as Library
+// Log In and Reader Join Code, all of which share that final step),
+// built entirely from OnboardingTheme.swift's components rather than
+// Theme.swift's, matching HomeView's own onboarding steps.
 struct LibraryAccountView: View {
     // @Binding (not "let") so "Go Back" below can clear it, returning to
     // AccountView's picker the same way it got here.
@@ -723,32 +728,47 @@ struct LibraryAccountView: View {
             LibrarySignUpView(authMode: $authMode, currentPage: $currentPage)
         } else {
             VStack(spacing: Spacing.medium) {
-                PageHeader(
-                    title: "Welcome, Librarian!",
-                    subtitle: "Log in to your account, or set up a new one."
+                OnboardingProgressBar(step: 4, total: 4)
+                    .padding(.bottom, Spacing.small)
+
+                // No glow/sparkle at this size — same treatment
+                // AccountChoiceScreen's own mascot uses, since by this
+                // point a reader's attention should be on the choice
+                // itself, not on Ember.
+                OnboardingMascot(size: 96, sparkleCount: 0, showsGlow: false)
+
+                OnboardingPageHeader(
+                    title: "Set up your library",
+                    titleSize: 30,
+                    subtitle: "Sign up to create a new library, or log in if you already have one.",
+                    subtitleSize: 16
                 )
 
-                ChoiceCard(
-                    icon: "key.fill",
-                    title: "Log In",
-                    description: "Welcome back — sign in to your library."
-                ) {
-                    authMode = .login
-                }
+                Spacer()
 
-                ChoiceCard(
-                    icon: "sparkles",
-                    title: "Sign Up",
-                    description: "Set up a brand new library account."
-                ) {
+                Button(action: {
                     authMode = .signUp
-                }
+                }, label: {
+                    Text("Sign Up")
+                })
+                .buttonStyle(OnboardingPrimaryButtonStyle())
 
-                BackButton(action: {
+                Button(action: {
+                    authMode = .login
+                }, label: {
+                    Text("Log In")
+                })
+                .buttonStyle(OnboardingSecondaryButtonStyle())
+
+                Spacer()
+
+                OnboardingBackButton(action: {
                     accountType = nil
                 })
             }
             .padding(Spacing.large)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.onboardingBackground.ignoresSafeArea())
         }
     }
 }
@@ -765,6 +785,12 @@ private func sanitizedUsername(_ input: String) -> String {
 }
 
 // Logging into an existing library account, for real now via AuthService.
+// Rebuilt to match the onboarding redesign — same mascot/title/subtitle
+// pattern as LibraryAccountView's own "Set up your library" screen just
+// above, with two stacked ghost fields (left-aligned, Quicksand — NOT
+// the single centered Baloo-2 field the sign-up steps use, since two
+// fields sharing one screen read better smaller and left-aligned than
+// centered and oversized).
 struct LibraryLoginView: View {
     // @Binding so "Go Back" can clear it, returning to LibraryAccountView's
     // log in/sign up picker.
@@ -788,48 +814,88 @@ struct LibraryLoginView: View {
 
     var body: some View {
         VStack(spacing: Spacing.medium) {
-            PageHeader(title: "Library Log In")
+            OnboardingProgressBar(step: 4, total: 4)
+                .padding(.bottom, Spacing.small)
 
-            TextField("Username", text: $username)
-                .textFieldStyle(.roundedBorder)
-                .font(.comfortableBody)
-                .padding(.horizontal)
-                // Stops the keyboard from auto-capitalizing the first
-                // letter, since capitals get stripped right back out anyway.
-                .textInputAutocapitalization(.never)
-                .onChange(of: username) { _, newValue in
-                    username = sanitizedUsername(newValue)
+            OnboardingMascot(size: 96, sparkleCount: 0, showsGlow: false)
+
+            OnboardingPageHeader(
+                title: "Log in to your library",
+                titleSize: 30,
+                subtitle: "Enter your library credentials.",
+                subtitleSize: 16
+            )
+
+            VStack(spacing: Spacing.medium) {
+                VStack(spacing: Spacing.small) {
+                    TextField(
+                        "",
+                        text: $username,
+                        prompt: Text("Username")
+                            .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+                    )
+                    .textFieldStyle(.plain)
+                    .font(OnboardingFont.body(18, weight: .bold))
+                    .foregroundStyle(Color.onboardingText)
+                    // Stops the keyboard from auto-capitalizing the first
+                    // letter, since capitals get stripped right back out
+                    // anyway.
+                    .textInputAutocapitalization(.never)
+                    .tint(Color.onboardingText)
+                    .onChange(of: username) { _, newValue in
+                        username = sanitizedUsername(newValue)
+                    }
+
+                    Rectangle()
+                        .fill(Color.onboardingBorder)
+                        .frame(height: 2)
                 }
 
-            // SecureField (not TextField) hides what's typed, the way
-            // password fields normally work.
-            SecureField("Password", text: $password)
-                .textFieldStyle(.roundedBorder)
-                .font(.comfortableBody)
-                .padding(.horizontal)
+                VStack(spacing: Spacing.small) {
+                    // SecureField (not TextField) hides what's typed, the
+                    // way password fields normally work.
+                    SecureField(
+                        "",
+                        text: $password,
+                        prompt: Text("Password")
+                            .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+                    )
+                    .textFieldStyle(.plain)
+                    .font(OnboardingFont.body(18, weight: .bold))
+                    .foregroundStyle(Color.onboardingText)
+                    .tint(Color.onboardingText)
+
+                    Rectangle()
+                        .fill(Color.onboardingBorder)
+                        .frame(height: 2)
+                }
+            }
 
             if let errorMessage {
-                ErrorLabel(message: errorMessage)
+                OnboardingErrorLabel(message: errorMessage, isLeading: true)
             }
+
+            Spacer()
 
             Button(action: {
                 logIn()
             }, label: {
                 Text("Log In")
             })
-            .buttonStyle(PrimaryButtonStyle())
-            .padding(.top)
+            .buttonStyle(OnboardingPrimaryButtonStyle())
             // Neither field can be left blank — an empty username or
             // password would just fail the sign-in anyway, so there's no
             // reason to let the button fire (and show a network error)
             // before both are actually filled in.
             .disabled(isSubmitting || username.isEmpty || password.isEmpty)
 
-            BackButton(action: {
+            OnboardingBackButton(action: {
                 authMode = nil
             })
         }
         .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
     // Library accounts are identified by username, but Firebase's

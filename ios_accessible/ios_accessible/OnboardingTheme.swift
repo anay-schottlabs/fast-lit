@@ -101,6 +101,37 @@ struct OnboardingPrimaryButtonStyle: ButtonStyle {
     }
 }
 
+// The outlined pill next to a filled OnboardingPrimaryButtonStyle one —
+// used where this flow needs a second, less-emphasized full-width action
+// alongside its primary one (e.g. "Log In" beside "Sign Up" on the
+// library auth choice screen). Same capsule shape and sizing as the
+// primary style, just a 2px border in this flow's own border token
+// instead of a solid fill — matching Theme.swift's own
+// SecondaryButtonStyle shape, built from this flow's separate tokens.
+struct OnboardingSecondaryButtonStyle: ButtonStyle {
+    @Environment(\.isEnabled) private var isEnabled
+
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .font(OnboardingFont.body(19, weight: .bold))
+            .foregroundStyle(Color.onboardingText)
+            .frame(maxWidth: .infinity, minHeight: 60)
+            .background(
+                Capsule()
+                    .strokeBorder(Color.onboardingBorder, lineWidth: 2)
+            )
+            .opacity(disabledAdjustedOpacity(pressed: configuration.isPressed))
+            .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
+            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+            .animation(.easeOut(duration: 0.15), value: isEnabled)
+    }
+
+    private func disabledAdjustedOpacity(pressed: Bool) -> Double {
+        guard isEnabled else { return 0.4 }
+        return pressed ? 0.6 : 1.0
+    }
+}
+
 // "Go Back" on every non-welcome onboarding screen — plain text, no
 // border or fill, in the flow's secondary (not primary) text color.
 struct OnboardingBackButton: View {
@@ -136,11 +167,18 @@ private struct OnboardingTextButtonStyle: ButtonStyle {
 struct OnboardingErrorLabel: View {
     let message: String
 
+    // The single-field sign-up steps center everything (their one field
+    // is centered too), but LibraryLoginView's two stacked fields are
+    // left-aligned — this follows suit there rather than looking
+    // oddly centered under left-aligned fields.
+    var isLeading: Bool = false
+
     var body: some View {
         Text(message)
             .font(OnboardingFont.body(14, weight: .semiBold))
             .foregroundStyle(Color.onboardingError)
-            .multilineTextAlignment(.center)
+            .multilineTextAlignment(isLeading ? .leading : .center)
+            .frame(maxWidth: .infinity, alignment: isLeading ? .leading : .center)
     }
 }
 
