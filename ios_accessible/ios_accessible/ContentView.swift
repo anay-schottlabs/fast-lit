@@ -857,129 +857,368 @@ struct LibraryLoginView: View {
     }
 }
 
-// Signing up for a new library account. Same fields as LibraryLoginView,
-// plus a name, since sign up (unlike log in) is creating a new person's
-// account rather than authenticating one that already exists. Actually
-// creates the account now via AuthService.
+// Which step of LibrarySignUpView's own wizard is showing — a dedicated
+// enum (rather than the old plain Int) since each step is now its own
+// full screen with its own title/copy/field, not just a swapped-out
+// field within one shared layout.
+private enum LibrarySignUpStep {
+    case libraryName
+    case username
+    case password
+    case confirmPassword
+    case success
+}
+
+// Signing up for a new library account, rebuilt as four separate
+// full-screen steps — one field per screen — matching HomeView's own
+// "What should we call you?" onboarding step exactly (mascot, centered
+// Baloo 2 title, single underlined field, Continue/Go Back), plus a
+// final confirmation screen once the account is actually created. Each
+// step's own step-N-of-4 progress bar is separate from the main
+// onboarding flow's — this sub-flow restarts its own count at step 1,
+// since reaching here already means onboarding proper is finished.
 struct LibrarySignUpView: View {
     @Binding var authMode: AuthMode?
 
-    // Set to .library on a successful sign-up.
+    // Set to .library once the reader taps "Continue" on this flow's own
+    // success step — not the instant the account is actually created —
+    // so there's always a clear confirmation moment first, the same
+    // pattern ReaderAccountView's own "You're All Set!" screen uses.
     @Binding var currentPage: Page
 
     @Environment(AuthService.self) private var authService
 
-    // Which step of the wizard is showing: 0 = library name, 1 = username,
-    // 2 = password + confirm password. A plain Int (rather than an enum)
-    // since it's only ever used as "current step" / "step + 1", and this
-    // view is the only place that needs it.
-    @State private var step: Int = 0
+    @State private var step: LibrarySignUpStep = .libraryName
 
     // "Library" is just a fun way to describe an organization account, so
     // this step asks for the organization's name, not a person's name —
-    // unlike ReaderSignUpView, which asks "What should we call you?".
+    // unlike the reader flow, which asks "What should we call you?".
     @State private var libraryName: String = ""
     @State private var username: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
 
-    // nil until something goes wrong (password mismatch, or a failed
-    // sign-up); cleared again on the next attempt.
+    // nil until something goes wrong on the CURRENT step (a taken
+    // username, too-short password, mismatched confirmation, or a failed
+    // sign-up); cleared again whenever its own field changes.
     @State private var errorMessage: String? = nil
 
-    // Disables "Sign Up" for the duration of a sign-up attempt, so a slow
+    // Disables "Continue"/"Create Library" for the duration of a network
+    // call (the username-taken check, or the actual sign-up), so a slow
     // network can't be worked around by mashing the button into firing
-    // several sign-ups at once.
+    // several at once.
     @State private var isSubmitting: Bool = false
 
     var body: some View {
+        Group {
+            switch step {
+            case .libraryName:
+                libraryNameStep
+            case .username:
+                usernameStep
+            case .password:
+                passwordStep
+            case .confirmPassword:
+                confirmPasswordStep
+            case .success:
+                successStep
+            }
+        }
+        // Same "each step is its own identity" trick HomeView's own
+        // onboarding steps use — without it, SwiftUI treats every step as
+        // one view quietly changing content, rather than something to
+        // actually transition between.
+        .id(step)
+        .transition(.opacity.combined(with: .scale(scale: 0.96)))
+        .animation(.easeInOut(duration: 0.45), value: step)
+    }
+
+    // Step 1 of 4: the organization's name.
+    private var libraryNameStep: some View {
         VStack(spacing: Spacing.medium) {
-            PageHeader(title: "Library Sign Up", subtitle: "Step \(step + 1) of 3")
+            OnboardingProgressBar(step: 1, total: 4)
+                .padding(.bottom, Spacing.small)
 
-            if step == 0 {
-                TextField("What's your library called?", text: $libraryName)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.comfortableBody)
-                    .padding(.horizontal)
-            } else if step == 1 {
-                TextField("Choose a username", text: $username)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.comfortableBody)
-                    .padding(.horizontal)
-                    // Stops the keyboard from auto-capitalizing the first
-                    // letter, since capitals get stripped right back out
-                    // anyway.
-                    .textInputAutocapitalization(.never)
-                    .onChange(of: username) { _, newValue in
-                        username = sanitizedUsername(newValue)
-                        // Clears a stale "already taken" error left over
-                        // from a previous username typed on this step.
-                        errorMessage = nil
-                    }
-            } else {
-                SecureField("Password", text: $password)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.comfortableBody)
-                    .padding(.horizontal)
+            Spacer()
 
-                SecureField("Confirm Password", text: $confirmPassword)
-                    .textFieldStyle(.roundedBorder)
-                    .font(.comfortableBody)
-                    .padding(.horizontal)
+            OnboardingMascot(size: 110, sparkleCount: 1)
+
+            OnboardingPageHeader(
+                title: "What's your library called?",
+                titleSize: 34,
+                subtitle: "This is the name members will see.",
+                subtitleSize: 16
+            )
+
+            VStack(spacing: Spacing.small) {
+                TextField(
+                    "",
+                    text: $libraryName,
+                    prompt: Text("Library name")
+                        .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+                )
+                .textFieldStyle(.plain)
+                .font(OnboardingFont.display(26))
+                .foregroundStyle(Color.onboardingText)
+                .multilineTextAlignment(.center)
+                .textInputAutocapitalization(.words)
+                .tint(Color.onboardingText)
+
+                Rectangle()
+                    .fill(Color.onboardingBorder)
+                    .frame(height: 2)
             }
+            .padding(.horizontal, Spacing.extraLarge)
 
-            if let errorMessage {
-                ErrorLabel(message: errorMessage)
-            }
+            Spacer()
 
-            // On the last step this is the actual "Sign Up" submit. Leaving
-            // the username step (1) needs a network check first — see
-            // advancePastUsernameStep() — so it can't just increment step
-            // the way leaving step 0 does.
             Button(action: {
-                if step == 1 {
-                    advancePastUsernameStep()
-                } else if step < 2 {
-                    step += 1
-                } else {
-                    signUp()
-                }
+                step = .username
             }, label: {
-                Text(step < 2 ? "Next" : "Sign Up")
+                Text("Continue")
             })
-            .buttonStyle(PrimaryButtonStyle())
-            .padding(.top)
-            // Whichever field(s) the current step shows can't be left
-            // blank — see canAdvance below.
-            .disabled(isSubmitting || !canAdvance)
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+            .disabled(libraryName.trimmingCharacters(in: .whitespaces).isEmpty)
 
-            // On the first step, "Go Back" leaves the wizard entirely, back
-            // to the log in/sign up picker; on later steps it just moves
-            // back one step instead.
-            BackButton(action: {
-                if step > 0 {
-                    step -= 1
-                } else {
-                    authMode = nil
-                }
+            OnboardingBackButton(action: {
+                authMode = nil
             })
         }
         .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
-    // Whether the field(s) on the CURRENT step are filled in enough to
-    // move on — checked per-step since each step shows different fields,
-    // and a field from a later step being empty shouldn't block an
-    // earlier one.
-    private var canAdvance: Bool {
-        switch step {
-        case 0:
-            return !libraryName.isEmpty
-        case 1:
-            return !username.isEmpty
-        default:
-            return !password.isEmpty && !confirmPassword.isEmpty
+    // Step 2 of 4: a unique username — the same async "already taken"
+    // check the old combined form ran, just triggered from its own full
+    // screen now.
+    private var usernameStep: some View {
+        VStack(spacing: Spacing.medium) {
+            OnboardingProgressBar(step: 2, total: 4)
+                .padding(.bottom, Spacing.small)
+
+            Spacer()
+
+            OnboardingMascot(size: 110, sparkleCount: 1)
+
+            OnboardingPageHeader(
+                title: "Pick a username",
+                titleSize: 34,
+                subtitle: "You'll use this to log in.",
+                subtitleSize: 16
+            )
+
+            VStack(spacing: Spacing.small) {
+                TextField(
+                    "",
+                    text: $username,
+                    prompt: Text("Username")
+                        .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+                )
+                .textFieldStyle(.plain)
+                .font(OnboardingFont.display(26))
+                .foregroundStyle(Color.onboardingText)
+                .multilineTextAlignment(.center)
+                // Stops the keyboard from auto-capitalizing the first
+                // letter, since capitals get stripped right back out
+                // anyway.
+                .textInputAutocapitalization(.never)
+                .tint(Color.onboardingText)
+                .onChange(of: username) { _, newValue in
+                    username = sanitizedUsername(newValue)
+                    // Clears a stale "already taken" error left over from
+                    // a previous username typed on this step.
+                    errorMessage = nil
+                }
+
+                Rectangle()
+                    .fill(Color.onboardingBorder)
+                    .frame(height: 2)
+            }
+            .padding(.horizontal, Spacing.extraLarge)
+
+            if let errorMessage {
+                OnboardingErrorLabel(message: errorMessage)
+            }
+
+            Spacer()
+
+            Button(action: {
+                advancePastUsernameStep()
+            }, label: {
+                Text("Continue")
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+            .disabled(isSubmitting || username.trimmingCharacters(in: .whitespaces).isEmpty)
+
+            OnboardingBackButton(action: {
+                step = .libraryName
+            })
         }
+        .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
+    }
+
+    // Step 3 of 4: a password, at least 8 characters — validated with an
+    // inline error on Continue rather than just leaving it disabled,
+    // since (unlike an empty field) "too short" isn't obvious just from
+    // looking at the field.
+    private var passwordStep: some View {
+        VStack(spacing: Spacing.medium) {
+            OnboardingProgressBar(step: 3, total: 4)
+                .padding(.bottom, Spacing.small)
+
+            Spacer()
+
+            OnboardingMascot(size: 110, sparkleCount: 1)
+
+            OnboardingPageHeader(
+                title: "Create a password",
+                titleSize: 34,
+                subtitle: "Use at least 8 characters.",
+                subtitleSize: 16
+            )
+
+            VStack(spacing: Spacing.small) {
+                SecureField(
+                    "",
+                    text: $password,
+                    prompt: Text("Password")
+                        .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+                )
+                .textFieldStyle(.plain)
+                .font(OnboardingFont.display(26))
+                .foregroundStyle(Color.onboardingText)
+                .multilineTextAlignment(.center)
+                .tint(Color.onboardingText)
+                .onChange(of: password) { _, _ in
+                    errorMessage = nil
+                }
+
+                Rectangle()
+                    .fill(Color.onboardingBorder)
+                    .frame(height: 2)
+            }
+            .padding(.horizontal, Spacing.extraLarge)
+
+            if let errorMessage {
+                OnboardingErrorLabel(message: errorMessage)
+            }
+
+            Spacer()
+
+            Button(action: {
+                continueFromPasswordStep()
+            }, label: {
+                Text("Continue")
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+            .disabled(password.isEmpty)
+
+            OnboardingBackButton(action: {
+                step = .username
+            })
+        }
+        .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
+    }
+
+    // Step 4 of 4: confirming the password — matching it is what
+    // actually creates the account (see submitSignUp below), so this
+    // step's own button reads "Create Library" rather than "Continue".
+    private var confirmPasswordStep: some View {
+        VStack(spacing: Spacing.medium) {
+            OnboardingProgressBar(step: 4, total: 4)
+                .padding(.bottom, Spacing.small)
+
+            Spacer()
+
+            OnboardingMascot(size: 110, sparkleCount: 1)
+
+            OnboardingPageHeader(
+                title: "Confirm your password",
+                titleSize: 34,
+                subtitle: "Just making sure it's right.",
+                subtitleSize: 16
+            )
+
+            VStack(spacing: Spacing.small) {
+                SecureField(
+                    "",
+                    text: $confirmPassword,
+                    prompt: Text("Confirm password")
+                        .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+                )
+                .textFieldStyle(.plain)
+                .font(OnboardingFont.display(26))
+                .foregroundStyle(Color.onboardingText)
+                .multilineTextAlignment(.center)
+                .tint(Color.onboardingText)
+                .onChange(of: confirmPassword) { _, _ in
+                    errorMessage = nil
+                }
+
+                Rectangle()
+                    .fill(Color.onboardingBorder)
+                    .frame(height: 2)
+            }
+            .padding(.horizontal, Spacing.extraLarge)
+
+            if let errorMessage {
+                OnboardingErrorLabel(message: errorMessage)
+            }
+
+            Spacer()
+
+            Button(action: {
+                submitSignUp()
+            }, label: {
+                Text("Create Library")
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+            .disabled(isSubmitting || confirmPassword.isEmpty)
+
+            OnboardingBackButton(action: {
+                step = .password
+            })
+        }
+        .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
+    }
+
+    // The terminal step, once the account is actually created — the same
+    // "You're All Set!" pattern ReaderAccountView shows after a
+    // successful join, adapted here for a library owner instead of a
+    // joining reader. No progress bar, matching Welcome's own lack of one
+    // — there's nothing left to show progress through.
+    private var successStep: some View {
+        VStack(spacing: Spacing.large) {
+            Spacer()
+
+            OnboardingMascot(size: 130, sparkleCount: 2)
+
+            OnboardingPageHeader(
+                title: "You're All Set!",
+                titleSize: 44,
+                subtitle: "Your library is ready. Time to start building your collection.",
+                subtitleSize: 18
+            )
+
+            Spacer()
+
+            Button(action: {
+                currentPage = .library
+            }, label: {
+                Text("Continue")
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+        }
+        .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
     // Same fixed-domain trick LibraryLoginView uses, so a username signed
@@ -988,9 +1227,9 @@ struct LibrarySignUpView: View {
         "\(username)@fastlit-library.app"
     }
 
-    // Only advances from the username step (1) to the password step (2)
-    // once a check against Firestore's libraryUsernames registry confirms
-    // the username isn't already taken — the whole point being that no one
+    // Only advances from the username step to the password step once a
+    // check against Firestore's libraryUsernames registry confirms the
+    // username isn't already taken — the whole point being that no one
     // should even reach the password step for a username that can't be
     // signed up with. (See AuthService.isUsernameTaken for why this goes
     // through Firestore rather than asking Firebase Auth directly.)
@@ -1003,7 +1242,7 @@ struct LibrarySignUpView: View {
                 if taken {
                     errorMessage = "That username is already taken."
                 } else {
-                    step += 1
+                    step = .password
                 }
             } catch {
                 errorMessage = error.localizedDescription
@@ -1012,8 +1251,17 @@ struct LibrarySignUpView: View {
         }
     }
 
-    private func signUp() {
-        guard password == confirmPassword else {
+    private func continueFromPasswordStep() {
+        guard password.count >= 8 else {
+            errorMessage = "Use at least 8 characters."
+            return
+        }
+        errorMessage = nil
+        step = .confirmPassword
+    }
+
+    private func submitSignUp() {
+        guard confirmPassword == password else {
             errorMessage = "Passwords don't match."
             return
         }
@@ -1042,7 +1290,7 @@ struct LibrarySignUpView: View {
                     libraryName: libraryName,
                     joinCode: AuthService.generateJoinCode()
                 )
-                currentPage = .library
+                step = .success
             } catch {
                 errorMessage = error.localizedDescription
             }

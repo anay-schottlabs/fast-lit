@@ -43,3 +43,8 @@ ui-debug.log
 # dependencies are local, not part of the iOS app itself.
 scripts/node_modules/
 scripts/package-lock.json
+
+# Design handoff reference package (HTML/JSX prototype + README) used to
+# guide implementation — a reference doc dropped in locally when needed,
+# not part of the app itself, so it shouldn't be committed.
+design_handoff_onboarding_flow/

@@ -2,9 +2,10 @@ import SwiftUI
 
 // A second, SEPARATE little design system, used ONLY by the first-time
 // onboarding sequence (HomeView's welcome/name/theme/account-choice
-// steps) and the "Who's Joining Us?" screen those steps share with
-// AccountView. Deliberately its own file, with its own colors, fonts,
-// and button/card styles — NOT built from Theme.swift's own
+// steps), the "Who's Joining Us?" screen those steps share with
+// AccountView, and the library sign-up flow (LibrarySignUpView) that
+// continues on from it. Deliberately its own file, with its own colors,
+// fonts, and button/card styles — NOT built from Theme.swift's own
 // Color.surfaceBackground/.textPrimary/.accentPrimary,
 // PrimaryButtonStyle, AppMascot, etc. Those are the rest of the app's
 // look (warm cream/terracotta, SF Rounded) and stay exactly as they
@@ -17,14 +18,15 @@ import SwiftUI
 
 // MARK: - Colors
 
-// Like Theme.swift's own colors, these seven all come from
-// Assets.xcassets (OnboardingBackground.colorset, OnboardingCard.colorset,
-// etc.) — Xcode generates a matching static Color property for each one
-// automatically, already resolving to the right light/dark variant, so
-// there's nothing to declare here. Their values are the exact hex codes
-// from the design handoff doc (see design_handoff_onboarding_flow/
-// README.md's "Design Tokens" section) — not approximations of the rest
-// of the app's palette.
+// Like Theme.swift's own colors, these all come from Assets.xcassets
+// (OnboardingBackground.colorset, OnboardingCard.colorset, etc.) — Xcode
+// generates a matching static Color property for each one automatically,
+// already resolving to the right light/dark variant, so there's nothing
+// to declare here. Their values are the exact hex codes from the design
+// handoff doc (see design_handoff_onboarding_flow/README.md's "Design
+// Tokens" section) — not approximations of the rest of the app's
+// palette. OnboardingError is the one exception to "strictly
+// grayscale/beige" — see OnboardingErrorLabel below for why.
 
 // MARK: - Fonts
 
@@ -121,6 +123,24 @@ private struct OnboardingTextButtonStyle: ButtonStyle {
             .foregroundStyle(Color.onboardingTextSecondary)
             .opacity(isEnabled ? (configuration.isPressed ? 0.5 : 1.0) : 0.4)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+    }
+}
+
+// MARK: - Errors
+
+// The inline validation message under a ghost field (e.g. "Use at least
+// 8 characters." on the sign-up password step) — the one place this
+// design system departs from strict grayscale/beige, since an error
+// genuinely needs to read as different from everything else on screen,
+// not just another line of secondary text.
+struct OnboardingErrorLabel: View {
+    let message: String
+
+    var body: some View {
+        Text(message)
+            .font(OnboardingFont.body(14, weight: .semiBold))
+            .foregroundStyle(Color.onboardingError)
+            .multilineTextAlignment(.center)
     }
 }
 
