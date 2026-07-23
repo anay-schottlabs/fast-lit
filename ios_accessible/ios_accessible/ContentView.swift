@@ -146,22 +146,19 @@ struct HomeView: View {
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("readerName") private var readerName: String = ""
 
-    // Same key ios_accessibleApp.swift's own @AppStorage property reads —
-    // @AppStorage just reads/writes UserDefaults under the hood, so two
-    // separate properties pointed at the same key (one here, one there)
-    // automatically stay in sync. Only actually written once, on the
-    // theme step's "Continue" below — see previewedScheme just under it
-    // for why tapping between the two preview cards doesn't touch this.
+    // Same key ios_accessibleApp.swift's own @AppStorage property reads,
+    // and the SAME source of truth the theme step's Light/Dark cards
+    // write to directly (see themeStep below) — @AppStorage just
+    // reads/writes UserDefaults under the hood, so two separate
+    // properties pointed at the same key (one here, one there)
+    // automatically stay in sync, and so does the app's real root-level
+    // ".preferredColorScheme(_:)" the instant either one changes. Written
+    // on tap, not deferred to "Continue" — a reader's pick needs to
+    // survive stepping back to Name or forward to Account Choice without
+    // requiring a specific button press to "save" it first.
     @AppStorage("appColorScheme") private var appColorSchemeRaw: String = AppColorScheme.system.rawValue
 
     @State private var onboardingStep: OnboardingStep = .welcome
-
-    // The reader's Light/Dark pick on the theme step, before they
-    // confirm it — kept separate from appColorSchemeRaw itself so tapping
-    // between the two preview cards only changes which one is
-    // highlighted, not the app's actual real appearance, until "Continue"
-    // is tapped.
-    @State private var previewedScheme: AppColorScheme = .light
 
     var body: some View {
         Group {
@@ -310,13 +307,26 @@ struct HomeView: View {
         .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
-    // Step 3: a real, live preview of both Light and Dark (see
-    // OnboardingThemeSwatch in OnboardingTheme.swift) before picking
-    // one. "Continue" commits the pick to appColorSchemeRaw (the same
-    // key ios_accessibleApp.swift reads for
-    // ".preferredColorScheme(_:)") and moves on to the final "Who's
-    // Joining Us?" step — it does NOT mark onboarding finished yet;
-    // accountChoiceStep below is what does that.
+    // What themeStep's two cards show as selected — reads
+    // appColorSchemeRaw directly (see themeStep's own comment), but
+    // treats the untouched default ("system," from a reader who hasn't
+    // reached this step yet) as "Light" for DISPLAY purposes only, so a
+    // card always looks pre-picked the first time this step shows,
+    // same as before. Never writes ".system" anywhere itself — only an
+    // actual tap on a card does that, via themeStep's own two actions.
+    private var displayedScheme: AppColorScheme {
+        let stored = AppColorScheme(rawValue: appColorSchemeRaw) ?? .system
+        return stored == .system ? .light : stored
+    }
+
+    // Step 3: pick Light or Dark (see OnboardingThemeSwatch in
+    // OnboardingTheme.swift). Tapping a card writes appColorSchemeRaw
+    // directly — immediately, not deferred to "Continue" — so the whole
+    // app (this screen included, via ios_accessibleApp.swift's own
+    // root-level ".preferredColorScheme(_:)") updates live and the pick
+    // survives stepping back to Name or forward to Account Choice either
+    // way. "Continue" here just advances to the final "Who's Joining
+    // Us?" step; it doesn't need to save anything itself anymore.
     private var themeStep: some View {
         VStack(spacing: Spacing.medium) {
             OnboardingProgressBar(step: 2, total: 3)
@@ -334,23 +344,22 @@ struct HomeView: View {
             OnboardingSelectableCard(
                 leading: OnboardingThemeSwatch(palette: .light),
                 title: "Light",
-                isSelected: previewedScheme == .light
+                isSelected: displayedScheme == .light
             ) {
-                previewedScheme = .light
+                appColorSchemeRaw = AppColorScheme.light.rawValue
             }
 
             OnboardingSelectableCard(
                 leading: OnboardingThemeSwatch(palette: .dark),
                 title: "Dark",
-                isSelected: previewedScheme == .dark
+                isSelected: displayedScheme == .dark
             ) {
-                previewedScheme = .dark
+                appColorSchemeRaw = AppColorScheme.dark.rawValue
             }
 
             Spacer()
 
             Button(action: {
-                appColorSchemeRaw = previewedScheme.rawValue
                 withAnimation { onboardingStep = .accountChoice }
             }, label: {
                 Text("Continue")
@@ -365,15 +374,6 @@ struct HomeView: View {
         .padding(Spacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.onboardingBackground.ignoresSafeArea())
-        // Forces THIS screen (mascot, background, everything) into
-        // whichever scheme is currently tapped, live — without this,
-        // tapping Light/Dark only changed the two cards' own selection
-        // rings, and the actual on-screen appearance didn't visibly
-        // change until Continue wrote previewedScheme into
-        // appColorSchemeRaw. Scoped to just themeStep's own view tree,
-        // so it doesn't affect Welcome/Name before it or leak into
-        // Account Choice after Continue actually commits the pick.
-        .preferredColorScheme(previewedScheme.colorScheme)
     }
 
     // Step 4, the final onboarding step: the same "Who's Joining Us?"
