@@ -188,11 +188,7 @@ struct HomeView: View {
 
                 AppMascot(size: 90, flickerIntensity: 0.7, flickerSpeed: 0.85)
 
-                PageHeader(
-                    eyebrow: "Hi there",
-                    title: "Welcome to Fast Lit",
-                    subtitle: "Reading, one word at a time — simple, clear, and easy on the eyes."
-                )
+                PageHeader(title: "Welcome")
 
                 Spacer()
 
@@ -218,10 +214,7 @@ struct HomeView: View {
 
             AppMascot(size: 130, flickerIntensity: 1.0, flickerSpeed: 1.05)
 
-            PageHeader(
-                title: "What Should We Call You?",
-                subtitle: "Just so things feel a little more like yours."
-            )
+            PageHeader(title: "What Should We Call You?")
 
             // A "ghost" field — no box, no fill, just the text itself
             // and a thin line underneath as a subtle guide for where to
@@ -255,12 +248,9 @@ struct HomeView: View {
             .buttonStyle(PrimaryButtonStyle())
             .disabled(readerName.trimmingCharacters(in: .whitespaces).isEmpty)
 
-            Button(action: {
+            BackButton(action: {
                 withAnimation { onboardingStep = .welcome }
-            }, label: {
-                Text("Go Back")
-            })
-            .buttonStyle(TextButtonStyle())
+            }, plain: true)
         }
         .padding(Spacing.large)
     }
@@ -297,12 +287,9 @@ struct HomeView: View {
             .buttonStyle(PrimaryButtonStyle())
             .padding(.top, Spacing.small)
 
-            Button(action: {
+            BackButton(action: {
                 withAnimation { onboardingStep = .name }
-            }, label: {
-                Text("Go Back")
-            })
-            .buttonStyle(TextButtonStyle())
+            }, plain: true)
         }
         .padding(Spacing.large)
     }
@@ -316,8 +303,6 @@ struct HomeView: View {
 // re-show the theme preview here, both are already saved from onboarding.
 struct ReturningHomeView: View {
     @Binding var currentPage: Page
-
-    @AppStorage("readerName") private var readerName: String = ""
 
     // Toggled on by the gear icon below to present SettingsView as a sheet.
     @State private var isShowingSettings = false
@@ -335,16 +320,12 @@ struct ReturningHomeView: View {
 
                 AppMascot(size: 110, flickerIntensity: 0.9, flickerSpeed: 0.95)
 
-                PageHeader(
-                    eyebrow: "Welcome back",
-                    // Personalizes the greeting once a name has been
-                    // saved — readerName is only ever empty for an
-                    // account that somehow reached this screen without
-                    // completing onboarding first, which shouldn't
-                    // normally happen, but falling back to the generic
-                    // title is harmless either way.
-                    title: readerName.isEmpty ? "Welcome to Fast Lit" : "Hi, \(readerName)!"
-                )
+                // Deliberately NOT personalized with the reader's saved
+                // name here — this screen is reached before any actual
+                // log in/join happens (it's just "back at the app's home
+                // screen"), so a "Hi, <name>!" greeting belongs after a
+                // reader actually signs in or joins a library, not here.
+                PageHeader(eyebrow: "Welcome back", title: "Welcome to Fast Lit")
 
                 Spacer()
 
@@ -436,6 +417,7 @@ struct SettingsView: View {
                 }, label: {
                     Text("Done")
                 })
+                .buttonStyle(TextButtonStyle())
             }
         }
         .confirmationDialog(
@@ -548,12 +530,9 @@ struct AccountView: View {
                     accountType = .reader
                 }
 
-                Button(action: {
+                BackButton(action: {
                     currentPage = .home
-                }, label: {
-                    Text("Go Back")
                 })
-                .buttonStyle(SecondaryButtonStyle())
             }
             .padding(Spacing.large)
         }
@@ -604,12 +583,9 @@ struct LibraryAccountView: View {
                     authMode = .signUp
                 }
 
-                Button(action: {
+                BackButton(action: {
                     accountType = nil
-                }, label: {
-                    Text("Go Back")
                 })
-                .buttonStyle(SecondaryButtonStyle())
             }
             .padding(Spacing.large)
         }
@@ -688,12 +664,9 @@ struct LibraryLoginView: View {
             // before both are actually filled in.
             .disabled(isSubmitting || username.isEmpty || password.isEmpty)
 
-            Button(action: {
+            BackButton(action: {
                 authMode = nil
-            }, label: {
-                Text("Go Back")
             })
-            .buttonStyle(SecondaryButtonStyle())
         }
         .padding(Spacing.large)
     }
@@ -822,16 +795,13 @@ struct LibrarySignUpView: View {
             // On the first step, "Go Back" leaves the wizard entirely, back
             // to the log in/sign up picker; on later steps it just moves
             // back one step instead.
-            Button(action: {
+            BackButton(action: {
                 if step > 0 {
                     step -= 1
                 } else {
                     authMode = nil
                 }
-            }, label: {
-                Text("Go Back")
             })
-            .buttonStyle(SecondaryButtonStyle())
         }
         .padding(Spacing.large)
     }
@@ -1089,6 +1059,7 @@ struct LibraryCatalogManagementView: View {
                 }, label: {
                     Text("Done")
                 })
+                .buttonStyle(TextButtonStyle())
             }
         }
         .task {
@@ -1181,12 +1152,9 @@ struct ReaderAccountView: View {
                 })
                 .buttonStyle(PrimaryButtonStyle())
 
-                Button(action: {
+                BackButton(action: {
                     accountType = nil
-                }, label: {
-                    Text("Go Back")
                 })
-                .buttonStyle(SecondaryButtonStyle())
             }
             .padding(Spacing.large)
         } else {
@@ -1224,12 +1192,9 @@ struct ReaderAccountView: View {
                 // it early would just fail the lookup anyway.
                 .disabled(isSubmitting || code.count < 6)
 
-                Button(action: {
+                BackButton(action: {
                     accountType = nil
-                }, label: {
-                    Text("Go Back")
                 })
-                .buttonStyle(SecondaryButtonStyle())
             }
             .padding(Spacing.large)
         }
@@ -1332,12 +1297,9 @@ struct ChooseView: View {
                 .background(Color.surfaceBackground)
             }
 
-            Button(action: {
+            BackButton(action: {
                 currentPage = .home
-            }, label: {
-                Text("Go Back")
             })
-            .buttonStyle(SecondaryButtonStyle())
         }
         .padding(Spacing.large)
         // .sheet(item:) shows a modal whenever the bound value is non-nil,
@@ -1767,7 +1729,7 @@ struct ReadableContentDetailView: View {
                 }, label: {
                     Text("Done")
                 })
-                .font(.comfortableBody)
+                .buttonStyle(TextButtonStyle())
             }
             // .confirmationAction is the standard "confirm/accept" spot (right side).
             ToolbarItem(placement: .confirmationAction) {
@@ -1777,7 +1739,7 @@ struct ReadableContentDetailView: View {
                 }, label: {
                     Text("Accept")
                 })
-                .font(.comfortableBody.weight(.semibold))
+                .buttonStyle(TextButtonStyle(emphasized: true))
             }
         }
     }
