@@ -483,6 +483,16 @@ struct AppMascot: View {
     // in sync with each other, rather than drifting in and out of phase.
     @State private var isFlickering = false
 
+    // Ember's own fixed palette — deliberately literal colors, not the
+    // shared Color.accentPrimary/.flameGlow tokens the rest of the app
+    // uses, since a hand-drawn character's own colors shouldn't retheme
+    // just because the reader picked a different app-wide accent. Golden
+    // yellow reads clearly on both the light and dark page backgrounds
+    // without needing separate light/dark variants the way a functional
+    // UI color would.
+    private let bodyColor = Color(red: 1.0, green: 0.780, blue: 0.212)
+    private let shadowColor = Color(red: 0.937, green: 0.663, blue: 0.196)
+
     private var currentRotationDegrees: Double {
         let amount = 2.5 * flickerIntensity
         return isFlickering ? amount : -amount
@@ -495,22 +505,36 @@ struct AppMascot: View {
 
     var body: some View {
         ZStack {
-            // The outer flame — fuller and rounder than a slender candle
-            // flame (see FlameShape's own comment), filled with the
-            // app's vibrant accent color.
+            // The main flame body: a solid gold fill with a thick white
+            // "sticker" outline traced around the same shape — the
+            // outline is a second copy of FlameShape, stroked rather
+            // than filled, sized to match via .overlay (which proposes
+            // the SAME size to its content as the view it's attached to).
             FlameShape()
-                .fill(Color.accentPrimary)
-                .frame(width: size * 0.82, height: size)
+                .fill(bodyColor)
+                .frame(width: size * 0.86, height: size)
+                .overlay(
+                    FlameShape()
+                        .stroke(Color.white, lineWidth: size * 0.045)
+                )
 
-            // A smaller, warm-gold "inner flame" near the base — the
-            // same trick real flame icons use to suggest a brighter,
-            // hotter core, using its own dedicated gold color (see
-            // Assets.xcassets/FlameGlow.colorset) rather than just a
-            // translucent version of the outer color.
+            // A subtly darker, softer-edged shape low in the body —
+            // suggesting gentle depth/shading rather than a bright inner
+            // flame — sized and positioned so it stays within the outer
+            // silhouette rather than poking past its edges.
             FlameShape()
-                .fill(Color.flameGlow)
-                .frame(width: size * 0.4, height: size * 0.5)
-                .offset(y: size * 0.2)
+                .fill(shadowColor.opacity(0.6))
+                .frame(width: size * 0.34, height: size * 0.42)
+                .offset(y: size * 0.27)
+
+            // A small glossy highlight streak in the upper-right, the
+            // way a sticker/icon suggests a light source and a glossy
+            // surface with one bright diagonal streak.
+            Ellipse()
+                .fill(Color.white.opacity(0.75))
+                .frame(width: size * 0.11, height: size * 0.22)
+                .rotationEffect(.degrees(28))
+                .offset(x: size * 0.15, y: -size * 0.24)
         }
         // Both the sway and the "breathe" pivot from the bottom, the way
         // a real flame sways from its base while the tip drifts most —
@@ -540,27 +564,47 @@ struct AppMascot: View {
     }
 }
 
-// The flame silhouette AppMascot draws above (twice — once for the outer
-// flame, smaller for the inner one): a full, rounded teardrop leaning to
-// an off-center point near the top. Wider/fuller than a slender candle
-// flame — the extra width low down is what gives Ember some real
-// presence rather than reading as a thin sliver.
+// The flame silhouette AppMascot draws above (three times — the main
+// body, the white outline traced around it, and the smaller inner
+// shadow shape): a full, rounded body with a distinctive double-peaked
+// top — a shallow "valley" between a shorter left peak and a taller
+// right peak — rather than a single smooth point, which is what gives
+// Ember its particular silhouette instead of reading as a generic
+// teardrop.
 private struct FlameShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
         let width = rect.width
         let height = rect.height
 
+        // Start at the bottom center and sweep up the left side to the
+        // shorter left peak.
         path.move(to: CGPoint(x: width * 0.5, y: height))
         path.addCurve(
-            to: CGPoint(x: width * 0.58, y: 0),
-            control1: CGPoint(x: width * -0.08, y: height * 0.74),
-            control2: CGPoint(x: width * 0.08, y: height * 0.22)
+            to: CGPoint(x: width * 0.28, y: height * 0.32),
+            control1: CGPoint(x: width * 0.02, y: height * 0.85),
+            control2: CGPoint(x: width * 0.04, y: height * 0.48)
         )
+
+        // Down into the shallow valley between the two peaks.
+        path.addCurve(
+            to: CGPoint(x: width * 0.52, y: height * 0.22),
+            control1: CGPoint(x: width * 0.38, y: height * 0.18),
+            control2: CGPoint(x: width * 0.42, y: height * 0.3)
+        )
+
+        // Up to the taller right peak, the highest point of the shape.
+        path.addCurve(
+            to: CGPoint(x: width * 0.66, y: 0),
+            control1: CGPoint(x: width * 0.58, y: height * 0.15),
+            control2: CGPoint(x: width * 0.6, y: height * 0.05)
+        )
+
+        // Down the right side, back to bottom center.
         path.addCurve(
             to: CGPoint(x: width * 0.5, y: height),
-            control1: CGPoint(x: width * 1.1, y: height * 0.4),
-            control2: CGPoint(x: width * 0.95, y: height * 0.88)
+            control1: CGPoint(x: width * 1.08, y: height * 0.42),
+            control2: CGPoint(x: width * 0.92, y: height * 0.88)
         )
         path.closeSubpath()
         return path
