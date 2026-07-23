@@ -87,36 +87,6 @@ enum AppColorScheme: String, CaseIterable, Identifiable {
         }
     }
 
-    // Literal colors used ONLY by ThemePreviewCard's small swatch — NOT
-    // the dynamic Color.surfaceBackground/.textPrimary/.accentPrimary
-    // used everywhere else in the app. A dynamic named color can only
-    // ever resolve to whichever appearance is currently active, but
-    // ThemePreviewCard needs to show what BOTH Light and Dark actually
-    // look like side by side, at the same time — these mirror the exact
-    // values in Assets.xcassets' SurfaceBackground/TextPrimary/
-    // AccentColor color sets for each appearance, so if that palette is
-    // ever retuned, these three should be updated to match.
-    var previewBackground: Color {
-        switch self {
-        case .system, .light: return Color(red: 0.984, green: 0.953, blue: 0.906)
-        case .dark: return Color(red: 0.141, green: 0.114, blue: 0.086)
-        }
-    }
-
-    var previewText: Color {
-        switch self {
-        case .system, .light: return Color(red: 0.239, green: 0.196, blue: 0.149)
-        case .dark: return Color(red: 0.949, green: 0.914, blue: 0.863)
-        }
-    }
-
-    var previewAccent: Color {
-        switch self {
-        case .system, .light: return Color(red: 0.910, green: 0.475, blue: 0.310)
-        case .dark: return Color(red: 0.949, green: 0.588, blue: 0.420)
-        }
-    }
-
     // What gets handed to SwiftUI's ".preferredColorScheme(_:)" modifier.
     // That modifier's parameter is ColorScheme? (optional) — nil there
     // specifically means "don't override, follow the system setting,"
@@ -509,15 +479,14 @@ struct ErrorLabel: View {
 struct AppMascot: View {
     // How big to draw the mascot — every other measurement below is
     // computed as a fraction of this one number, so the whole character
-    // scales as a single unit wherever it's used. HomeView's onboarding
-    // flow passes a larger size at each step, so Ember visibly "grows"
-    // as a reader moves through it.
+    // scales as a single unit wherever it's used. ReturningHomeView and
+    // ReaderAccountView each pass their own fixed size; first-time
+    // onboarding no longer uses Ember at all — see OnboardingMascot in
+    // OnboardingTheme.swift for that flow's own, separate mascot.
     var size: CGFloat = 120
 
     // Multiplies how far Ember sways/breathes each flicker — 1.0 is the
-    // default motion; HomeView's onboarding flow passes a larger value
-    // at each step, alongside a bigger size, so Ember reads as more
-    // energetic/alive the further along a reader gets.
+    // default motion.
     var flickerIntensity: Double = 1.0
 
     // Multiplies how FAST each flicker cycle runs — above 1.0 is faster
@@ -759,82 +728,6 @@ struct ChoiceCard: View {
         // just this card's own custom look.
         .buttonStyle(.plain)
         .cardStyle()
-    }
-}
-
-// MARK: - Theme preview
-
-// A big, tappable card used on the onboarding "Light or Dark?" step
-// (see HomeView) — shows a genuinely accurate LIVE preview of what the
-// app looks like in that specific appearance (not just a label), so a
-// reader can actually see both before picking one, and a checkmark/ring
-// showing whether this card is the current selection.
-struct ThemePreviewCard: View {
-    // Only .light or .dark are meaningful here — there's no "preview" of
-    // .system, since that's "whatever the device is already set to."
-    let scheme: AppColorScheme
-    let isSelected: Bool
-    let action: () -> Void
-
-    var body: some View {
-        Button(action: action) {
-            HStack(spacing: Spacing.medium) {
-                // The preview swatch: sample text and a sample pill,
-                // colored with LITERAL light/dark values (see
-                // AppColorScheme.previewBackground/previewText/
-                // previewAccent below) rather than this app's normal
-                // dynamic Color.surfaceBackground/.textPrimary/
-                // .accentPrimary. A dynamic named color can only ever
-                // resolve to whichever appearance is CURRENTLY active —
-                // ".preferredColorScheme()" applied to just this small
-                // subview turned out not to reliably force the other one
-                // to render here, since both cards need to show their
-                // true colors AT THE SAME TIME regardless of the device's
-                // actual current appearance, literal values are the
-                // reliable way to guarantee that.
-                VStack(spacing: Spacing.small) {
-                    Text("Aa")
-                        .font(.system(size: 22, weight: .bold, design: .rounded))
-                        .foregroundStyle(scheme.previewText)
-                    Capsule()
-                        .fill(scheme.previewAccent)
-                        .frame(width: 56, height: 14)
-                }
-                .frame(width: 88, height: 88)
-                .background(scheme.previewBackground)
-                .clipShape(RoundedRectangle(cornerRadius: Radius.small, style: .continuous))
-                .overlay(
-                    RoundedRectangle(cornerRadius: Radius.small, style: .continuous)
-                        .stroke(Color.black.opacity(0.08), lineWidth: 1)
-                )
-
-                Text(scheme.label)
-                    .font(.sectionTitle)
-                    .foregroundStyle(Color.textPrimary)
-
-                Spacer()
-
-                // A filled checkmark when selected, an empty ring when
-                // not — same "fill in as you go" idea CodeBox uses below,
-                // so the selected card is unmistakable at a glance.
-                if isSelected {
-                    Image(systemName: "checkmark.circle.fill")
-                        .font(.system(size: 28))
-                        .foregroundStyle(Color.accentPrimary)
-                } else {
-                    Circle()
-                        .strokeBorder(Color.textSecondary.opacity(0.35), lineWidth: 2)
-                        .frame(width: 28, height: 28)
-                }
-            }
-            .padding(Spacing.large)
-        }
-        .buttonStyle(.plain)
-        .cardStyle()
-        .overlay(
-            RoundedRectangle(cornerRadius: Radius.card, style: .continuous)
-                .stroke(isSelected ? Color.accentPrimary : Color.clear, lineWidth: 3)
-        )
     }
 }
 

@@ -45,6 +45,15 @@ struct ContentView: View {
     // account flow, not a descendant of it.
     @State private var joinedLibraryUid: String? = nil
 
+    // Which kind of account the reader picked — either on HomeView's own
+    // final onboarding step (see AccountChoiceScreen in this file), or on
+    // AccountView's own copy of that same screen for every later visit.
+    // Lives here, one level above both, so a choice made during onboarding
+    // survives the hand-off from HomeView to AccountView: once picked,
+    // AccountView skips straight to that account type's form instead of
+    // asking the same question a second time.
+    @State private var accountType: AccountType? = nil
+
     // Computed property SwiftUI calls whenever it needs to redraw the screen.
     // "some View" = "returns some type conforming to View, exact type not spelled out."
     var body: some View {
@@ -74,7 +83,7 @@ struct ContentView: View {
                 // We manually swap "pages" by comparing the enum with "==". Each branch
                 // hands the $currentPage binding down so that page can change it.
                 if currentPage == .home {
-                    HomeView(currentPage: $currentPage)
+                    HomeView(currentPage: $currentPage, accountType: $accountType)
                 } else if currentPage == .choose {
                     // "if let" only unwraps and shows ChooseView once joinedLibraryUid
                     // is actually set, which it always is by the time a reader can
@@ -83,7 +92,7 @@ struct ContentView: View {
                         ChooseView(currentPage: $currentPage, contentToRead: $contentToRead, libraryUid: joinedLibraryUid)
                     }
                 } else if currentPage == .account {
-                    AccountView(currentPage: $currentPage, joinedLibraryUid: $joinedLibraryUid)
+                    AccountView(currentPage: $currentPage, joinedLibraryUid: $joinedLibraryUid, accountType: $accountType)
                 } else if currentPage == .library {
                     LibraryView(currentPage: $currentPage)
                 } else if currentPage == .read {
@@ -105,21 +114,34 @@ enum OnboardingStep {
     case welcome
     case name
     case theme
+    case accountChoice
 }
 
 // The first screen shown when the app launches. The very first time
 // (while hasCompletedOnboarding is still false) this walks a reader
-// through a short welcome sequence — tap to begin, what to call them,
-// then a live preview of Light vs Dark — with Ember (see AppMascot in
-// Theme.swift) growing bigger and more animated at each step, all the
-// way through to AccountView's "Who's Joining Us?" screen. Every later
-// visit to Home (e.g. right after signing out) skips straight to
-// ReturningHomeView instead, since there's no reason to re-ask a name or
-// show the theme preview a second time.
+// through a short welcome sequence — an explicit "Get Started" tap, what
+// to call them, a live preview of Light vs Dark, then "Who's Joining
+// Us?" — using OnboardingTheme.swift's own separate mascot/fonts/colors,
+// NOT the rest of the app's (see that file's own top comment for why).
+// The mascot starts big for that first "Welcome" moment and settles
+// smaller at each step after, as attention shifts from it to the actual
+// choices being asked. Reaching the end hands off straight into
+// whichever account type was picked (AccountView skips its own copy of
+// that same question — see ContentView's own "accountType", shared
+// between the two). Every later visit to Home (e.g. right after signing
+// out) skips straight to ReturningHomeView instead, since there's no
+// reason to re-ask a name or show the theme preview a second time —
+// ReturningHomeView, unlike this one, uses the rest of the app's normal
+// look.
 struct HomeView: View {
     // @Binding links to a @State var owned by a parent view (ContentView's
     // currentPage), so changing it here updates the parent's value too.
     @Binding var currentPage: Page
+
+    // The same ContentView-level property AccountView reads — set here,
+    // on the final onboarding step, so AccountView finds it already
+    // answered by the time currentPage switches to .account.
+    @Binding var accountType: AccountType?
 
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("readerName") private var readerName: String = ""
@@ -154,6 +176,8 @@ struct HomeView: View {
                         nameStep
                     case .theme:
                         themeStep
+                    case .accountChoice:
+                        accountChoiceStep
                     }
                 }
                 // ".id(onboardingStep)" gives each step's content its own
@@ -172,37 +196,34 @@ struct HomeView: View {
         .animation(.easeInOut(duration: 0.45), value: hasCompletedOnboarding)
     }
 
-    // Step 1: nothing to fill in yet, just Ember and an invitation to
-    // begin. The WHOLE screen is one big Button (rather than a small
-    // button placed somewhere on it), so "tap anywhere" is both literally
-    // true and still a real, accessible control — VoiceOver, Switch
-    // Control, and keyboard navigation all understand a Button
-    // automatically, which a bare tap gesture on a plain VStack would not
-    // give us for free.
+    // Step 1: nothing to fill in yet, just the mascot at its biggest and
+    // a real "Get Started" button — no progress bar yet either, since
+    // there's nothing to show progress THROUGH until the next step.
     private var welcomeStep: some View {
-        Button(action: {
-            withAnimation { onboardingStep = .name }
-        }, label: {
-            VStack(spacing: Spacing.large) {
-                Spacer()
+        VStack(spacing: Spacing.large) {
+            Spacer()
 
-                AppMascot(size: 90, flickerIntensity: 0.7, flickerSpeed: 0.85)
+            OnboardingMascot(size: 170, sparkleCount: 2)
 
-                PageHeader(title: "Welcome")
+            OnboardingPageHeader(
+                title: "Welcome",
+                titleSize: 58,
+                subtitle: "Your cozy corner for stories, at your own pace.",
+                subtitleSize: 20
+            )
 
-                Spacer()
+            Spacer()
 
-                Text("Tap anywhere to continue")
-                    .font(.buttonLabel)
-                    .foregroundStyle(Color.accentPrimary)
-
-                Spacer()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .contentShape(Rectangle())
-        })
-        .buttonStyle(.plain)
+            Button(action: {
+                withAnimation { onboardingStep = .name }
+            }, label: {
+                Text("Get Started")
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+        }
         .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
     // Step 2: a first name (or nickname) so later screens can greet a
@@ -210,11 +231,19 @@ struct HomeView: View {
     // LibraryLoginView/LibrarySignUpView), not skippable.
     private var nameStep: some View {
         VStack(spacing: Spacing.medium) {
+            OnboardingProgressBar(step: 1, total: 3)
+                .padding(.bottom, Spacing.small)
+
             Spacer()
 
-            AppMascot(size: 130, flickerIntensity: 1.0, flickerSpeed: 1.05)
+            OnboardingMascot(size: 110, sparkleCount: 1)
 
-            PageHeader(title: "What Should We Call You?")
+            OnboardingPageHeader(
+                title: "What should we call you?",
+                titleSize: 34,
+                subtitle: "We'll use this to greet you.",
+                subtitleSize: 16
+            )
 
             // A "ghost" field — no box, no fill, just the text itself
             // and a thin line underneath as a subtle guide for where to
@@ -225,15 +254,25 @@ struct HomeView: View {
             // longer form, so it can afford to feel like writing directly
             // on the page instead of filling in a box.
             VStack(spacing: Spacing.small) {
-                TextField("Your name", text: $readerName)
-                    .textFieldStyle(.plain)
-                    .font(.sectionTitle)
-                    .foregroundStyle(Color.textPrimary)
-                    .multilineTextAlignment(.center)
-                    .textInputAutocapitalization(.words)
+                // "prompt:" (rather than the plain string initializer)
+                // lets the placeholder itself be styled — needed here so
+                // even the placeholder shows this flow's own secondary
+                // color instead of whatever the system's default
+                // placeholder gray is.
+                TextField(
+                    "",
+                    text: $readerName,
+                    prompt: Text("Your name")
+                        .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+                )
+                .textFieldStyle(.plain)
+                .font(OnboardingFont.display(26))
+                .foregroundStyle(Color.onboardingText)
+                .multilineTextAlignment(.center)
+                .textInputAutocapitalization(.words)
 
                 Rectangle()
-                    .fill(Color.textSecondary.opacity(0.3))
+                    .fill(Color.onboardingBorder)
                     .frame(height: 2)
             }
             .padding(.horizontal, Spacing.extraLarge)
@@ -245,53 +284,89 @@ struct HomeView: View {
             }, label: {
                 Text("Continue")
             })
-            .buttonStyle(PrimaryButtonStyle())
+            .buttonStyle(OnboardingPrimaryButtonStyle())
             .disabled(readerName.trimmingCharacters(in: .whitespaces).isEmpty)
 
-            BackButton(action: {
+            OnboardingBackButton(action: {
                 withAnimation { onboardingStep = .welcome }
-            }, plain: true)
+            })
         }
         .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
     // Step 3: a real, live preview of both Light and Dark (see
-    // ThemePreviewCard in Theme.swift) before picking one. "Continue" is
-    // what actually commits the pick to appColorSchemeRaw (the same key
-    // ios_accessibleApp.swift reads for ".preferredColorScheme(_:)"),
-    // marks onboarding as finished, and moves on to AccountView.
+    // OnboardingThemeSwatch in OnboardingTheme.swift) before picking
+    // one. "Continue" commits the pick to appColorSchemeRaw (the same
+    // key ios_accessibleApp.swift reads for
+    // ".preferredColorScheme(_:)") and moves on to the final "Who's
+    // Joining Us?" step — it does NOT mark onboarding finished yet;
+    // accountChoiceStep below is what does that.
     private var themeStep: some View {
         VStack(spacing: Spacing.medium) {
-            AppMascot(size: 170, flickerIntensity: 1.3, flickerSpeed: 1.3)
+            OnboardingProgressBar(step: 2, total: 3)
+                .padding(.bottom, Spacing.small)
 
-            PageHeader(
-                title: "Light or Dark?",
-                subtitle: "Pick whichever feels best — you can always change this later."
+            OnboardingMascot(size: 96, sparkleCount: 1)
+
+            OnboardingPageHeader(
+                title: "Light or dark?",
+                titleSize: 32,
+                subtitle: "You can always change this later.",
+                subtitleSize: 17
             )
 
-            ThemePreviewCard(scheme: .light, isSelected: previewedScheme == .light) {
+            OnboardingSelectableCard(
+                leading: OnboardingThemeSwatch(palette: .light),
+                title: "Light",
+                isSelected: previewedScheme == .light
+            ) {
                 previewedScheme = .light
             }
 
-            ThemePreviewCard(scheme: .dark, isSelected: previewedScheme == .dark) {
+            OnboardingSelectableCard(
+                leading: OnboardingThemeSwatch(palette: .dark),
+                title: "Dark",
+                isSelected: previewedScheme == .dark
+            ) {
                 previewedScheme = .dark
             }
 
             Button(action: {
                 appColorSchemeRaw = previewedScheme.rawValue
-                hasCompletedOnboarding = true
-                currentPage = .account
+                withAnimation { onboardingStep = .accountChoice }
             }, label: {
                 Text("Continue")
             })
-            .buttonStyle(PrimaryButtonStyle())
+            .buttonStyle(OnboardingPrimaryButtonStyle())
             .padding(.top, Spacing.small)
 
-            BackButton(action: {
+            OnboardingBackButton(action: {
                 withAnimation { onboardingStep = .name }
-            }, plain: true)
+            })
         }
         .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
+    }
+
+    // Step 4, the final onboarding step: the same "Who's Joining Us?"
+    // choice AccountView asks on every later visit (see
+    // AccountChoiceScreen below), reused here with its progress bar
+    // showing and "Go Back" returning to the theme step instead of Home.
+    // Picking a type and tapping Continue is what finally marks
+    // onboarding as finished and hands off to AccountView, which — since
+    // accountType is already answered — skips straight to that type's
+    // own form.
+    private var accountChoiceStep: some View {
+        AccountChoiceScreen(showProgress: true, onContinue: { chosen in
+            accountType = chosen
+            hasCompletedOnboarding = true
+            currentPage = .account
+        }, onBack: {
+            withAnimation { onboardingStep = .theme }
+        })
     }
 }
 
@@ -484,11 +559,15 @@ struct AccountView: View {
     // reader joins one.
     @Binding var joinedLibraryUid: String?
 
-    // nil until an account type is picked below; once set, its form replaces
-    // the picker. This sub-choice doesn't need to survive anywhere outside
-    // this screen, so — unlike currentPage — it doesn't need to live any
-    // higher up than right here.
-    @State private var accountType: AccountType? = nil
+    // Set by HomeView's own final onboarding step (see accountChoiceStep
+    // there) before currentPage ever switches to .account — a @Binding,
+    // not @State, specifically so that hand-off works: if it already
+    // holds a value by the time this view appears, the picker below is
+    // skipped entirely and the matching form shows right away. Cleared
+    // back to nil by LibraryAccountView/ReaderAccountView's own "Go
+    // Back", which is what brings the picker back for a reader who
+    // changes their mind.
+    @Binding var accountType: AccountType?
 
     var body: some View {
         if accountType == .library {
@@ -496,46 +575,100 @@ struct AccountView: View {
         } else if accountType == .reader {
             ReaderAccountView(accountType: $accountType, currentPage: $currentPage, joinedLibraryUid: $joinedLibraryUid)
         } else {
-            VStack(spacing: Spacing.medium) {
-                // The biggest, most animated Ember appears — the tail
-                // end of the "grows as you go" sequence HomeView's
-                // onboarding steps start (see AppMascot in Theme.swift),
-                // whether a reader actually just came from onboarding or
-                // this is a later visit.
-                AppMascot(size: 190, flickerIntensity: 1.5, flickerSpeed: 1.4)
-
-                PageHeader(
-                    title: "Who's Joining Us?",
-                    subtitle: "Pick whichever one sounds like you."
-                )
-
-                // Icon-led cards (see ChoiceCard in Theme.swift) rather
-                // than two bare "Library"/"Reader" buttons — a short
-                // description under each title gives a reader enough
-                // context to pick correctly without needing to already
-                // know what a "Library account" even means here.
-                ChoiceCard(
-                    icon: "books.vertical.fill",
-                    title: "I'm a Library",
-                    description: "Set up reading material for your members."
-                ) {
-                    accountType = .library
-                }
-
-                ChoiceCard(
-                    icon: "person.fill",
-                    title: "I'm a Reader",
-                    description: "Join with a code from your library."
-                ) {
-                    accountType = .reader
-                }
-
-                BackButton(action: {
-                    currentPage = .home
-                })
-            }
-            .padding(Spacing.large)
+            // The same "Who's Joining Us?" screen HomeView's onboarding
+            // shows as its own final step (see AccountChoiceScreen below)
+            // — reached here on every visit that DIDN'T just come through
+            // onboarding, so no progress bar, and "Go Back" returns to
+            // Home instead of an onboarding step.
+            AccountChoiceScreen(onContinue: { chosen in
+                accountType = chosen
+            }, onBack: {
+                currentPage = .home
+            })
         }
+    }
+}
+
+// The "Who's Joining Us?" choice, shared between two different places it
+// can appear: as the final step of HomeView's first-time onboarding
+// sequence (showProgress: true, "Go Back" returns to the theme step) and
+// as AccountView's own picker for every later visit (showProgress:
+// false, "Go Back" returns to Home instead). Built entirely from
+// OnboardingTheme.swift's own components — same reasoning as HomeView's
+// steps: this screen is part of the onboarding redesign even when a
+// returning reader reaches it outside onboarding proper, so it keeps
+// that flow's look rather than switching back to the rest of the app's.
+// Tapping a card only highlights it; actually committing the choice
+// needs a separate tap on "Continue", so a reader can change their mind
+// before being swept into a form.
+private struct AccountChoiceScreen: View {
+    var showProgress: Bool = false
+
+    // Called once "Continue" is tapped, with whichever type ended up
+    // selected — never called while selection is nil, since Continue is
+    // disabled until then (see ".disabled(selection == nil)" below).
+    let onContinue: (AccountType) -> Void
+    let onBack: () -> Void
+
+    // Always starts nil, even when AccountView shows this again after a
+    // reader taps "Go Back" from inside LibraryAccountView/
+    // ReaderAccountView — that should ask the question fresh, not
+    // silently remember their last pick.
+    @State private var selection: AccountType? = nil
+
+    var body: some View {
+        VStack(spacing: Spacing.medium) {
+            if showProgress {
+                OnboardingProgressBar(step: 3, total: 3)
+                    .padding(.bottom, Spacing.small)
+            }
+
+            // The smallest, calmest size this mascot is ever drawn at —
+            // and, per the design, the only step with no glow or
+            // sparkles at all, since by this point a reader's attention
+            // should be entirely on the choice itself.
+            OnboardingMascot(size: 56, sparkleCount: 0, showsGlow: false)
+
+            OnboardingPageHeader(
+                title: "Who's Joining Us?",
+                titleSize: 25,
+                subtitle: "Pick whichever one sounds like you.",
+                subtitleSize: 15
+            )
+
+            OnboardingSelectableCard(
+                leading: OnboardingIconTile(systemImage: "books.vertical.fill"),
+                title: "I'm a Library",
+                description: "Set up reading material for your members.",
+                isSelected: selection == .library
+            ) {
+                selection = .library
+            }
+
+            OnboardingSelectableCard(
+                leading: OnboardingIconTile(systemImage: "person.fill"),
+                title: "I'm a Reader",
+                description: "Join with a code from your library.",
+                isSelected: selection == .reader
+            ) {
+                selection = .reader
+            }
+
+            Button(action: {
+                if let selection {
+                    onContinue(selection)
+                }
+            }, label: {
+                Text("Continue")
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+            .disabled(selection == nil)
+
+            OnboardingBackButton(action: onBack)
+        }
+        .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
     }
 }
 
