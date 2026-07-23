@@ -220,6 +220,16 @@ struct HomeView: View {
                 Text("Get Started")
             })
             .buttonStyle(OnboardingPrimaryButtonStyle())
+
+            // Every other step has a real "Go Back" here; Welcome
+            // doesn't (there's nowhere to go back to) — but reserving
+            // the same amount of space below the button keeps "Get
+            // Started" docked at the exact same height as those steps'
+            // "Continue", instead of sitting lower with nothing below it.
+            OnboardingBackButton(action: {})
+                .hidden()
+                .disabled(true)
+                .accessibilityHidden(true)
         }
         .padding(Spacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
