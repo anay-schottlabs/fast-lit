@@ -377,6 +377,11 @@ struct OnboardingSelectableCard<Leading: View>: View {
                     )
             }
             .padding(20)
+            // Without this, taps only register on the actual rendered
+            // content (the icon, text, or ring) — not the padding or the
+            // empty space the Spacer() above takes up — so most of the
+            // card's own body would silently do nothing when tapped.
+            .contentShape(Rectangle())
         }
         .buttonStyle(.plain)
         .background(Color.onboardingCard)
