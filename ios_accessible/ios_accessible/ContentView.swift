@@ -1575,6 +1575,15 @@ struct LibraryCatalogManagementView: View {
 // account, no name, no log in/sign up split. Once a code resolves to a real
 // library (via AuthService.fetchLibraryName), shows that library's name on
 // its own page instead of the join form.
+// Rebuilt to match the onboarding redesign — both the join-code entry
+// and the terminal "You're All Set!" screen it leads to now use
+// OnboardingTheme.swift's components, matching LibrarySignUpView's own
+// successStep pattern (mascot 130, glow+2 sparkles, "You're All Set!"
+// at 44px) for the same terminal moment on this path. The joined
+// library's actual NAME — real, useful information the static design
+// mockup has no equivalent of — is folded into that screen's own
+// subtitle rather than shown as a separate line in the old accent color,
+// so it still reads as part of one cohesive message.
 struct ReaderAccountView: View {
     @Binding var accountType: AccountType?
 
@@ -1588,35 +1597,41 @@ struct ReaderAccountView: View {
 
     @Environment(AuthService.self) private var authService
 
-    @State private var code: String = ""
+    // Holds the code AS DISPLAYED, hyphen included (e.g. "AB3-9F2") —
+    // unlike the old CodeEntryField-based "code" this replaces, which
+    // only ever held the 6 raw characters and reconstructed the hyphen
+    // separately at submit time. See formattedJoinCode(from:) below for
+    // why keeping the hyphen inline here is simpler now.
+    @State private var joinCode: String = ""
 
     // nil until a code is looked up successfully; once set, this view shows
     // the joined-org page instead of the join form.
     @State private var joinedLibraryName: String? = nil
 
-    // nil until a lookup fails (bad code or a network error); cleared again
-    // on the next attempt.
+    // nil until a submit fails (malformed code, no match, or a network
+    // error); cleared again as soon as the field's own value changes.
     @State private var errorMessage: String? = nil
 
-    // Disables "Join" for the duration of a lookup, so a slow network can't
-    // be worked around by mashing the button into firing several at once.
+    // Disables "Join Library" for the duration of a lookup, so a slow
+    // network can't be worked around by mashing the button into firing
+    // several at once. Unlike the design's own static mock, there's a
+    // real network call here, so this is the one thing this screen adds
+    // beyond the reference.
     @State private var isSubmitting: Bool = false
 
     var body: some View {
         if let joinedLibraryName {
-            VStack(spacing: Spacing.medium) {
+            VStack(spacing: Spacing.large) {
                 Spacer()
 
-                AppMascot()
-                    .padding(.bottom, Spacing.medium)
+                OnboardingMascot(size: 130, sparkleCount: 2)
 
-                PageHeader(title: "You're All Set!")
-
-                Text(joinedLibraryName)
-                    .font(.sectionTitle)
-                    .foregroundStyle(Color.accentPrimary)
-                    .multilineTextAlignment(.center)
-                    .padding(.bottom, Spacing.large)
+                OnboardingPageHeader(
+                    title: "You're All Set!",
+                    titleSize: 44,
+                    subtitle: "You've joined \(joinedLibraryName). Time to find your next great read.",
+                    subtitleSize: 18
+                )
 
                 Spacer()
 
@@ -1625,72 +1640,105 @@ struct ReaderAccountView: View {
                 }, label: {
                     Text("Start Reading")
                 })
-                .buttonStyle(PrimaryButtonStyle())
-
-                BackButton(action: {
-                    accountType = nil
-                })
+                .buttonStyle(OnboardingPrimaryButtonStyle())
             }
             .padding(Spacing.large)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.onboardingBackground.ignoresSafeArea())
         } else {
             VStack(spacing: Spacing.medium) {
-                PageHeader(
-                    title: "Join Your Library",
-                    subtitle: "Enter the code your library gave you."
+                OnboardingProgressBar(step: 4, total: 4)
+                    .padding(.bottom, Spacing.small)
+
+                OnboardingMascot(size: 96, sparkleCount: 0, showsGlow: false)
+
+                OnboardingPageHeader(
+                    title: "Enter your join code",
+                    titleSize: 30,
+                    subtitle: "Ask your library for this code.",
+                    subtitleSize: 16
                 )
 
-                // Styled as 6 individual boxes with the hyphen shown
-                // automatically (see CodeEntryField in Theme.swift) rather
-                // than one plain text box — the reader only ever types or
-                // pastes the 6 real characters; "code" here never contains
-                // the hyphen itself.
-                CodeEntryField(code: $code)
-                    .padding(Spacing.large)
-                    .cardStyle()
-                    .onChange(of: code) { _, _ in
+                VStack(spacing: Spacing.small) {
+                    TextField(
+                        "",
+                        text: $joinCode,
+                        prompt: Text("ABC-123")
+                            .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+                    )
+                    .textFieldStyle(.plain)
+                    .font(OnboardingFont.display(32))
+                    .tracking(4)
+                    .foregroundStyle(Color.onboardingText)
+                    .multilineTextAlignment(.center)
+                    .textInputAutocapitalization(.characters)
+                    .tint(Color.onboardingText)
+                    .onChange(of: joinCode) { _, newValue in
+                        joinCode = formattedJoinCode(from: newValue)
                         errorMessage = nil
                     }
 
-                if let errorMessage {
-                    ErrorLabel(message: errorMessage)
+                    Rectangle()
+                        .fill(Color.onboardingBorder)
+                        .frame(height: 2)
+
+                    Text("e.g. ABC-123 — try that one")
+                        .font(OnboardingFont.body(14, weight: .semiBold))
+                        .foregroundStyle(Color.onboardingTextSecondary)
                 }
 
-                Button(action: {
-                    join()
-                }, label: {
-                    Text("Join")
-                })
-                .buttonStyle(PrimaryButtonStyle())
-                .padding(.top)
-                // Matches a real code's length, so "Join" only becomes
-                // tappable once all 6 characters are actually in — mashing
-                // it early would just fail the lookup anyway.
-                .disabled(isSubmitting || code.count < 6)
+                if let errorMessage {
+                    OnboardingErrorLabel(message: errorMessage)
+                }
 
-                BackButton(action: {
+                Spacer()
+
+                Button(action: {
+                    submitJoinCode()
+                }, label: {
+                    Text("Join Library")
+                })
+                .buttonStyle(OnboardingPrimaryButtonStyle())
+                .disabled(isSubmitting)
+
+                OnboardingBackButton(action: {
                     accountType = nil
                 })
             }
             .padding(Spacing.large)
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(Color.onboardingBackground.ignoresSafeArea())
         }
     }
 
-    private func join() {
+    // Reformats on every keystroke, same as the design's own
+    // formatJoinCode: strip anything that isn't a letter/digit (so a
+    // pasted "AB3-9F2" — hyphen included — still works), force
+    // uppercase, cap at 6 real characters, then re-insert the hyphen
+    // after the 3rd once there's anything past it. Stripping first and
+    // re-inserting after means this handles backspacing through the
+    // hyphen correctly too, without any special-case code for it.
+    private func formattedJoinCode(from raw: String) -> String {
+        let clean = String(raw.uppercased().filter { $0.isLetter || $0.isNumber }.prefix(6))
+        guard clean.count > 3 else { return clean }
+        return "\(clean.prefix(3))-\(clean.dropFirst(3))"
+    }
+
+    private func submitJoinCode() {
+        guard joinCode.range(of: "^[A-Z0-9]{3}-[A-Z0-9]{3}$", options: .regularExpression) != nil else {
+            errorMessage = "Enter a valid code like ABC-123."
+            return
+        }
+
         errorMessage = nil
         isSubmitting = true
-        // "code" holds only the 6 raw characters (see CodeEntryField) —
-        // the hyphen is reconstructed here, right before the lookup,
-        // since that's the shape AuthService.generateJoinCode actually
-        // produces and what's stored as each libraryJoinCodes document's
-        // ID.
-        let formattedCode = "\(code.prefix(3))-\(code.suffix(3))"
         Task {
             do {
-                if let library = try await authService.fetchJoinedLibrary(forJoinCode: formattedCode) {
+                if let library = try await authService.fetchJoinedLibrary(forJoinCode: joinCode) {
                     joinedLibraryUid = library.uid
                     joinedLibraryName = library.name
                 } else {
-                    errorMessage = "That code doesn't match any organization."
+                    errorMessage = "We couldn't find a library with that code."
                 }
             } catch {
                 errorMessage = error.localizedDescription
