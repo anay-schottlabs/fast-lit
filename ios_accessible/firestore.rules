@@ -36,5 +36,28 @@ service cloud.firestore {
       // No reason for a client to need the full list of taken usernames.
       allow list: if false;
     }
+
+    // A library account's own profile (username + join code), keyed by
+    // uid rather than username — this is "my own data", read back by the
+    // signed-in owner via their own uid, not looked up by name the way
+    // libraryUsernames above is. See AuthService.createLibraryProfile /
+    // fetchLibraryProfile and LibraryView, which displays the join code.
+    match /libraries/{uid} {
+      // Only the account owner can read their own profile/join code.
+      allow get: if request.auth != null && request.auth.uid == uid;
+
+      // Only the account owner can create their own profile, and only
+      // with these exact fields.
+      allow create: if request.auth != null
+                    && request.auth.uid == uid
+                    && request.resource.data.keys().hasOnly(['username', 'joinCode', 'createdAt']);
+
+      // No editing or deleting from the client — there's no "regenerate
+      // join code" feature yet.
+      allow update, delete: if false;
+
+      // No reason for a client to need every library's profile at once.
+      allow list: if false;
+    }
   }
 }

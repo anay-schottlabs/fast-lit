@@ -476,6 +476,13 @@ struct LibrarySignUpView: View {
                 // registry is briefly out of date for the next person's
                 // "is this taken" check.
                 try? await authService.registerUsername(username)
+                // Also best-effort, for the same reason — LibraryView
+                // handles a missing join code (e.g. from this failing)
+                // gracefully rather than this blocking sign-up.
+                try? await authService.createLibraryProfile(
+                    username: username,
+                    joinCode: AuthService.generateJoinCode()
+                )
                 currentPage = .library
             } catch {
                 errorMessage = error.localizedDescription
@@ -493,6 +500,12 @@ struct LibraryView: View {
 
     @Environment(AuthService.self) private var authService
 
+    // nil until the join code finishes loading (or fails to). Distinct
+    // from an empty string so the view can tell "still loading" apart from
+    // "loaded, but there's nothing there".
+    @State private var joinCode: String? = nil
+    @State private var loadError: String? = nil
+
     var body: some View {
         VStack {
             Text("Library Home")
@@ -502,6 +515,24 @@ struct LibraryView: View {
 
             Text("Placeholder — library-facing features go here.")
                 .padding()
+
+            // Readers use this to find and sign up for this specific
+            // library — see ReaderSignUpView's "Library/Org Code" field.
+            if let joinCode {
+                Text("Your Join Code")
+                    .font(.headline)
+                Text(joinCode)
+                    .font(.system(size: 28, weight: .bold, design: .monospaced))
+                    .padding(.bottom)
+            } else if let loadError {
+                Text(loadError)
+                    .foregroundStyle(.red)
+                    .font(.footnote)
+                    .padding(.bottom)
+            } else {
+                ProgressView()
+                    .padding(.bottom)
+            }
 
             Button(action: {
                 // try? rather than try: sign-out failing here isn't
@@ -516,12 +547,27 @@ struct LibraryView: View {
             .buttonStyle(.glass)
         }
         .padding()
+        // .task (rather than .onAppear) ties this to the view's lifecycle —
+        // it's automatically cancelled if the view disappears before the
+        // fetch finishes, so a slow network can't set state on a view
+        // that's no longer showing.
+        .task {
+            do {
+                if let profile = try await authService.fetchLibraryProfile() {
+                    joinCode = profile.joinCode
+                } else {
+                    loadError = "No join code found for this account."
+                }
+            } catch {
+                loadError = error.localizedDescription
+            }
+        }
     }
 }
 
 // Lets the user choose whether to log into an existing reader account or
-// sign up for a new one, then shows that specific form. Reader accounts
-// use a six-digit code either way, instead of a username/password.
+// sign up for a new one, then shows that specific form. Reader accounts use
+// a library/org join code either way, instead of a username/password.
 struct ReaderAccountView: View {
     @Binding var accountType: AccountType?
 
@@ -579,11 +625,11 @@ struct ReaderLoginView: View {
                 .bold()
                 .padding()
 
-            // .numberPad brings up a digit-only keyboard, since the code is
-            // always six digits.
-            TextField("6-digit code", text: $code)
+            // Not .numberPad: join codes mix letters and digits (see
+            // AuthService.generateJoinCode), so a digit-only keyboard would
+            // make half of any code untypeable.
+            TextField("Library/Org Code", text: $code)
                 .textFieldStyle(.roundedBorder)
-                .keyboardType(.numberPad)
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
@@ -605,8 +651,9 @@ struct ReaderLoginView: View {
 }
 
 // Signing up for a new reader account, one step at a time: the reader's
-// name, then their library/org code (the same six-digit code
-// ReaderLoginView uses). "Sign Up" still doesn't do anything yet.
+// name, then their library/org join code (the same field format
+// ReaderLoginView uses — see AuthService.generateJoinCode). "Sign Up"
+// still doesn't do anything yet.
 struct ReaderSignUpView: View {
     @Binding var authMode: AuthMode?
 
@@ -634,11 +681,11 @@ struct ReaderSignUpView: View {
                     .textFieldStyle(.roundedBorder)
                     .padding(.horizontal)
             } else {
-                // .numberPad brings up a digit-only keyboard, since the
-                // code is always six digits.
+                // Not .numberPad: join codes mix letters and digits (see
+                // AuthService.generateJoinCode), so a digit-only keyboard
+                // would make half of any code untypeable.
                 TextField("Library/Org Code", text: $code)
                     .textFieldStyle(.roundedBorder)
-                    .keyboardType(.numberPad)
                     .multilineTextAlignment(.center)
                     .padding(.horizontal)
             }

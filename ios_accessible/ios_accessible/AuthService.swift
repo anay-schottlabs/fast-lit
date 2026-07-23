@@ -101,6 +101,63 @@ class AuthService {
         ])
     }
 
+    // Generates a join code readers use to find and sign up for a specific
+    // library: 3 random letters/digits, a hyphen, then 3 more (e.g.
+    // "AB3-9F2"). Uppercase-only so it isn't case-sensitive to whoever
+    // types it back in later. A static, Firebase-independent function
+    // (rather than something that reaches into Firestore itself) since
+    // generating the code and persisting it are separate concerns — this
+    // just produces the string; createLibraryProfile below is what saves it.
+    static func generateJoinCode() -> String {
+        let characters = "ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789"
+        func randomTriplet() -> String {
+            String((0..<3).map { _ in characters.randomElement()! })
+        }
+        return "\(randomTriplet())-\(randomTriplet())"
+    }
+
+    // A library account's own profile — the data LibraryView reads back to
+    // display "your join code", as opposed to libraryUsernames above, which
+    // exists purely for the sign-up uniqueness check.
+    struct LibraryProfile {
+        let username: String
+        let joinCode: String
+    }
+
+    // Keyed by uid (not username, unlike libraryUsernames) since this is
+    // "my own profile" data, read back by the signed-in owner via their own
+    // uid rather than looked up by name.
+    private var libraries: CollectionReference {
+        Firestore.firestore().collection("libraries")
+    }
+
+    // Saves a library account's profile (username + join code) right after
+    // sign-up. Only meaningful once the Auth account exists — see
+    // registerUsername above for why Auth.auth().currentUser is read fresh
+    // here rather than this class's own (possibly not-yet-updated)
+    // currentUser property.
+    func createLibraryProfile(username: String, joinCode: String) async throws {
+        guard let uid = Auth.auth().currentUser?.uid else { return }
+        try await libraries.document(uid).setData([
+            "username": username,
+            "joinCode": joinCode,
+            "createdAt": FieldValue.serverTimestamp(),
+        ])
+    }
+
+    // Reads the signed-in library account's own profile. nil means there's
+    // no profile doc yet (e.g. createLibraryProfile failed silently during
+    // sign-up) rather than an error — LibraryView treats those differently.
+    func fetchLibraryProfile() async throws -> LibraryProfile? {
+        guard let uid = Auth.auth().currentUser?.uid else { return nil }
+        let document = try await libraries.document(uid).getDocument()
+        guard let username = document.get("username") as? String,
+              let joinCode = document.get("joinCode") as? String else {
+            return nil
+        }
+        return LibraryProfile(username: username, joinCode: joinCode)
+    }
+
     // Signs in with no credentials at all — Firebase still issues a real
     // (if anonymous) account. One way Reader accounts (just a six-digit
     // code, no username/password) could eventually be handled.
