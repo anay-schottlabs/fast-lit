@@ -353,6 +353,15 @@ struct HomeView: View {
         .padding(Spacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.onboardingBackground.ignoresSafeArea())
+        // Forces THIS screen (mascot, background, everything) into
+        // whichever scheme is currently tapped, live — without this,
+        // tapping Light/Dark only changed the two cards' own selection
+        // rings, and the actual on-screen appearance didn't visibly
+        // change until Continue wrote previewedScheme into
+        // appColorSchemeRaw. Scoped to just themeStep's own view tree,
+        // so it doesn't affect Welcome/Name before it or leak into
+        // Account Choice after Continue actually commits the pick.
+        .preferredColorScheme(previewedScheme.colorScheme)
     }
 
     // Step 4, the final onboarding step: the same "Who's Joining Us?"
