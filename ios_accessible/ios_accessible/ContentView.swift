@@ -337,6 +337,8 @@ struct HomeView: View {
                 previewedScheme = .dark
             }
 
+            Spacer()
+
             Button(action: {
                 appColorSchemeRaw = previewedScheme.rawValue
                 withAnimation { onboardingStep = .accountChoice }
@@ -666,6 +668,8 @@ private struct AccountChoiceScreen: View {
             ) {
                 selection = .reader
             }
+
+            Spacer()
 
             Button(action: {
                 if let selection {
