@@ -1501,6 +1501,7 @@ struct LibraryHomeView: View {
                     .foregroundStyle(Color.onboardingTextSecondary)
                     .padding(Spacing.large)
             })
+            .buttonStyle(HapticButtonStyle())
             .accessibilityLabel("Settings")
         }
         // .task (rather than .onAppear) ties this to the view's lifecycle —
@@ -1870,6 +1871,7 @@ struct ChooseView: View {
                             // bigger, easier target to tap.
                             .padding(.vertical, Spacing.medium)
                         })
+                        .buttonStyle(HapticButtonStyle())
                         .listRowBackground(Color.surfaceCard)
                     }
                 }
@@ -1891,6 +1893,7 @@ struct ChooseView: View {
                     .foregroundStyle(Color.textSecondary)
                     .padding(Spacing.large)
             })
+            .buttonStyle(HapticButtonStyle())
             .accessibilityLabel("Settings")
         }
         // .sheet(item:) shows a modal whenever the bound value is non-nil,

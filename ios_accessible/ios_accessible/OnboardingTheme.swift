@@ -90,6 +90,7 @@ struct OnboardingPrimaryButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
             .animation(.easeOut(duration: 0.15), value: isEnabled)
+            .buttonPressHaptic(configuration.isPressed)
     }
 
     private func disabledAdjustedOpacity(pressed: Bool) -> Double {
@@ -124,6 +125,7 @@ struct OnboardingSecondaryButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
             .animation(.easeOut(duration: 0.15), value: isEnabled)
+            .buttonPressHaptic(configuration.isPressed)
     }
 
     private func disabledAdjustedOpacity(pressed: Bool) -> Double {
@@ -190,6 +192,7 @@ private struct OnboardingTextButtonStyle: ButtonStyle {
             .foregroundStyle(Color.onboardingTextSecondary)
             .opacity(isEnabled ? (configuration.isPressed ? 0.5 : 1.0) : 0.4)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+            .buttonPressHaptic(configuration.isPressed)
     }
 }
 
@@ -477,7 +480,10 @@ struct OnboardingSelectableCard<Leading: View>: View {
             // card's own body would silently do nothing when tapped.
             .contentShape(Rectangle())
         }
-        .buttonStyle(.plain)
+        // HapticButtonStyle (Theme.swift) rather than plain ".plain" — same
+        // "leave the label untouched" behavior, plus the same tap haptic
+        // every other button in the app gets.
+        .buttonStyle(HapticButtonStyle())
         .background(Color.onboardingCard)
         .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
         .overlay(

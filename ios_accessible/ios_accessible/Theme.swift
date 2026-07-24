@@ -178,6 +178,19 @@ enum Radius {
 
 // MARK: - Button styles
 
+// A light UIKit impact haptic fired the instant a button is pressed down
+// (the false→true edge of isPressed only, via the condition closure —
+// not the release too, which would otherwise fire a second pulse on
+// every tap). Every custom ButtonStyle below and in OnboardingTheme.swift
+// calls this from its own makeBody(configuration:), so every button in
+// the app — old design and new — gets the same tactile click without
+// each style re-implementing it by hand.
+extension View {
+    func buttonPressHaptic(_ isPressed: Bool) -> some View {
+        sensoryFeedback(.impact, trigger: isPressed) { old, new in new }
+    }
+}
+
 // ButtonStyle is a protocol SwiftUI provides specifically for this:
 // implementing "makeBody(configuration:)" lets one type control exactly
 // how EVERY button using it looks (and how it reacts to being pressed),
@@ -225,6 +238,7 @@ struct PrimaryButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
             .animation(.easeOut(duration: 0.15), value: isEnabled)
+            .buttonPressHaptic(configuration.isPressed)
     }
 
     private func disabledAdjustedOpacity(pressed: Bool) -> Double {
@@ -257,6 +271,7 @@ struct SecondaryButtonStyle: ButtonStyle {
             .scaleEffect(configuration.isPressed ? 0.97 : 1.0)
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
             .animation(.easeOut(duration: 0.15), value: isEnabled)
+            .buttonPressHaptic(configuration.isPressed)
     }
 
     private func disabledAdjustedOpacity(pressed: Bool) -> Double {
@@ -331,11 +346,27 @@ struct TextButtonStyle: ButtonStyle {
             .foregroundStyle(emphasized ? Color.accentPrimary : Color.textSecondary)
             .opacity(disabledAdjustedOpacity(pressed: configuration.isPressed))
             .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
+            .buttonPressHaptic(configuration.isPressed)
     }
 
     private func disabledAdjustedOpacity(pressed: Bool) -> Double {
         guard isEnabled else { return 0.4 }
         return pressed ? 0.5 : 1.0
+    }
+}
+
+// For buttons that don't want ANY of Primary/Secondary/Text's own color,
+// sizing, or opacity — icon-only overlays (a Settings gear), ChooseView's
+// own list rows, OnboardingSelectableCard's tappable cards — but should
+// still feel tappable the same way every other button in this app does.
+// Behaves exactly like SwiftUI's own ".plain" (returns the label
+// untouched) plus the same haptic every other style bakes in; use this
+// in place of ".plain" wherever a button's visuals are already fully
+// hand-built by its own call site.
+struct HapticButtonStyle: ButtonStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        configuration.label
+            .buttonPressHaptic(configuration.isPressed)
     }
 }
 
