@@ -84,13 +84,14 @@ struct ios_accessibleApp: App {
     // wired up to it.
     @State private var authService: AuthService
 
-    // The reader's saved Light/Dark/Automatic choice (see Theme.swift's
-    // AppColorScheme and HomeView's "Appearance" picker, which both read
-    // and write this same key). @AppStorage reads and writes UserDefaults
-    // directly, so the choice survives being backgrounded or relaunched —
-    // stored as AppColorScheme's own rawValue (a String) since that's the
-    // simple type @AppStorage knows how to persist; not stored as
-    // AppColorScheme itself.
+    // The reader's saved Light/Dark choice (see Theme.swift's
+    // AppColorScheme, HomeView's own theme step, and SettingsView's own
+    // Appearance section, all of which read and write this same key).
+    // @AppStorage reads and writes UserDefaults directly, so the choice
+    // survives being backgrounded or relaunched — stored as
+    // AppColorScheme's own rawValue (a String) since that's the simple
+    // type @AppStorage knows how to persist; not stored as AppColorScheme
+    // itself.
     @AppStorage("appColorScheme") private var appColorSchemeRaw: String = AppColorScheme.system.rawValue
 
     // A custom init (rather than a plain "= AuthService()" default above)

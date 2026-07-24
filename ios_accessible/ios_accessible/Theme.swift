@@ -46,46 +46,20 @@ extension Color {
 
 // MARK: - Appearance
 
-// The reader-facing choice behind HomeView's "Appearance" picker: follow
-// the system's own Light/Dark setting, or override it one way regardless
-// of what the system says. A plain String rawValue (rather than Int or
-// no rawValue at all) so this can be saved directly with @AppStorage,
-// which needs its stored type to be one of a small set of simple types
-// UserDefaults understands — String is the simplest fit here.
-enum AppColorScheme: String, CaseIterable, Identifiable {
+// The reader-facing choice behind SettingsView's and HomeView's own
+// Light/Dark cards. ".system" still exists as an internal "untouched"
+// sentinel value — the default before a reader has picked anything —
+// but neither screen's UI offers it as a real choice; both treat it as
+// "Light" for display purposes (see each one's own displayedScheme/
+// currentScheme) and only ever write .light/.dark back. A plain String
+// rawValue (rather than Int or no rawValue at all) so this can be saved
+// directly with @AppStorage, which needs its stored type to be one of a
+// small set of simple types UserDefaults understands — String is the
+// simplest fit here.
+enum AppColorScheme: String {
     case system
     case light
     case dark
-
-    // Identifiable (needed for ForEach below) just needs some stable,
-    // unique id per case — the case's own rawValue already is one, so
-    // there's no reason to invent a second value.
-    var id: String { rawValue }
-
-    // Not shown on screen — HomeView's picker displays iconName below
-    // instead, so this is only ever read as each icon's VoiceOver
-    // accessibility label, so the choice is still announced as a word
-    // ("Automatic"/"Light"/"Dark") for anyone using a screen reader,
-    // even though sighted readers only ever see an icon.
-    var label: String {
-        switch self {
-        case .system: return "Automatic"
-        case .light: return "Light"
-        case .dark: return "Dark"
-        }
-    }
-
-    // The SF Symbol (Apple's built-in icon set) shown for each case —
-    // the same icon vocabulary iOS's own Settings app uses for
-    // Automatic/Light/Dark, so it should already read as familiar rather
-    // than needing to be learned.
-    var iconName: String {
-        switch self {
-        case .system: return "circle.lefthalf.filled"
-        case .light: return "sun.max.fill"
-        case .dark: return "moon.fill"
-        }
-    }
 
     // What gets handed to SwiftUI's ".preferredColorScheme(_:)" modifier.
     // That modifier's parameter is ColorScheme? (optional) — nil there

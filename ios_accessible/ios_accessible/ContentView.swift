@@ -449,111 +449,113 @@ struct HomeView: View {
     }
 }
 
-// Reachable from AccountView's gear icon — holds the two things that
-// don't belong cluttering up the simple day-to-day account picker:
-// changing Light/Dark/Automatic, and starting over from scratch.
+// A signed-in reader or library account's own settings — reachable via a
+// gear icon on ChooseView (a reader's catalog, once joined) or
+// LibraryHomeView (once signed in), never from AccountView's own picker,
+// since there's nothing to configure before an account actually exists.
+// A real full screen, not a sheet — same reasoning, and same
+// Binding-owned-by-the-presenting-view pattern, as
+// LibraryCatalogManagementView's own move away from a sheet. Styled with
+// OnboardingTheme.swift's components rather than Theme.swift's, matching
+// the direction the rest of the app is headed.
 struct SettingsView: View {
-    @Environment(\.dismiss) private var dismiss
+    // Set back to false by "Go Back" below — owned by whichever screen
+    // presents this one, not this view itself.
+    @Binding var isShowingSettings: Bool
 
-    // See AccountView's own copy of this property for why it's read
-    // here too — this is what lets a reader change their mind about
-    // Light/Dark/Automatic any time, not just during onboarding.
+    // The same key HomeView's own onboarding theme step writes to, so a
+    // change here takes effect (and persists) exactly the same way.
     @AppStorage("appColorScheme") private var appColorSchemeRaw: String = AppColorScheme.system.rawValue
 
-    // Clearing these two is the entire "reset" — HomeView reads
-    // hasCompletedOnboarding to decide whether to skip straight to
-    // AccountView's picker or run the full welcome sequence, so setting
-    // it back to false is what actually sends a reader back to the very
-    // beginning once this sheet is dismissed.
-    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+    // The same key HomeView's onboarding name step writes to — shared
+    // between the reader and library flows, since both ask for a name
+    // before account type is even chosen (see HomeView's nameStep).
     @AppStorage("readerName") private var readerName: String = ""
 
-    // Toggled on by "Reset & Start Over" below — confirming first means
-    // an accidental tap can't silently clear a reader's saved name.
-    @State private var isShowingResetConfirmation = false
-
-    var body: some View {
-        VStack(spacing: Spacing.extraLarge) {
-            appearancePicker
-
-            Button(action: {
-                isShowingResetConfirmation = true
-            }, label: {
-                Text("Reset & Start Over")
-            })
-            .buttonStyle(SecondaryButtonStyle())
-
-            Spacer()
-        }
-        .padding(Spacing.large)
-        // Sheets are a separate view hierarchy from ContentView's own
-        // ZStack (see its own comment for why that one uses a ZStack
-        // rather than a plain ".background()") — that background doesn't
-        // reach in here, so this sheet needs its own, the same way
-        // ReadableContentDetailView does.
-        .background(Color.surfaceBackground.ignoresSafeArea())
-        .navigationTitle("Settings")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button(action: {
-                    dismiss()
-                }, label: {
-                    Text("Done")
-                })
-                .buttonStyle(TextButtonStyle())
-            }
-        }
-        .confirmationDialog(
-            "Start over from the beginning?",
-            isPresented: $isShowingResetConfirmation,
-            titleVisibility: .visible
-        ) {
-            Button("Reset", role: .destructive) {
-                hasCompletedOnboarding = false
-                readerName = ""
-                dismiss()
-            }
-            Button("Cancel", role: .cancel) {}
-        } message: {
-            Text("This clears your saved name and takes you back to the welcome screens.")
-        }
+    // Treats the untouched default ("system," from before this app
+    // offered a real choice) as "Light" for DISPLAY purposes only — same
+    // reasoning as HomeView's own displayedScheme. Nothing here ever
+    // writes .system back; only Light/Dark are offered below.
+    private var currentScheme: AppColorScheme {
+        let stored = AppColorScheme(rawValue: appColorSchemeRaw) ?? .system
+        return stored == .system ? .light : stored
     }
 
-    // Lets a reader change Light, Dark, or Automatic (follow the system
-    // setting) any time, regardless of what the rest of their device is
-    // set to — see AppColorScheme in Theme.swift and
-    // ios_accessibleApp.swift's ".preferredColorScheme(_:)", which is
-    // what actually applies this.
-    private var appearancePicker: some View {
-        VStack(spacing: Spacing.small) {
-            Text("Appearance")
-                .font(.comfortableBody)
-                .foregroundStyle(Color.textSecondary)
+    var body: some View {
+        ScrollView {
+            VStack(spacing: Spacing.extraLarge) {
+                OnboardingPageHeader(title: "Settings", titleSize: 34)
+                    .padding(.top, Spacing.large)
 
-            // "selection: $appColorSchemeRaw" binds directly to the raw
-            // String, and each option below "tags" itself with the
-            // matching case's own rawValue — Picker doesn't need to know
-            // anything about AppColorScheme itself this way, just that
-            // whichever tag matches the current selection gets highlighted.
-            // Each option shows only its icon (see AppColorScheme.iconName)
-            // rather than a text label — ".accessibilityLabel" still gives
-            // VoiceOver the word ("Automatic"/"Light"/"Dark") to announce,
-            // so nothing is lost for a screen reader even though sighted
-            // readers only ever see a sun/moon/half-circle.
-            Picker("Appearance", selection: $appColorSchemeRaw) {
-                ForEach(AppColorScheme.allCases) { scheme in
-                    Image(systemName: scheme.iconName)
-                        .accessibilityLabel(scheme.label)
-                        .tag(scheme.rawValue)
-                }
+                nameSection
+                appearanceSection
+
+                Spacer(minLength: Spacing.large)
+
+                OnboardingBackButton(action: {
+                    isShowingSettings = false
+                })
             }
-            .pickerStyle(.segmented)
-            // Bigger icons and a taller control — matches this app's
-            // larger-than-default sizing everywhere else.
-            .controlSize(.large)
+            .padding(.horizontal, Spacing.large)
+            .padding(.bottom, Spacing.large)
         }
-        .padding(.top, Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
+    }
+
+    private var nameSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Text("Your Name")
+                .font(OnboardingFont.body(16, weight: .semiBold))
+                .foregroundStyle(Color.onboardingTextSecondary)
+
+            TextField(
+                "",
+                text: $readerName,
+                prompt: Text("Your name")
+                    .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+            )
+            .textFieldStyle(.plain)
+            .font(OnboardingFont.display(24))
+            .foregroundStyle(Color.onboardingText)
+            .textInputAutocapitalization(.words)
+            .tint(Color.onboardingText)
+            .padding(Spacing.medium)
+            .frame(maxWidth: .infinity, alignment: .leading)
+            .background(Color.onboardingCard)
+            .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // Light or Dark only — no "Automatic" — mirroring HomeView's own
+    // onboarding theme step, which offers the exact same two cards, same
+    // reasoning: a reader who wants this app specifically in one mode
+    // shouldn't have it silently flip because the rest of their device's
+    // appearance changed.
+    private var appearanceSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Text("Appearance")
+                .font(OnboardingFont.body(16, weight: .semiBold))
+                .foregroundStyle(Color.onboardingTextSecondary)
+
+            OnboardingSelectableCard(
+                leading: OnboardingThemeSwatch(palette: .light),
+                title: "Light",
+                isSelected: currentScheme == .light
+            ) {
+                appColorSchemeRaw = AppColorScheme.light.rawValue
+            }
+
+            OnboardingSelectableCard(
+                leading: OnboardingThemeSwatch(palette: .dark),
+                title: "Dark",
+                isSelected: currentScheme == .dark
+            ) {
+                appColorSchemeRaw = AppColorScheme.dark.rawValue
+            }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 
@@ -578,12 +580,6 @@ struct AccountView: View {
     // changes their mind.
     @Binding var accountType: AccountType?
 
-    // Toggled on by the gear icon below to present SettingsView as a
-    // sheet — the only way to reach it now, since there's no separate
-    // "Welcome back" screen with its own gear icon anymore (see
-    // HomeView's own comment on hasCompletedOnboarding for why).
-    @State private var isShowingSettings = false
-
     var body: some View {
         if accountType == .library {
             LibraryAccountView(accountType: $accountType, currentPage: $currentPage)
@@ -595,28 +591,14 @@ struct AccountView: View {
             // — reached here on every later visit too, so no progress bar
             // and no "Go Back" (there's nothing before this to go back
             // to for a returning reader — HomeView sends them straight
-            // here).
+            // here). No Settings access here either — this is a
+            // sign-in/sign-up screen, not an account's own home, so
+            // there's nothing yet to configure; see LibraryHomeView and
+            // ChooseView's own gear icons for where Settings actually
+            // lives once signed in.
             AccountChoiceScreen(onContinue: { chosen in
                 accountType = chosen
             })
-            .overlay(alignment: .topTrailing) {
-                Button(action: {
-                    isShowingSettings = true
-                }, label: {
-                    Image(systemName: "gearshape.fill")
-                        .font(.system(size: 24))
-                        .foregroundStyle(Color.onboardingTextSecondary)
-                        .padding(Spacing.large)
-                })
-                .accessibilityLabel("Settings")
-            }
-            .sheet(isPresented: $isShowingSettings) {
-                // NavigationStack lets .navigationTitle/.toolbar inside
-                // SettingsView work.
-                NavigationStack {
-                    SettingsView()
-                }
-            }
         }
     }
 }
@@ -1438,9 +1420,16 @@ struct LibraryHomeView: View {
     // rather than presenting it separately.
     @State private var isManagingCatalog: Bool = false
 
+    // Toggled on by the gear icon below — same "swap this view's own
+    // body" pattern as isManagingCatalog just above, for the same reason
+    // (see SettingsView's own doc comment for why it's not a sheet).
+    @State private var isShowingSettings: Bool = false
+
     var body: some View {
         if isManagingCatalog {
             LibraryCatalogManagementView(isManagingCatalog: $isManagingCatalog)
+        } else if isShowingSettings {
+            SettingsView(isShowingSettings: $isShowingSettings)
         } else {
             homeContent
         }
@@ -1503,6 +1492,17 @@ struct LibraryHomeView: View {
         .padding(Spacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.onboardingBackground.ignoresSafeArea())
+        .overlay(alignment: .topTrailing) {
+            Button(action: {
+                isShowingSettings = true
+            }, label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 24))
+                    .foregroundStyle(Color.onboardingTextSecondary)
+                    .padding(Spacing.large)
+            })
+            .accessibilityLabel("Settings")
+        }
         // .task (rather than .onAppear) ties this to the view's lifecycle —
         // it's automatically cancelled if the view disappears before the
         // fetch finishes, so a slow network can't set state on a view
@@ -1817,7 +1817,21 @@ struct ChooseView: View {
     @State private var isLoading: Bool = true
     @State private var loadError: String? = nil
 
+    // Toggled on by the gear icon below — swaps this whole view's own
+    // body over to SettingsView, same pattern LibraryHomeView uses for
+    // its own gear icon (see SettingsView's own doc comment for why it's
+    // not a sheet).
+    @State private var isShowingSettings: Bool = false
+
     var body: some View {
+        if isShowingSettings {
+            SettingsView(isShowingSettings: $isShowingSettings)
+        } else {
+            catalogContent
+        }
+    }
+
+    private var catalogContent: some View {
         VStack(spacing: Spacing.medium) {
             PageHeader(eyebrow: "Reading Catalog", title: "Choose Something to Read")
 
@@ -1868,6 +1882,17 @@ struct ChooseView: View {
             })
         }
         .padding(Spacing.large)
+        .overlay(alignment: .topTrailing) {
+            Button(action: {
+                isShowingSettings = true
+            }, label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 24))
+                    .foregroundStyle(Color.textSecondary)
+                    .padding(Spacing.large)
+            })
+            .accessibilityLabel("Settings")
+        }
         // .sheet(item:) shows a modal whenever the bound value is non-nil,
         // passing the unwrapped value in. "$" turns @State into a two-way
         // Binding. Attached to the whole VStack (rather than nested inside
