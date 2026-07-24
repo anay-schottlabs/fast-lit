@@ -7,7 +7,7 @@ import SwiftUI
 // continues on from it. Deliberately its own file, with its own colors,
 // fonts, and button/card styles — NOT built from Theme.swift's own
 // Color.surfaceBackground/.textPrimary/.accentPrimary,
-// PrimaryButtonStyle, AppMascot, etc. Those are the rest of the app's
+// PrimaryButtonStyle, PageHeader, etc. Those are the rest of the app's
 // look (warm cream/terracotta, SF Rounded) and stay exactly as they
 // are; onboarding's own look (cooler grayscale/beige, no accent color
 // at all, Baloo 2 + Quicksand) is a deliberately different, from-scratch
@@ -250,9 +250,9 @@ struct OnboardingPageHeader: View {
 // MARK: - Mascot
 
 // The onboarding flow's own mascot — simple concentric-circle shapes,
-// NOT Theme.swift's flame "Ember" (AppMascot), which stays exactly as
-// it is for every OTHER screen in the app (ReturningHomeView,
-// ReaderAccountView, ...). The design spec defines three interchangeable
+// a deliberately separate character from anything in Theme.swift, which
+// this flow doesn't draw from at all (see this file's own top comment).
+// The design spec defines three interchangeable
 // styles; "orbit" is the one actually used throughout this flow, but all
 // three are implemented here since the design explicitly calls this out
 // as a swappable style rather than a one-off choice.
@@ -263,11 +263,11 @@ enum OnboardingMascotStyle {
 }
 
 struct OnboardingMascot: View {
-    // Every other measurement is a fraction of this one number, same
-    // idea as Theme.swift's own AppMascot — HomeView's onboarding
-    // passes a smaller size at each successive step (170 → 110 → 96 →
-    // 56), so the mascot visibly settles down in size as a reader's
-    // attention shifts toward the actual choices being asked of them.
+    // Every other measurement is a fraction of this one number —
+    // HomeView's onboarding passes a smaller size at each successive
+    // step (170 → 110 → 96 → 56), so the mascot visibly settles down in
+    // size as a reader's attention shifts toward the actual choices
+    // being asked of them.
     var size: CGFloat = 120
 
     // "orbit" is this flow's actual default — see OnboardingMascotStyle

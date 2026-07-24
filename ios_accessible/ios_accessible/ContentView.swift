@@ -110,7 +110,7 @@ struct ContentView: View {
 
 // Which step of the very-first-launch welcome sequence is showing (see
 // HomeView below). Not used again once hasCompletedOnboarding is true,
-// when ReturningHomeView takes over instead.
+// when HomeView instead hands off straight to AccountView's picker.
 enum OnboardingStep {
     case welcome
     case name
@@ -131,10 +131,9 @@ enum OnboardingStep {
 // whichever account type was picked (AccountView skips its own copy of
 // that same question — see ContentView's own "accountType", shared
 // between the two). Every later visit to Home (e.g. right after signing
-// out) skips straight to ReturningHomeView instead, since there's no
-// reason to re-ask a name or show the theme preview a second time —
-// ReturningHomeView, unlike this one, uses the rest of the app's normal
-// look.
+// out) skips straight past all of this to AccountView's picker instead,
+// since there's no reason to re-ask a name or show the theme preview a
+// second time.
 struct HomeView: View {
     // @Binding links to a @State var owned by a parent view (ContentView's
     // currentPage), so changing it here updates the parent's value too.
@@ -165,7 +164,14 @@ struct HomeView: View {
     var body: some View {
         Group {
             if hasCompletedOnboarding {
-                ReturningHomeView(currentPage: $currentPage)
+                // Nothing left to show here on a later visit — Name and
+                // Theme are already answered, so send them straight on to
+                // AccountView's picker instead of re-running any of this
+                // onboarding sequence. Color.clear rather than EmptyView()
+                // so the frame stays a real, hit-testable view for the
+                // instant before onAppear fires.
+                Color.clear
+                    .onAppear { currentPage = .account }
             } else {
                 Group {
                     switch onboardingStep {
@@ -191,8 +197,9 @@ struct HomeView: View {
             }
         }
         // Animates BOTH the step-to-step transition above and the final
-        // hand-off to ReturningHomeView, so nothing about this sequence
-        // ever cuts abruptly from one screen to the next.
+        // hand-off away from this whole sequence once hasCompletedOnboarding
+        // flips to true, so nothing about it ever cuts abruptly from one
+        // screen to the next.
         .animation(.easeInOut(duration: 0.45), value: onboardingStep)
         .animation(.easeInOut(duration: 0.45), value: hasCompletedOnboarding)
     }
@@ -442,92 +449,22 @@ struct HomeView: View {
     }
 }
 
-// Shown every time a reader reaches Home EXCEPT the very first time (see
-// HomeView above, which handles that one-time welcome sequence instead)
-// — most commonly right after signing out. Deliberately much simpler
-// than that first-time sequence: just Ember, a greeting, one tap to
-// continue, and a small way into Settings — no need to re-ask a name or
-// re-show the theme preview here, both are already saved from onboarding.
-struct ReturningHomeView: View {
-    @Binding var currentPage: Page
-
-    // Toggled on by the gear icon below to present SettingsView as a sheet.
-    @State private var isShowingSettings = false
-
-    var body: some View {
-        // The WHOLE screen is one big Button, same "tap anywhere" idea
-        // HomeView's own welcome step uses — a real Button (rather than a
-        // bare tap gesture) so VoiceOver, Switch Control, and keyboard
-        // navigation all understand it as a control automatically.
-        Button(action: {
-            currentPage = .account
-        }, label: {
-            VStack(spacing: Spacing.large) {
-                Spacer()
-
-                AppMascot(size: 110, flickerIntensity: 0.9, flickerSpeed: 0.95)
-
-                // Deliberately NOT personalized with the reader's saved
-                // name here — this screen is reached before any actual
-                // log in/join happens (it's just "back at the app's home
-                // screen"), so a "Hi, <name>!" greeting belongs after a
-                // reader actually signs in or joins a library, not here.
-                PageHeader(eyebrow: "Welcome back", title: "Welcome to Fast Lit")
-
-                Spacer()
-
-                Text("Tap anywhere to start reading")
-                    .font(.buttonLabel)
-                    .foregroundStyle(Color.accentPrimary)
-
-                Spacer()
-            }
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .contentShape(Rectangle())
-        })
-        .buttonStyle(.plain)
-        .padding(Spacing.large)
-        // A small gear in the corner, overlaid ON TOP of the full-screen
-        // button above — SwiftUI hit-tests the topmost view at whatever
-        // point was actually tapped, so tapping this gear opens Settings
-        // instead of triggering the big background button underneath it.
-        .overlay(alignment: .topTrailing) {
-            Button(action: {
-                isShowingSettings = true
-            }, label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 24))
-                    .foregroundStyle(Color.textSecondary)
-                    .padding(Spacing.large)
-            })
-            .accessibilityLabel("Settings")
-        }
-        .sheet(isPresented: $isShowingSettings) {
-            // NavigationStack lets .navigationTitle/.toolbar inside
-            // SettingsView work.
-            NavigationStack {
-                SettingsView()
-            }
-        }
-    }
-}
-
-// Reachable from ReturningHomeView's gear icon — holds the two things
-// that don't belong cluttering up the simple day-to-day Home screen:
+// Reachable from AccountView's gear icon — holds the two things that
+// don't belong cluttering up the simple day-to-day account picker:
 // changing Light/Dark/Automatic, and starting over from scratch.
 struct SettingsView: View {
     @Environment(\.dismiss) private var dismiss
 
-    // See ReturningHomeView's own copy of this property for why it's
-    // read here too — this is what lets a reader change their mind about
+    // See AccountView's own copy of this property for why it's read
+    // here too — this is what lets a reader change their mind about
     // Light/Dark/Automatic any time, not just during onboarding.
     @AppStorage("appColorScheme") private var appColorSchemeRaw: String = AppColorScheme.system.rawValue
 
     // Clearing these two is the entire "reset" — HomeView reads
-    // hasCompletedOnboarding to decide whether to show ReturningHomeView
-    // or the full welcome sequence, so setting it back to false is what
-    // actually sends a reader back to the very beginning once this sheet
-    // is dismissed.
+    // hasCompletedOnboarding to decide whether to skip straight to
+    // AccountView's picker or run the full welcome sequence, so setting
+    // it back to false is what actually sends a reader back to the very
+    // beginning once this sheet is dismissed.
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("readerName") private var readerName: String = ""
 
@@ -641,6 +578,12 @@ struct AccountView: View {
     // changes their mind.
     @Binding var accountType: AccountType?
 
+    // Toggled on by the gear icon below to present SettingsView as a
+    // sheet — the only way to reach it now, since there's no separate
+    // "Welcome back" screen with its own gear icon anymore (see
+    // HomeView's own comment on hasCompletedOnboarding for why).
+    @State private var isShowingSettings = false
+
     var body: some View {
         if accountType == .library {
             LibraryAccountView(accountType: $accountType, currentPage: $currentPage)
@@ -649,14 +592,31 @@ struct AccountView: View {
         } else {
             // The same "Who's Joining Us?" screen HomeView's onboarding
             // shows as its own final step (see AccountChoiceScreen below)
-            // — reached here on every visit that DIDN'T just come through
-            // onboarding, so no progress bar, and "Go Back" returns to
-            // Home instead of an onboarding step.
+            // — reached here on every later visit too, so no progress bar
+            // and no "Go Back" (there's nothing before this to go back
+            // to for a returning reader — HomeView sends them straight
+            // here).
             AccountChoiceScreen(onContinue: { chosen in
                 accountType = chosen
-            }, onBack: {
-                currentPage = .home
             })
+            .overlay(alignment: .topTrailing) {
+                Button(action: {
+                    isShowingSettings = true
+                }, label: {
+                    Image(systemName: "gearshape.fill")
+                        .font(.system(size: 24))
+                        .foregroundStyle(Color.onboardingTextSecondary)
+                        .padding(Spacing.large)
+                })
+                .accessibilityLabel("Settings")
+            }
+            .sheet(isPresented: $isShowingSettings) {
+                // NavigationStack lets .navigationTitle/.toolbar inside
+                // SettingsView work.
+                NavigationStack {
+                    SettingsView()
+                }
+            }
         }
     }
 }
@@ -665,10 +625,11 @@ struct AccountView: View {
 // can appear: as the final step of HomeView's first-time onboarding
 // sequence (showProgress: true, "Go Back" returns to the theme step) and
 // as AccountView's own picker for every later visit (showProgress:
-// false, "Go Back" returns to Home instead). Built entirely from
-// OnboardingTheme.swift's own components — same reasoning as HomeView's
-// steps: this screen is part of the onboarding redesign even when a
-// returning reader reaches it outside onboarding proper, so it keeps
+// false, no "Go Back" at all — see onBack's own doc comment for why).
+// Built entirely from OnboardingTheme.swift's own components — same
+// reasoning as HomeView's steps: this screen is part of the onboarding
+// redesign even when a returning reader reaches it outside onboarding
+// proper, so it keeps
 // that flow's look rather than switching back to the rest of the app's.
 // Tapping a card only highlights it; actually committing the choice
 // needs a separate tap on "Continue", so a reader can change their mind
@@ -680,7 +641,13 @@ private struct AccountChoiceScreen: View {
     // selected — never called while selection is nil, since Continue is
     // disabled until then (see ".disabled(selection == nil)" below).
     let onContinue: (AccountType) -> Void
-    let onBack: () -> Void
+
+    // Optional — nil means there's nowhere meaningful to go back to (a
+    // returning reader lands directly on this screen now, with no
+    // previous screen in this session — see AccountView's own use of
+    // this below), so "Go Back" just isn't shown at all rather than
+    // bouncing right back to this same screen.
+    var onBack: (() -> Void)? = nil
 
     // Always starts nil, even when AccountView shows this again after a
     // reader taps "Go Back" from inside LibraryAccountView/
@@ -739,7 +706,9 @@ private struct AccountChoiceScreen: View {
             .disabled(selection == nil)
             .padding(.top, Spacing.small)
 
-            OnboardingBackButton(action: onBack)
+            if let onBack {
+                OnboardingBackButton(action: onBack)
+            }
         }
         .padding(Spacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
@@ -1446,9 +1415,7 @@ struct LibraryHomeView: View {
     let greeting: LibraryHomeGreeting
 
     // Set to .account by "Sign Out" below, landing on AccountView's own
-    // "library or reader" picker — not .home, which used to route
-    // through ReturningHomeView's own old-styled "Welcome back" screen
-    // first.
+    // "library or reader" picker directly.
     @Binding var currentPage: Page
 
     // Cleared to nil by "Sign Out" below, alongside currentPage — without
