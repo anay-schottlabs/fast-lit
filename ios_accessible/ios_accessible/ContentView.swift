@@ -2290,26 +2290,22 @@ struct ReadView: View {
     // ticks below correctly centered on it regardless of word length.
     private var wordDisplay: some View {
         HStack(spacing: 0) {
-            // Muted, medium weight (not the heavy weight of the focal
-            // letter below) — in this app's monochrome palette there's no
-            // separate hue to lean on the way a colored accent used to
-            // provide, so the before/after letters are pushed back with
-            // BOTH a lighter color and a lighter weight, leaving the focal
-            // letter to stand out through contrast on two axes at once,
-            // not just one.
+            // Muted — in this app's monochrome palette there's no separate
+            // hue to lean on the way a colored accent used to provide, so
+            // the before/after letters are pushed back with a lighter
+            // color, leaving the focal letter (plain textPrimary, same
+            // .medium weight as these) to stand out through color contrast
+            // alone — the fixation ticks above/below it carry the rest of
+            // the emphasis.
             Text(wordParts.before)
                 .foregroundStyle(Color.textSecondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
             Text(wordParts.center)
                 // Plain textPrimary, not the old accentPrimary-adjacent
                 // Color.rsvpFocalLetter — this screen's emphasis comes
-                // entirely from weight now, not a second hue.
+                // entirely from color contrast against the before/after
+                // letters, not a second hue or a heavier weight.
                 .foregroundStyle(Color.textPrimary)
-                // Overrides just the weight from the .medium base set
-                // below, up to the heaviest weight available — the focal
-                // letter reads as unmistakably "the point of emphasis"
-                // through weight alone.
-                .fontWeight(.black)
                 .fixedSize()
             Text(wordParts.after)
                 .foregroundStyle(Color.textSecondary)
