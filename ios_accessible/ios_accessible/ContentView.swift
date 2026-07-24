@@ -1886,76 +1886,85 @@ struct ChooseView: View {
 
     var body: some View {
         VStack(spacing: Spacing.medium) {
-            PageHeader(eyebrow: "Reading Catalog", title: "Choose Something to Read")
+            OnboardingPageHeader(title: "Choose Something to Read", titleSize: 34)
+                .padding(.top, Spacing.large)
 
-            if isLoading {
-                ProgressView()
-                Spacer()
-            } else if let loadError {
-                ErrorLabel(message: loadError)
-                Spacer()
-            } else if availableContent.isEmpty {
-                Text("Your library hasn't added any reading material yet. Please check back soon.")
-                    .font(.comfortableBody)
-                    .foregroundStyle(Color.textSecondary)
-                    .multilineTextAlignment(.center)
-                    .padding()
-                Spacer()
-            } else {
-                List {
-                    // "item" avoids clashing with the Text view type.
-                    ForEach(availableContent) { item in
-                        Button(action: {
-                            selectedContent = item // triggers the .sheet below
-                        }, label: {
-                            HStack {
-                                Text(item.title)
-                                    .font(.comfortableBody)
-                                    .foregroundStyle(Color.textPrimary)
-                                Spacer()
-                                // A visible ">" hints the row is tappable,
-                                // beyond just the row itself looking like
-                                // a button — a small extra clarity cue.
-                                Image(systemName: "chevron.right")
-                                    .foregroundStyle(Color.textSecondary)
-                            }
-                            // Generous vertical padding makes each row a
-                            // bigger, easier target to tap.
-                            .padding(.vertical, Spacing.medium)
-                        })
-                        .buttonStyle(HapticButtonStyle())
-                        .listRowBackground(Color.surfaceCard)
+            Group {
+                if isLoading {
+                    Spacer()
+                    ProgressView()
+                        .tint(Color.onboardingText)
+                    Spacer()
+                } else if let loadError {
+                    Spacer()
+                    OnboardingErrorLabel(message: loadError)
+                    Spacer()
+                } else if availableContent.isEmpty {
+                    Spacer()
+                    Text("Your library hasn't added any reading material yet. Please check back soon.")
+                        .font(OnboardingFont.body(16, weight: .semiBold))
+                        .foregroundStyle(Color.onboardingTextSecondary)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, Spacing.large)
+                    Spacer()
+                } else {
+                    List {
+                        // "item" avoids clashing with the Text view type.
+                        ForEach(availableContent) { item in
+                            Button(action: {
+                                selectedContent = item // triggers the .sheet below
+                            }, label: {
+                                HStack {
+                                    Text(item.title)
+                                        .font(OnboardingFont.body(18, weight: .semiBold))
+                                        .foregroundStyle(Color.onboardingText)
+                                    Spacer()
+                                    // A visible ">" hints the row is tappable,
+                                    // beyond just the row itself looking like
+                                    // a button — a small extra clarity cue.
+                                    Image(systemName: "chevron.right")
+                                        .foregroundStyle(Color.onboardingTextSecondary)
+                                }
+                                // Generous vertical padding makes each row a
+                                // bigger, easier target to tap.
+                                .padding(.vertical, Spacing.medium)
+                            })
+                            .buttonStyle(HapticButtonStyle())
+                            .listRowBackground(Color.onboardingCard)
+                        }
                     }
+                    .scrollContentBackground(.hidden)
                 }
-                .scrollContentBackground(.hidden)
-                .background(Color.surfaceBackground)
             }
 
-            BackButton(action: {
+            OnboardingBackButton(action: {
                 currentPage = .home
             })
         }
-        .padding(Spacing.large)
+        .padding(.horizontal, Spacing.large)
+        .padding(.bottom, Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
         // .sheet(item:) shows a modal whenever the bound value is non-nil,
         // passing the unwrapped value in. "$" turns @State into a two-way
         // Binding. Attached to the whole VStack (rather than nested inside
         // the List branch above) so it stays in place no matter which of
         // the loading/error/empty/list branches above is currently showing.
         .sheet(item: $selectedContent) { item in
-            // NavigationStack lets .navigationTitle/.toolbar inside the detail
-            // view work.
-            NavigationStack {
-                // onAccept is a closure we pass in; the detail view calls it
-                // without knowing what it does here on our side.
-                ReadableContentDetailView(content: item, onAccept: {
-                    contentToRead = item // remember what to read...
-                    currentPage = .read // ...then go straight to reading —
-                    // ReadView itself locks the screen into landscape on
-                    // appear (see its .onAppear), so there's no need for
-                    // an intermediate "please rotate your device" screen
-                    // asking the reader to do it by hand.
-                })
-            }
+            // onAccept is a closure we pass in; the detail view calls it
+            // without knowing what it does here on our side. No
+            // NavigationStack wrapper — ReadableContentDetailView is
+            // styled with OnboardingTheme.swift's own components now,
+            // which build their own header/buttons rather than relying
+            // on a nav bar's title/toolbar for either.
+            ReadableContentDetailView(content: item, onAccept: {
+                contentToRead = item // remember what to read...
+                currentPage = .read // ...then go straight to reading —
+                // ReadView itself locks the screen into landscape on
+                // appear (see its .onAppear), so there's no need for
+                // an intermediate "please rotate your device" screen
+                // asking the reader to do it by hand.
+            })
         }
         // .task (rather than .onAppear) ties this to the view's lifecycle —
         // it's automatically cancelled if the view disappears before the
@@ -2333,49 +2342,52 @@ struct ReadableContentDetailView: View {
     @Environment(\.dismiss) private var dismiss
 
     var body: some View {
-        ScrollView { // lets long passages scroll
-            VStack(alignment: .leading, spacing: Spacing.medium) {
-                Text(content.description)
-                    .font(.comfortableBody)
-                    .foregroundStyle(Color.textSecondary)
-                Text(content.text)
-                    .font(.comfortableBody)
-                    .foregroundStyle(Color.textPrimary)
-                    // A little extra breathing room between lines makes a
-                    // full passage of body text noticeably easier to track
-                    // line-to-line than the system default spacing.
-                    .lineSpacing(6)
+        VStack(spacing: Spacing.medium) {
+            ScrollView { // lets long passages scroll
+                VStack(alignment: .leading, spacing: Spacing.medium) {
+                    // No navigationTitle/toolbar here — OnboardingTheme
+                    // screens build their own title and their own bottom
+                    // buttons rather than relying on a nav bar, so the
+                    // title is just the first thing inside the scroll
+                    // content instead.
+                    Text(content.title)
+                        .font(OnboardingFont.display(28))
+                        .foregroundStyle(Color.onboardingText)
+                    Text(content.description)
+                        .font(OnboardingFont.body(16, weight: .semiBold))
+                        .foregroundStyle(Color.onboardingTextSecondary)
+                    Text(content.text)
+                        .font(OnboardingFont.body(17, weight: .medium))
+                        .foregroundStyle(Color.onboardingText)
+                        // A little extra breathing room between lines makes a
+                        // full passage of body text noticeably easier to track
+                        // line-to-line than the system default spacing.
+                        .lineSpacing(6)
+                }
+                .padding(.top, Spacing.large)
             }
-            .padding(Spacing.large)
-        }
-        // ScrollView already fills all the space it's offered (that's
-        // needed for scrolling to make sense at all), so unlike the fixes
-        // above, a plain ".background()" here already covers the whole
-        // sheet — ".ignoresSafeArea()" just extends it fully to the edges.
-        .background(Color.surfaceBackground.ignoresSafeArea())
-        .navigationTitle(content.title)
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            // .cancellationAction is the standard "close this screen" spot (left side).
-            ToolbarItem(placement: .cancellationAction) {
+
+            HStack(spacing: Spacing.medium) {
                 Button(action: {
                     dismiss()
                 }, label: {
                     Text("Done")
                 })
-                .buttonStyle(TextButtonStyle())
-            }
-            // .confirmationAction is the standard "confirm/accept" spot (right side).
-            ToolbarItem(placement: .confirmationAction) {
+                .buttonStyle(OnboardingSecondaryButtonStyle())
+
                 Button(action: {
                     onAccept() // tell ChooseView to move to the orient screen
                     dismiss() // then close this sheet
                 }, label: {
                     Text("Accept")
                 })
-                .buttonStyle(TextButtonStyle(emphasized: true))
+                .buttonStyle(OnboardingPrimaryButtonStyle())
             }
         }
+        .padding(.horizontal, Spacing.large)
+        .padding(.bottom, Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
     }
 }
 

@@ -88,23 +88,8 @@ extension Font {
     // Size > Larger Text. Given this app's audience, respecting that
     // setting matters more than pixel-perfect control over exact sizes.
 
-    // Page titles ("Library Home", "Join Your Library", etc.) —
-    // ".rounded" gives every letterform soft, friendly terminals instead
-    // of sharp corners, which reads as warmer and more approachable —
-    // important for an app meant to feel comforting to seniors and
-    // welcoming to readers of all kinds, including kids with special
-    // needs. Bold (not the heaviest possible weight) so titles feel
-    // confident without feeling like they're shouting.
-    static let pageTitle = Font.system(.largeTitle, design: .rounded).weight(.bold)
-
     // Smaller headings within a screen (e.g. "Your Join Code").
     static let sectionTitle = Font.system(.title, design: .rounded).weight(.semibold)
-
-    // A short, small, bold, letter-spaced label shown ABOVE a PageHeader's
-    // title (e.g. "YOUR LIBRARY") — see PageHeader's optional "eyebrow"
-    // parameter below. ".uppercase" is applied by PageHeader itself, not
-    // baked in here, so callers can still pass ordinary-cased strings.
-    static let eyebrow = Font.system(.caption, design: .rounded).weight(.bold)
 
     // The everyday body/label/paragraph text style used almost
     // everywhere in this app. Deliberately several steps larger than
@@ -131,11 +116,6 @@ extension Font {
     // code is meant to be read character-by-character precisely, not
     // to feel decorative.)
     static let joinCode = Font.system(.title, design: .monospaced).weight(.bold)
-
-    // Error messages — one step larger than SwiftUI's ".footnote", since
-    // an error is important information a reader needs to actually
-    // register, not a fine-print afterthought.
-    static let errorMessage = Font.system(.callout).weight(.semibold)
 }
 
 // MARK: - Spacing & sizing
@@ -160,20 +140,6 @@ enum Spacing {
     // in ReadView, where a full-width button wouldn't make sense sitting
     // next to a number.
     static let compactButtonWidth: CGFloat = 64
-}
-
-enum Radius {
-    // Buttons themselves are full capsules now (see PrimaryButtonStyle/
-    // SecondaryButtonStyle below, which use Shape "Capsule()" rather than
-    // a RoundedRectangle at all) — this radius is for everything else
-    // that's still a rounded rectangle: cards, the join-code entry boxes,
-    // list rows. Generously rounded, matching a soft, modern "card" look.
-    static let card: CGFloat = 24
-
-    // A tighter radius for small elements (e.g. each box in
-    // CodeEntryField) where the full card radius would look odd on
-    // something this small.
-    static let small: CGFloat = 12
 }
 
 // MARK: - Button styles
@@ -280,82 +246,7 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
-// The "Go Back" action repeats across nearly every screen in this app —
-// pulling it into one shared button means it always gets the same
-// leading chevron icon (rather than being plain text), and any future
-// tweak to how "going back" looks/reads only needs to happen here once.
-struct BackButton: View {
-    let action: () -> Void
-
-    // HomeView's onboarding steps deliberately use the lighter,
-    // unbordered TextButtonStyle for "Go Back" (so it doesn't compete
-    // with that screen's own "Continue" pill) — everywhere else uses the
-    // outlined SecondaryButtonStyle pill, same as every other secondary
-    // action in the app.
-    var plain: Bool = false
-
-    var body: some View {
-        Button(action: action) {
-            Label("Go Back", systemImage: "chevron.left")
-        }
-        .buttonStyle(plain ? AnyButtonStyle(TextButtonStyle()) : AnyButtonStyle(SecondaryButtonStyle()))
-    }
-}
-
-// SwiftUI's ".buttonStyle(_:)" expects one single concrete type at each
-// call site — it can't take "either TextButtonStyle or
-// SecondaryButtonStyle depending on a condition" directly, since a
-// ternary needs both branches to already be the exact same type. This
-// small wrapper erases either one down to the same "AnyButtonStyle" type
-// so BackButton's own ternary above can compile.
-struct AnyButtonStyle: ButtonStyle {
-    private let makeBodyClosure: (Configuration) -> AnyView
-
-    init<S: ButtonStyle>(_ style: S) {
-        makeBodyClosure = { configuration in
-            AnyView(style.makeBody(configuration: configuration))
-        }
-    }
-
-    func makeBody(configuration: Configuration) -> some View {
-        makeBodyClosure(configuration)
-    }
-}
-
-// A minimal, text-only style — no fill, no outline, just the label
-// itself — for actions too light-touch for even SecondaryButtonStyle's
-// outlined pill, like stepping back one step in HomeView's onboarding
-// sequence. "Never mind, take me back" doesn't need to compete visually
-// with the actual forward-moving "Continue" button on the same screen.
-// Also used for toolbar buttons (see LibraryCatalogManagementView,
-// SettingsView, ReadableContentDetailView) — a toolbar slot is too
-// small/compact for even a pill-shaped button, but every button in this
-// app should still be one of ITS OWN custom styles rather than falling
-// back to the platform-default blue toolbar text.
-struct TextButtonStyle: ButtonStyle {
-    @Environment(\.isEnabled) private var isEnabled
-
-    // Toolbar "confirm" actions (e.g. "Accept") use this to read as
-    // bolder/accent-colored — a primary action, not a de-emphasized one
-    // like "Go Back" or a toolbar "Done"/"Cancel".
-    var emphasized: Bool = false
-
-    func makeBody(configuration: Configuration) -> some View {
-        configuration.label
-            .font(emphasized ? .buttonLabel : .comfortableBody)
-            .foregroundStyle(emphasized ? Color.accentPrimary : Color.textSecondary)
-            .opacity(disabledAdjustedOpacity(pressed: configuration.isPressed))
-            .animation(.easeOut(duration: 0.15), value: configuration.isPressed)
-            .buttonPressHaptic(configuration.isPressed)
-    }
-
-    private func disabledAdjustedOpacity(pressed: Bool) -> Double {
-        guard isEnabled else { return 0.4 }
-        return pressed ? 0.5 : 1.0
-    }
-}
-
-// For buttons that don't want ANY of Primary/Secondary/Text's own color,
+// For buttons that don't want ANY of Primary/Secondary's own color,
 // sizing, or opacity — icon-only overlays (a Settings gear), ChooseView's
 // own list rows, OnboardingSelectableCard's tappable cards — but should
 // still feel tappable the same way every other button in this app does.
@@ -367,104 +258,6 @@ struct HapticButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label
             .buttonPressHaptic(configuration.isPressed)
-    }
-}
-
-// MARK: - Shared screen chrome
-
-// The heading almost every screen in this app starts with: an optional
-// small bold all-caps "eyebrow" label, a big heavy title, and an optional
-// smaller subtitle underneath. Pulling this out once means every screen's
-// heading looks and behaves identically, instead of each of the ~13
-// screens hand-rolling its own Text/font/padding combination.
-struct PageHeader: View {
-    // Optional: a short label shown above the title in small, bold,
-    // letter-spaced capitals (e.g. "YOUR LIBRARY") — echoes the small
-    // all-caps section labels this app's design language is drawing on.
-    // Most screens don't need one, so this defaults to nil.
-    var eyebrow: String? = nil
-
-    let title: String
-
-    // Optional: some screens want a short explanatory line under the
-    // title, others don't need one. Defaulting to nil means call sites
-    // that don't need a subtitle can just omit the parameter entirely,
-    // rather than passing an empty string.
-    var subtitle: String? = nil
-
-    var body: some View {
-        VStack(spacing: Spacing.small) {
-            if let eyebrow {
-                Text(eyebrow)
-                    .font(.eyebrow)
-                    .foregroundStyle(Color.textSecondary)
-                    // ".textCase(.uppercase)" here (rather than requiring
-                    // every caller to type their eyebrow text in capitals
-                    // already) means callers can write normal, readable
-                    // Swift string literals and still always get capitals
-                    // on screen.
-                    .textCase(.uppercase)
-                    // Letter-spacing (".tracking") is what makes a short
-                    // all-caps label like this read as an intentional
-                    // "label," rather than looking like a title that's
-                    // just too small.
-                    .tracking(2)
-            }
-
-            Text(title)
-                .font(.pageTitle)
-                .foregroundStyle(Color.textPrimary)
-                .multilineTextAlignment(.center)
-
-            // "if let subtitle" only unwraps and shows this Text once
-            // subtitle is actually non-nil.
-            if let subtitle {
-                Text(subtitle)
-                    .font(.comfortableBody)
-                    .foregroundStyle(Color.textSecondary)
-                    .multilineTextAlignment(.center)
-            }
-        }
-        .padding(.bottom, Spacing.medium)
-    }
-}
-
-// A consistent "card" treatment — background fill, rounded corners, and a
-// soft shadow — used for the handful of standalone card-like containers
-// in this app (the join-code display, the code-entry field). Written as
-// a View extension (rather than yet another custom ButtonStyle-style
-// struct) since it's not swapping out a whole view's content the way
-// PrimaryButtonStyle does, just adding a few chained modifiers — the
-// exact thing View extensions are for.
-extension View {
-    func cardStyle() -> some View {
-        self
-            .background(Color.surfaceCard)
-            .clipShape(RoundedRectangle(cornerRadius: Radius.card, style: .continuous))
-            // A soft, low-opacity black shadow reads as "this card is
-            // gently raised off the page" in both light and dark mode —
-            // unlike a tinted shadow, plain black-at-low-opacity doesn't
-            // need its own light/dark variant to still look right.
-            .shadow(color: .black.opacity(0.08), radius: 12, y: 4)
-    }
-}
-
-// A consistent error message treatment used everywhere a form can fail
-// (bad password, username taken, network error, ...). Pairs the error
-// color with a warning icon via SwiftUI's "Label" view — which lays out
-// an icon next to text for you — rather than relying on color alone,
-// since a color-only signal is easy to miss, especially for the
-// colorblind readers or less-experienced readers this app is meant to
-// welcome.
-struct ErrorLabel: View {
-    let message: String
-
-    var body: some View {
-        Label(message, systemImage: "exclamationmark.triangle.fill")
-            .font(.errorMessage)
-            .foregroundStyle(Color.errorText)
-            .multilineTextAlignment(.leading)
-            .padding(.horizontal)
     }
 }
 
