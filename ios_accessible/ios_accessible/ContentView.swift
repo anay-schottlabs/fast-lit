@@ -553,7 +553,7 @@ struct SettingsView: View {
         // ZStack (see its own comment for why that one uses a ZStack
         // rather than a plain ".background()") — that background doesn't
         // reach in here, so this sheet needs its own, the same way
-        // LibraryCatalogManagementView and ReadableContentDetailView do.
+        // ReadableContentDetailView does.
         .background(Color.surfaceBackground.ignoresSafeArea())
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
@@ -1445,11 +1445,21 @@ struct LibraryHomeView: View {
     @State private var joinCode: String? = nil
     @State private var loadError: String? = nil
 
-    // Toggled on by "Manage Catalog" below to present
-    // LibraryCatalogManagementView as a sheet.
+    // Toggled on by "Manage Catalog" below — swaps this whole view's own
+    // body over to LibraryCatalogManagementView, a real full screen (see
+    // that struct's own doc comment for why it's not a sheet anymore)
+    // rather than presenting it separately.
     @State private var isManagingCatalog: Bool = false
 
     var body: some View {
+        if isManagingCatalog {
+            LibraryCatalogManagementView(isManagingCatalog: $isManagingCatalog)
+        } else {
+            homeContent
+        }
+    }
+
+    private var homeContent: some View {
         VStack(spacing: Spacing.large) {
             Spacer()
 
@@ -1520,25 +1530,25 @@ struct LibraryHomeView: View {
                 loadError = error.localizedDescription
             }
         }
-        .sheet(isPresented: $isManagingCatalog) {
-            // NavigationStack lets .navigationTitle/.toolbar inside the
-            // management view work.
-            NavigationStack {
-                LibraryCatalogManagementView()
-            }
-        }
     }
 }
 
 // Lets a signed-in library account choose which catalog items its readers
-// are allowed to read — presented as a sheet from LibraryHomeView's
-// "Manage Catalog" button. Every toggle flip saves immediately (see
-// save() below) rather than needing a separate "Save" button, since
-// there's nothing else on this screen a half-saved toggle could conflict
-// with.
+// are allowed to read — a real full screen now (see LibraryHomeView's own
+// isManagingCatalog toggle above), not a sheet, styled with
+// OnboardingTheme.swift's components like the rest of the app is moving
+// toward. Every toggle flip saves immediately (see save() below) rather
+// than needing a separate "Save" button, since there's nothing else on
+// this screen a half-saved toggle could conflict with — "Go Back" is
+// exactly equivalent to the old sheet's "Done", just styled to match.
 struct LibraryCatalogManagementView: View {
+    // Set back to false by "Go Back" below — LibraryHomeView owns this,
+    // not this view, the same way e.g. LibraryAccountView's own authMode
+    // switches between its sub-screens rather than each one dismissing
+    // itself.
+    @Binding var isManagingCatalog: Bool
+
     @Environment(AuthService.self) private var authService
-    @Environment(\.dismiss) private var dismiss
 
     @State private var catalog: [ReadableContent] = []
     @State private var enabledContentIds: Set<String> = []
@@ -1548,22 +1558,20 @@ struct LibraryCatalogManagementView: View {
     @State private var saveError: String? = nil
 
     var body: some View {
-        // See ContentView's ZStack for why the background is a sibling
-        // here rather than a ".background()" modifier on Group: the
-        // isLoading/loadError branches below (a bare ProgressView/
-        // ErrorLabel, no List) hug their own small content size rather
-        // than filling the sheet, so ".background()" on Group would only
-        // paint a content-sized rectangle in those two states, not the
-        // whole sheet.
-        ZStack {
-            Color.surfaceBackground
-                .ignoresSafeArea()
+        VStack(spacing: Spacing.medium) {
+            OnboardingPageHeader(title: "Manage Catalog", titleSize: 34)
+                .padding(.top, Spacing.large)
 
             Group {
                 if isLoading {
+                    Spacer()
                     ProgressView()
+                        .tint(Color.onboardingText)
+                    Spacer()
                 } else if let loadError {
-                    ErrorLabel(message: loadError)
+                    Spacer()
+                    OnboardingErrorLabel(message: loadError)
+                    Spacer()
                 } else {
                     List {
                         ForEach(catalog) { item in
@@ -1578,37 +1586,38 @@ struct LibraryCatalogManagementView: View {
                                     save()
                                 }
                             ))
-                            .font(.comfortableBody)
-                            .foregroundStyle(Color.textPrimary)
+                            .font(OnboardingFont.body(18, weight: .semiBold))
+                            .foregroundStyle(Color.onboardingText)
+                            // Tints the switch itself, not just its label —
+                            // without this it'd fall back to the app-wide
+                            // AccentColor (terracotta), wrong here since
+                            // this flow uses no accent color at all.
+                            .tint(Color.onboardingText)
                             // ".large" makes the switch itself bigger and
                             // easier to hit precisely, and adds vertical
                             // padding around each row — both matter more for
                             // this app's audience than the default compact size.
                             .controlSize(.large)
                             .padding(.vertical, Spacing.small)
-                            .listRowBackground(Color.surfaceCard)
+                            .listRowBackground(Color.onboardingCard)
                         }
                     }
                     .scrollContentBackground(.hidden)
 
                     if let saveError {
-                        ErrorLabel(message: saveError)
+                        OnboardingErrorLabel(message: saveError)
                     }
                 }
             }
+
+            OnboardingBackButton(action: {
+                isManagingCatalog = false
+            })
         }
-        .navigationTitle("Manage Catalog")
-        .navigationBarTitleDisplayMode(.inline)
-        .toolbar {
-            ToolbarItem(placement: .confirmationAction) {
-                Button(action: {
-                    dismiss()
-                }, label: {
-                    Text("Done")
-                })
-                .buttonStyle(TextButtonStyle())
-            }
-        }
+        .padding(.horizontal, Spacing.large)
+        .padding(.bottom, Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
         .task {
             await load()
         }
