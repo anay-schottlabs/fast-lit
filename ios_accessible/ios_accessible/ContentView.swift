@@ -2252,17 +2252,24 @@ struct ReadView: View {
     }
 
     var body: some View {
-        // Landscape-only side-rail layout (see design_handoff_onboarding_flow's
-        // "Read Page Redesign - Landscape" reference, option 2a/2b): the word
-        // display, its progress bar, and the corner close button all live in
-        // the wide left pane; every playback control is stacked in a
-        // fixed-width right rail instead of the old bottom row of buttons +
-        // slider. Deliberately still Theme.swift's own tokens (surfaceCard/
-        // surfaceBackground/textPrimary/textSecondary), not
-        // OnboardingTheme.swift's — this screen isn't part of that separate
-        // onboarding flow, and specifically drops Color.accentPrimary/
-        // .rsvpFocalLetter entirely in favor of weight-only emphasis, so nothing
-        // here competes with the neutral, monochrome reading experience.
+        // Landscape-only side-rail layout, redone from
+        // design_handoff_onboarding_flow's "Read Page Redesign -
+        // Landscape" reference (options 2a light / 2b dark) — the word
+        // display, its progress bar, and the corner close button all live
+        // in the wide left pane; every playback control sits in a
+        // fixed-width right rail as a 2×2 icon grid + WPM stepper instead
+        // of the old bottom row of buttons + slider. Uses
+        // OnboardingTheme.swift's own color tokens (onboardingBackground/
+        // onboardingCard/onboardingText/onboardingTextSecondary/
+        // onboardingBorder/onboardingTrack) even though this screen isn't
+        // part of the onboarding flow itself — those are simply this
+        // app's real neutral-gray tokens, and Theme.swift's own
+        // surfaceBackground/surfaceCard dark variants read as a warm
+        // brown that clashes with the rest of the app. Deliberately still
+        // NOT Color.accentPrimary anywhere, and NOT OnboardingTheme's own
+        // Quicksand/Baloo 2 fonts either — the reference's own CSS asks
+        // for the system's rounded font family here, not this app's
+        // branded onboarding typography.
         HStack(spacing: 0) {
             mainReadingArea
             controlRail
@@ -2291,7 +2298,7 @@ struct ReadView: View {
     // caption underneath.
     private var mainReadingArea: some View {
         VStack(spacing: 0) {
-            HStack(spacing: Spacing.medium) {
+            HStack(spacing: 14) {
                 // Replaces the old "Choose Something Different" text
                 // button below the controls — same destination
                 // (currentPage = .choose sends the reader back to
@@ -2303,18 +2310,24 @@ struct ReadView: View {
                     currentPage = .choose
                 }, label: {
                     CloseXShape()
-                        .stroke(Color.textPrimary, style: StrokeStyle(lineWidth: 3.5, lineCap: .round, lineJoin: .round))
-                        .frame(width: 16, height: 16)
-                        .frame(width: 44, height: 44)
-                        .contentShape(Rectangle())
+                        .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                        .frame(width: 18, height: 18)
+                        .frame(width: 40, height: 40)
+                        .background(Circle().fill(Color.onboardingText.opacity(0.08)))
+                        .contentShape(Circle())
                 })
                 .buttonStyle(HapticButtonStyle())
                 .accessibilityLabel("Close and choose something different")
 
-                readingProgressBar
+                // Reuses OnboardingTheme.swift's own progress bar exactly
+                // as onboarding uses it — same Capsule track/fill
+                // construction against the same onboardingTrack/
+                // onboardingText tokens, just fed indexNum/words.count
+                // instead of a fixed step/total.
+                OnboardingProgressBar(step: indexNum + 1, total: words.count)
             }
-            .padding(.horizontal, Spacing.large)
-            .padding(.top, Spacing.large)
+            .padding(.horizontal, 24)
+            .padding(.top, 20)
 
             Spacer()
 
@@ -2323,34 +2336,13 @@ struct ReadView: View {
             Spacer()
 
             Text("Word \(indexNum + 1) of \(words.count) · \(timeRemainingLabel)")
-                .font(.buttonCaption)
-                .foregroundStyle(Color.textSecondary)
-                .padding(.bottom, Spacing.large)
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.onboardingTextSecondary)
+                .padding(.horizontal, 24)
+                .padding(.bottom, 20)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color.surfaceBackground.ignoresSafeArea())
-    }
-
-    // A thin, fully custom capsule track rather than SwiftUI's own
-    // ProgressView — ProgressView's default linear style doesn't give
-    // precise control over height/corner radius, and its .tint(_:) would
-    // otherwise need Color.accentPrimary (the one color this whole screen
-    // deliberately avoids) to read clearly against either fill.
-    private var readingProgressBar: some View {
-        GeometryReader { geometry in
-            ZStack(alignment: .leading) {
-                Capsule()
-                    .fill(Color.textSecondary.opacity(0.25))
-                Capsule()
-                    .fill(Color.textPrimary)
-                    // "indexNum + 1" (not indexNum) so the bar reads as
-                    // "words shown so far out of the total" — it starts at
-                    // a sliver of progress on the very first word, rather
-                    // than at empty.
-                    .frame(width: geometry.size.width * CGFloat(indexNum + 1) / CGFloat(words.count))
-            }
-        }
-        .frame(height: 5)
+        .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
     // Rather than one Text centered as a block (which would put the focal
@@ -2367,33 +2359,33 @@ struct ReadView: View {
             // Muted — in this app's monochrome palette there's no separate
             // hue to lean on the way a colored accent used to provide, so
             // the before/after letters are pushed back with a lighter
-            // color, leaving the focal letter (plain textPrimary, same
+            // color, leaving the focal letter (plain onboardingText, same
             // .medium weight as these) to stand out through color contrast
             // alone — the fixation ticks above/below it carry the rest of
             // the emphasis.
             Text(wordParts.before)
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(Color.onboardingTextSecondary)
                 .frame(maxWidth: .infinity, alignment: .trailing)
             Text(wordParts.center)
-                // Plain textPrimary, not the old accentPrimary-adjacent
-                // Color.rsvpFocalLetter — this screen's emphasis comes
-                // entirely from color contrast against the before/after
-                // letters, not a second hue or a heavier weight.
-                .foregroundStyle(Color.textPrimary)
+                // Color contrast only, same weight as before/after — no
+                // heavier fontWeight override, and not the old
+                // accentPrimary-adjacent Color.rsvpFocalLetter either.
+                .foregroundStyle(Color.onboardingText)
                 .fixedSize()
             Text(wordParts.after)
-                .foregroundStyle(Color.textSecondary)
+                .foregroundStyle(Color.onboardingTextSecondary)
                 .frame(maxWidth: .infinity, alignment: .leading)
         }
         // Large, since this word is the whole point of the screen —
         // everything else (progress bar, rail) is secondary to it. Applied
         // to the HStack (rather than each Text) since font is an
-        // environment value that flows down to all three, with each
-        // Text's own .fontWeight() above adjusting weight on top of this
-        // shared base. Uses focalWordSize (see @ScaledMetric above) rather
-        // than a plain fixed 60, so this still grows for someone using a
-        // larger system text size, within a sensible clamp.
-        .font(.system(size: focalWordSize, weight: .medium))
+        // environment value that flows down to all three. Uses
+        // focalWordSize (see @ScaledMetric above) rather than a plain
+        // fixed 60, so this still grows for someone using a larger system
+        // text size, within a sensible clamp. ".rounded" design matches
+        // the reference's own "ui-rounded" font-family — this is still
+        // the system font, not OnboardingTheme's Quicksand/Baloo 2.
+        .font(.system(size: focalWordSize, weight: .medium, design: .rounded))
         // RSVP fixation-guide ticks: small marks fixed just above and
         // below the focal letter's position, the same reading aid a
         // physical RSVP device's center marker provides — a constant
@@ -2405,180 +2397,213 @@ struct ReadView: View {
         // horizontal center for free.
         .overlay(alignment: .top) {
             Capsule()
-                .fill(Color.textSecondary)
+                .fill(Color.onboardingTextSecondary)
                 .frame(width: 3, height: 16)
                 .offset(y: -focalWordSize * 0.3)
         }
         .overlay(alignment: .bottom) {
             Capsule()
-                .fill(Color.textSecondary)
+                .fill(Color.onboardingTextSecondary)
                 .frame(width: 3, height: 16)
                 .offset(y: focalWordSize * 0.3)
         }
     }
 
-    // The fixed-width right rail: step back/forward, play or pause, a
-    // small stop control, and the WPM stepper — replacing the old bottom
-    // row of labeled buttons + slider. Icon-only (no text caption under
-    // each button, unlike the row it replaces) to fit this narrower
-    // column at the same generous tap-target sizes; VoiceOver still gets
-    // the exact same wording via each button's own .accessibilityLabel,
-    // so nothing is lost for a screen reader even though sighted readers
-    // no longer see a printed word under every icon.
+    // The fixed-width right rail: a 2×2 icon grid (Play, Stop / Back,
+    // Forward), a divider, then the WPM stepper — replacing the old
+    // linear stack of circular buttons. Icon-only (no text caption under
+    // each tile) to fit this narrower column at the same generous
+    // tap-target sizes; VoiceOver still gets the exact same wording via
+    // each button's own .accessibilityLabel, so nothing is lost for a
+    // screen reader even though sighted readers no longer see a printed
+    // word under every icon.
     private var controlRail: some View {
-        VStack(spacing: Spacing.medium) {
+        VStack(spacing: 0) {
             Spacer()
 
-            Button(action: {
-                updateIndex(increment: -1)
-            }, label: {
-                ChevronShape(pointsLeft: true)
-                    .stroke(railIconColor, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                    .frame(width: 22, height: 22)
-                    .frame(width: 56, height: 56)
-                    .contentShape(Rectangle())
-            })
-            .buttonStyle(HapticButtonStyle())
-            // Manually stepping while the timer is also advancing indexNum
-            // would fight with playback, so stepping is disabled while playing.
-            .disabled(isPlaying)
-            .accessibilityLabel("Previous word")
+            VStack(spacing: 14) {
+                controlGrid
 
-            // Same button throughout — only its glyph and action change
-            // depending on isPlaying, rather than showing two buttons and
-            // hiding whichever one doesn't apply.
-            Button(action: {
-                if isPlaying {
-                    pause()
-                } else {
-                    play()
-                }
-            }, label: {
-                ZStack {
-                    Circle()
-                        .fill(Color.textPrimary)
-                    if isPlaying {
-                        HStack(spacing: 5) {
-                            RoundedRectangle(cornerRadius: 2, style: .continuous)
-                                .fill(Color.surfaceBackground)
-                                .frame(width: 6, height: 22)
-                            RoundedRectangle(cornerRadius: 2, style: .continuous)
-                                .fill(Color.surfaceBackground)
-                                .frame(width: 6, height: 22)
-                        }
-                    } else {
-                        // A gently rounded-corner triangle (see
-                        // RoundedPlayGlyph below) rather than SF Symbol's
-                        // sharp-cornered "play.fill", matching this
-                        // screen's own rounded, hand-drawn icon language —
-                        // offset slightly right since a triangle's own
-                        // visual center sits left of its bounding box's
-                        // true center.
-                        RoundedPlayGlyph()
-                            .fill(Color.surfaceBackground)
-                            .frame(width: 22, height: 22)
-                            .offset(x: 2)
+                Rectangle()
+                    .fill(Color.onboardingBorder)
+                    .frame(height: 1)
+                    .frame(maxWidth: .infinity)
+
+                // "-"/"+" buttons give an exact, easy way to change speed
+                // one step at a time — this rail has no room for the old
+                // Slider alongside them, and the stepper alone already
+                // covers the same adjustWPM(by:)/wpm state a slider would.
+                HStack(spacing: 10) {
+                    wpmStepperButton(symbol: "−", accessibilityLabel: "Decrease speed") {
+                        adjustWPM(by: -20)
+                    }
+
+                    Text("\(wpm)")
+                        .font(.system(size: 15, weight: .bold, design: .rounded))
+                        .foregroundStyle(Color.onboardingText)
+                        .frame(minWidth: 40)
+
+                    wpmStepperButton(symbol: "+", accessibilityLabel: "Increase speed") {
+                        adjustWPM(by: 20)
                     }
                 }
-                .frame(width: 68, height: 68)
-            })
-            .buttonStyle(HapticButtonStyle())
-            .accessibilityLabel(isPlaying ? "Pause" : "Play")
+                // wpm has no separate .onChange(of:) here — adjustWPM(by:)
+                // itself already rebuilds the timer mid-playback (see its
+                // own doc comment), which is what the old Slider's
+                // .onChange used to do too.
 
-            Button(action: {
-                updateIndex(increment: 1)
-            }, label: {
-                ChevronShape(pointsLeft: false)
-                    .stroke(railIconColor, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                    .frame(width: 22, height: 22)
-                    .frame(width: 56, height: 56)
-                    .contentShape(Rectangle())
-            })
-            .buttonStyle(HapticButtonStyle())
-            .disabled(isPlaying)
-            .accessibilityLabel("Next word")
-
-            Capsule()
-                .fill(Color.textSecondary.opacity(0.3))
-                .frame(width: 36, height: 1)
-
-            // "-"/"+" buttons give an exact, easy way to change speed one
-            // step at a time — this rail has no room for the old Slider
-            // alongside them, and the stepper alone already covers the
-            // same adjustWPM(by:)/wpm state a slider would.
-            HStack(spacing: Spacing.small) {
-                Button(action: {
-                    adjustWPM(by: -20)
-                }, label: {
-                    Text("−")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(Color.textPrimary)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.textSecondary.opacity(0.3), lineWidth: 2))
-                        .contentShape(Circle())
-                })
-                .buttonStyle(HapticButtonStyle())
-                .accessibilityLabel("Decrease speed")
-
-                Text("\(wpm)")
-                    .font(.system(size: 16, weight: .bold, design: .rounded))
-                    .foregroundStyle(Color.textPrimary)
-                    .frame(minWidth: 44)
-
-                Button(action: {
-                    adjustWPM(by: 20)
-                }, label: {
-                    Text("+")
-                        .font(.system(size: 18, weight: .bold))
-                        .foregroundStyle(Color.textPrimary)
-                        .frame(width: 36, height: 36)
-                        .overlay(Circle().stroke(Color.textSecondary.opacity(0.3), lineWidth: 2))
-                        .contentShape(Circle())
-                })
-                .buttonStyle(HapticButtonStyle())
-                .accessibilityLabel("Increase speed")
+                Text("words / min")
+                    .font(.system(size: 11, weight: .semibold, design: .rounded))
+                    .foregroundStyle(Color.onboardingTextSecondary)
             }
-            // wpm has no separate .onChange(of:) here — adjustWPM(by:)
-            // itself already rebuilds the timer mid-playback (see its own
-            // doc comment), which is what the old Slider's .onChange used
-            // to do too.
-
-            Text("words / min")
-                .font(.system(size: 11, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.textSecondary)
-
-            // Unlike the step buttons, stays enabled while playing — it
-            // needs to be able to interrupt playback, not just adjust
-            // position within it. Sits below the stepper rather than
-            // alongside back/play/forward, the same "supplementary rail
-            // action" spot the reference design reserves for its own
-            // Exit button in the variant this layout is drawn from.
-            Button(action: {
-                stop()
-            }, label: {
-                RoundedRectangle(cornerRadius: 3, style: .continuous)
-                    .fill(railIconColor)
-                    .frame(width: 14, height: 14)
-                    .frame(width: 40, height: 40)
-                    .contentShape(Rectangle())
-            })
-            .buttonStyle(HapticButtonStyle())
-            .accessibilityLabel("Stop and rewind to the beginning")
 
             Spacer()
         }
-        .frame(width: 190)
+        .padding(20)
+        .frame(width: 184)
         .frame(maxHeight: .infinity)
-        .background(Color.surfaceCard.ignoresSafeArea())
+        .background(Color.onboardingCard.ignoresSafeArea())
     }
 
-    // Dims back/forward (and, by extension, would dim any other rail icon
-    // that reused this) while playback is disabling them, the same way
-    // PrimaryButtonStyle's own disabled state dims elsewhere — needed by
-    // hand here since HapticButtonStyle itself has no opinion on color at
-    // all, unlike Primary/SecondaryButtonStyle.
-    private var railIconColor: Color {
-        Color.textPrimary.opacity(isPlaying ? 0.35 : 1.0)
+    // The 2×2 grid itself: top row is Play (the one filled/primary tile)
+    // and Stop, bottom row is Back and Forward — matching the reference's
+    // own CSS grid order exactly. All four tiles share the same size (via
+    // the grid's own equal-width columns + .aspectRatio(1, .fit) on each
+    // one) and the same ~18pt corner radius.
+    private var controlGrid: some View {
+        let columns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
+        return LazyVGrid(columns: columns, spacing: 10) {
+            playPauseTile
+            stopTile
+            backTile
+            forwardTile
+        }
+    }
+
+    private var playPauseTile: some View {
+        // Same button throughout — only its glyph and action change
+        // depending on isPlaying, rather than showing two buttons and
+        // hiding whichever one doesn't apply.
+        Button(action: {
+            if isPlaying {
+                pause()
+            } else {
+                play()
+            }
+        }, label: {
+            Group {
+                if isPlaying {
+                    // Two rounded bars — already inherently "rounded
+                    // corner", no custom Shape needed the way the
+                    // triangle below requires.
+                    HStack(spacing: 5) {
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .fill(Color.onboardingOnPrimary)
+                            .frame(width: 6, height: 22)
+                        RoundedRectangle(cornerRadius: 2, style: .continuous)
+                            .fill(Color.onboardingOnPrimary)
+                            .frame(width: 6, height: 22)
+                    }
+                } else {
+                    // A plain, symmetric triangle — filled AND stroked
+                    // with the same thick, round-joined/round-capped
+                    // line. The stroke is what rounds every corner; the
+                    // path itself stays a perfectly sharp, centered
+                    // triangle, so there's no hand-tuned bezier and no
+                    // manual re-centering offset needed.
+                    ZStack {
+                        PlayTriangleShape().fill(Color.onboardingOnPrimary)
+                        PlayTriangleShape().stroke(
+                            Color.onboardingOnPrimary,
+                            style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round)
+                        )
+                    }
+                    .frame(width: 28, height: 28)
+                }
+            }
+        })
+        .buttonStyle(HapticButtonStyle())
+        // .frame(maxWidth: .infinity) + .aspectRatio(1, .fit) apply to the
+        // BUTTON itself (after its label is already fixed-size), not to
+        // the icon inside it — that's what lets the tile grow to fill its
+        // grid cell and become a perfect square without stretching or
+        // distorting the icon centered inside it. Same pattern on all
+        // four tiles below.
+        .frame(maxWidth: .infinity)
+        .aspectRatio(1, contentMode: .fit)
+        .background(Color.onboardingText)
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .accessibilityLabel(isPlaying ? "Pause" : "Play")
+    }
+
+    private var stopTile: some View {
+        Button(action: {
+            stop()
+        }, label: {
+            // rect x=4 y=4 width=16 height=16 rx=4 in a 24×24 box, scaled
+            // to this tile's own 28pt icon size.
+            RoundedRectangle(cornerRadius: 28 * 4 / 24, style: .continuous)
+                .fill(Color.onboardingText)
+                .frame(width: 28 * 16 / 24, height: 28 * 16 / 24)
+                .frame(width: 28, height: 28)
+        })
+        .buttonStyle(HapticButtonStyle())
+        .frame(maxWidth: .infinity)
+        .aspectRatio(1, contentMode: .fit)
+        .background(Color.onboardingText.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .accessibilityLabel("Stop and rewind to the beginning")
+    }
+
+    private var backTile: some View {
+        Button(action: {
+            updateIndex(increment: -1)
+        }, label: {
+            ChevronShape(pointsLeft: true)
+                .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                .frame(width: 28, height: 28)
+        })
+        .buttonStyle(HapticButtonStyle())
+        .frame(maxWidth: .infinity)
+        .aspectRatio(1, contentMode: .fit)
+        .background(Color.onboardingText.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        // Manually stepping while the timer is also advancing indexNum
+        // would fight with playback, so stepping is disabled while playing.
+        .disabled(isPlaying)
+        .opacity(isPlaying ? 0.35 : 1.0)
+        .accessibilityLabel("Previous word")
+    }
+
+    private var forwardTile: some View {
+        Button(action: {
+            updateIndex(increment: 1)
+        }, label: {
+            ChevronShape(pointsLeft: false)
+                .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                .frame(width: 28, height: 28)
+        })
+        .buttonStyle(HapticButtonStyle())
+        .frame(maxWidth: .infinity)
+        .aspectRatio(1, contentMode: .fit)
+        .background(Color.onboardingText.opacity(0.05))
+        .clipShape(RoundedRectangle(cornerRadius: 18, style: .continuous))
+        .disabled(isPlaying)
+        .opacity(isPlaying ? 0.35 : 1.0)
+        .accessibilityLabel("Next word")
+    }
+
+    private func wpmStepperButton(symbol: String, accessibilityLabel: String, action: @escaping () -> Void) -> some View {
+        Button(action: action, label: {
+            Text(symbol)
+                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .foregroundStyle(Color.onboardingText)
+                .frame(width: 36, height: 36)
+                .overlay(Circle().stroke(Color.onboardingBorder, lineWidth: 2))
+                .contentShape(Circle())
+        })
+        .buttonStyle(HapticButtonStyle())
+        .accessibilityLabel(accessibilityLabel)
     }
 }
 
@@ -2586,17 +2611,23 @@ struct ReadView: View {
 // "chevron.left"/".right") so the exact stroke width, cap, and join can be
 // controlled directly — this screen's whole icon language is rounded caps
 // + rounded joins throughout, which a system glyph doesn't guarantee.
+// Traces the reference's own SVG path proportions exactly (in a 24×24
+// box: M15 6l-6 6 6 6 for left, M9 6l6 6-6 6 for right — a compact "V"
+// occupying the middle half of the box, not a full edge-to-edge chevron).
 private struct ChevronShape: Shape {
     let pointsLeft: Bool
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let tipX = pointsLeft ? rect.minX : rect.maxX
-        let farX = pointsLeft ? rect.maxX : rect.minX
-        let verticalInset = rect.height * 0.15
-        path.move(to: CGPoint(x: farX, y: rect.minY + verticalInset))
+        let nearX = rect.minX + rect.width * (9.0 / 24.0)
+        let farX = rect.minX + rect.width * (15.0 / 24.0)
+        let tipX = pointsLeft ? nearX : farX
+        let baseX = pointsLeft ? farX : nearX
+        let topY = rect.minY + rect.height * (6.0 / 24.0)
+        let bottomY = rect.minY + rect.height * (18.0 / 24.0)
+        path.move(to: CGPoint(x: baseX, y: topY))
         path.addLine(to: CGPoint(x: tipX, y: rect.midY))
-        path.addLine(to: CGPoint(x: farX, y: rect.maxY - verticalInset))
+        path.addLine(to: CGPoint(x: baseX, y: bottomY))
         return path
     }
 }
@@ -2605,78 +2636,47 @@ private struct ChevronShape: Shape {
 // four-point zigzag) so each one gets its own two rounded caps, the same
 // way a real "X" glyph reads — a single continuous zigzag path would only
 // round the two OUTER ends, leaving a sharp mitered corner in the middle
-// where the strokes cross.
+// where the strokes cross. Traces the reference's own SVG path exactly:
+// "M6 6l12 12M18 6L6 18" in a 24×24 box — the X is inset to the box's
+// middle half (6 to 18 out of 24 on each axis), not drawn full-bleed
+// corner-to-corner.
 private struct CloseXShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
-        path.move(to: CGPoint(x: rect.maxX, y: rect.minY))
-        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        let near = 6.0 / 24.0
+        let far = 18.0 / 24.0
+        let x1 = rect.minX + rect.width * near
+        let x2 = rect.minX + rect.width * far
+        let y1 = rect.minY + rect.height * near
+        let y2 = rect.minY + rect.height * far
+        path.move(to: CGPoint(x: x1, y: y1))
+        path.addLine(to: CGPoint(x: x2, y: y2))
+        path.move(to: CGPoint(x: x2, y: y1))
+        path.addLine(to: CGPoint(x: x1, y: y2))
         return path
     }
 }
 
-// A solid triangle with gently rounded corners for the rail's own Play
-// glyph — SF Symbol's "play.fill" is sharp-cornered, which doesn't match
-// this screen's rounded icon language (see ChevronShape/CloseXShape
-// above). Built with roundedPolygon(points:radius:) below rather than a
-// one-off hand-written Bezier path, since "a triangle with its corners
-// rounded off" is really a general shape operation, not something
-// specific to a play glyph.
-private struct RoundedPlayGlyph: Shape {
+// The rail's own Play glyph: a plain, symmetric triangle — points at
+// (8,6), (8,18), (18,12) in a 24×24 box, same as the reference's own SVG
+// path exactly. Deliberately NOT a hand-tuned "rounded" bezier shape and
+// NOT manually re-centered — this shape stays perfectly sharp-cornered
+// and symmetric; playPauseTile above rounds its corners by filling AND
+// stroking it with the same thick, round-joined line, which also keeps
+// it correctly centered on its own with no offset needed.
+private struct PlayTriangleShape: Shape {
     func path(in rect: CGRect) -> Path {
-        let corners = [
-            CGPoint(x: rect.minX, y: rect.minY),
-            CGPoint(x: rect.maxX, y: rect.midY),
-            CGPoint(x: rect.minX, y: rect.maxY),
-        ]
-        return roundedPolygon(points: corners, radius: rect.width * 0.22)
+        var path = Path()
+        let left = rect.minX + rect.width * (8.0 / 24.0)
+        let right = rect.minX + rect.width * (18.0 / 24.0)
+        let top = rect.minY + rect.height * (6.0 / 24.0)
+        let bottom = rect.minY + rect.height * (18.0 / 24.0)
+        path.move(to: CGPoint(x: left, y: top))
+        path.addLine(to: CGPoint(x: left, y: bottom))
+        path.addLine(to: CGPoint(x: right, y: rect.midY))
+        path.closeSubpath()
+        return path
     }
-}
-
-// Builds a closed polygon through the given points with each corner
-// rounded off by cutting in "radius" along both adjacent edges and
-// bridging the gap with a quadratic curve back through the original
-// corner point — a standard rounded-polygon construction, general enough
-// to round any convex shape's corners this same way, not just a triangle.
-// Clamps radius per-corner to half of whichever adjacent edge is shorter,
-// so it can't cut past an edge's own midpoint on a very small or narrow
-// shape.
-private func roundedPolygon(points: [CGPoint], radius: CGFloat) -> Path {
-    var path = Path()
-    let count = points.count
-
-    for i in 0..<count {
-        let previous = points[(i - 1 + count) % count]
-        let current = points[i]
-        let next = points[(i + 1) % count]
-
-        let toPrevious = CGVector(dx: previous.x - current.x, dy: previous.y - current.y)
-        let toNext = CGVector(dx: next.x - current.x, dy: next.y - current.y)
-        let previousLength = (toPrevious.dx * toPrevious.dx + toPrevious.dy * toPrevious.dy).squareRoot()
-        let nextLength = (toNext.dx * toNext.dx + toNext.dy * toNext.dy).squareRoot()
-        let cornerRadius = min(radius, previousLength / 2, nextLength / 2)
-
-        let cutStart = CGPoint(
-            x: current.x + toPrevious.dx / previousLength * cornerRadius,
-            y: current.y + toPrevious.dy / previousLength * cornerRadius
-        )
-        let cutEnd = CGPoint(
-            x: current.x + toNext.dx / nextLength * cornerRadius,
-            y: current.y + toNext.dy / nextLength * cornerRadius
-        )
-
-        if i == 0 {
-            path.move(to: cutStart)
-        } else {
-            path.addLine(to: cutStart)
-        }
-        path.addQuadCurve(to: cutEnd, control: current)
-    }
-
-    path.closeSubpath()
-    return path
 }
 
 // Shown inside the modal sheet for whichever content was tapped.
