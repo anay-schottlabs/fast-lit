@@ -132,6 +132,42 @@ struct OnboardingSecondaryButtonStyle: ButtonStyle {
     }
 }
 
+// A hand-drawn switch — a capsule track plus a circular knob, both
+// simple solid fills — for the same reason PrimaryButtonStyle/
+// SecondaryButtonStyle above don't use SwiftUI's own default button
+// chrome: the platform's own default Toggle (".switch" style) on recent
+// iOS versions renders with a translucent "glass" material baked in,
+// which doesn't fit this flow's flat, opaque, no-accent-color look.
+// Drawing the two shapes ourselves sidesteps that entirely rather than
+// fighting the system style to turn it off.
+struct OnboardingToggleStyle: ToggleStyle {
+    func makeBody(configuration: Configuration) -> some View {
+        HStack {
+            configuration.label
+
+            Spacer()
+
+            Capsule()
+                .fill(configuration.isOn ? Color.onboardingText : Color.onboardingBorder)
+                .frame(width: 56, height: 34)
+                .overlay(
+                    Circle()
+                        .fill(Color.onboardingCard)
+                        .padding(3)
+                        // Slides from one edge to the other rather than
+                        // scaling/fading — the same "one continuous
+                        // motion" feel a real switch has.
+                        .offset(x: configuration.isOn ? 11 : -11)
+                )
+                .onTapGesture {
+                    withAnimation(.easeInOut(duration: 0.15)) {
+                        configuration.isOn.toggle()
+                    }
+                }
+        }
+    }
+}
+
 // "Go Back" on every non-welcome onboarding screen — plain text, no
 // border or fill, in the flow's secondary (not primary) text color.
 struct OnboardingBackButton: View {

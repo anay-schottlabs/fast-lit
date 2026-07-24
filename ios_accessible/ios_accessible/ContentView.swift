@@ -770,9 +770,9 @@ struct LibraryAccountView: View {
 
     var body: some View {
         if authMode == .login {
-            LibraryLoginView(authMode: $authMode, currentPage: $currentPage)
+            LibraryLoginView(authMode: $authMode, currentPage: $currentPage, accountType: $accountType)
         } else if authMode == .signUp {
-            LibrarySignUpView(authMode: $authMode, currentPage: $currentPage)
+            LibrarySignUpView(authMode: $authMode, currentPage: $currentPage, accountType: $accountType)
         } else {
             VStack(spacing: Spacing.medium) {
                 OnboardingProgressBar(step: 5, total: 5)
@@ -847,8 +847,14 @@ struct LibraryLoginView: View {
 
     // Passed straight through to LibraryHomeView once sign-in succeeds
     // (see didSignIn just below) — that screen's own "Sign Out" is the
-    // only thing that actually changes this, back to .home.
+    // only thing that actually changes this, and what it changes it to.
     @Binding var currentPage: Page
+
+    // Also passed straight through to LibraryHomeView, for the same
+    // reason — "Sign Out" clears this back to nil so AccountView shows
+    // its own "library or reader" picker again, rather than skipping
+    // straight back into this same library flow.
+    @Binding var accountType: AccountType?
 
     @Environment(AuthService.self) private var authService
 
@@ -871,7 +877,7 @@ struct LibraryLoginView: View {
 
     var body: some View {
         if didSignIn {
-            LibraryHomeView(greeting: .loggedIn, currentPage: $currentPage)
+            LibraryHomeView(greeting: .loggedIn, currentPage: $currentPage, accountType: $accountType)
         } else {
             loginForm
         }
@@ -1013,9 +1019,15 @@ struct LibrarySignUpView: View {
 
     // Passed straight through to LibraryHomeView once the account is
     // actually created (see successStep below) — that screen's own
-    // "Sign Out" is the only thing that actually changes this, back to
-    // .home.
+    // "Sign Out" is the only thing that actually changes this, and what
+    // it changes it to.
     @Binding var currentPage: Page
+
+    // Also passed straight through to LibraryHomeView, for the same
+    // reason — "Sign Out" clears this back to nil so AccountView shows
+    // its own "library or reader" picker again, rather than skipping
+    // straight back into this same library flow.
+    @Binding var accountType: AccountType?
 
     @Environment(AuthService.self) private var authService
 
@@ -1324,7 +1336,7 @@ struct LibrarySignUpView: View {
     // directly on the library's own home screen (see LibraryHomeView),
     // not a separate generic "you're all set" screen first.
     private var successStep: some View {
-        LibraryHomeView(greeting: .signedUp, currentPage: $currentPage)
+        LibraryHomeView(greeting: .signedUp, currentPage: $currentPage, accountType: $accountType)
     }
 
     // Same fixed-domain trick LibraryLoginView uses, so a username signed
@@ -1433,9 +1445,17 @@ enum LibraryHomeGreeting {
 struct LibraryHomeView: View {
     let greeting: LibraryHomeGreeting
 
-    // Set to .home by "Sign Out" below — there's nowhere else in the app
-    // a signed-out library account should land.
+    // Set to .account by "Sign Out" below, landing on AccountView's own
+    // "library or reader" picker — not .home, which used to route
+    // through ReturningHomeView's own old-styled "Welcome back" screen
+    // first.
     @Binding var currentPage: Page
+
+    // Cleared to nil by "Sign Out" below, alongside currentPage — without
+    // this, AccountView would see accountType still set to .library and
+    // skip its own picker, landing right back in LibraryAccountView
+    // instead of actually asking "library or reader" again.
+    @Binding var accountType: AccountType?
 
     @Environment(AuthService.self) private var authService
 
@@ -1503,10 +1523,11 @@ struct LibraryHomeView: View {
             Button(action: {
                 // try? rather than try: sign-out failing here isn't
                 // something this screen needs to react to, and there's
-                // nowhere more useful to send the user than home
-                // regardless of the outcome.
+                // nowhere more useful to send the user than the account
+                // picker regardless of the outcome.
                 try? authService.signOut()
-                currentPage = .home
+                accountType = nil
+                currentPage = .account
             }, label: {
                 Text("Sign Out")
             })
@@ -1588,16 +1609,12 @@ struct LibraryCatalogManagementView: View {
                             ))
                             .font(OnboardingFont.body(18, weight: .semiBold))
                             .foregroundStyle(Color.onboardingText)
-                            // Tints the switch itself, not just its label —
-                            // without this it'd fall back to the app-wide
-                            // AccentColor (terracotta), wrong here since
-                            // this flow uses no accent color at all.
-                            .tint(Color.onboardingText)
-                            // ".large" makes the switch itself bigger and
-                            // easier to hit precisely, and adds vertical
-                            // padding around each row — both matter more for
-                            // this app's audience than the default compact size.
-                            .controlSize(.large)
+                            // A hand-drawn switch (see OnboardingToggleStyle
+                            // in OnboardingTheme.swift), not the system
+                            // ".switch" style — recent iOS versions render
+                            // that with a translucent glass material that
+                            // doesn't fit this flow's flat, opaque look.
+                            .toggleStyle(OnboardingToggleStyle())
                             .padding(.vertical, Spacing.small)
                             .listRowBackground(Color.onboardingCard)
                         }
