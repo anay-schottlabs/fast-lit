@@ -1653,9 +1653,17 @@ struct ReaderAccountView: View {
     @Binding var currentPage: Page
 
     // Reported back up to ContentView so ChooseView knows whose
-    // libraryCatalogSelections to filter the catalog against. Cleared
-    // back to nil by "Sign Out" below, the same way LibraryHomeView's own
-    // Sign Out clears its own equivalent state.
+    // libraryCatalogSelections to filter the catalog against — and, since
+    // it lives up there rather than as local @State here, also what this
+    // view itself reads (see body below) to tell "joined" apart from
+    // "not joined yet" across a round trip through ChooseView and back.
+    // A plain local @State here would reset to nil every time ChooseView's
+    // own "Go Back" sends currentPage to .account, since SwiftUI tears
+    // this whole struct down and rebuilds it fresh whenever that branch of
+    // ContentView's own if/else-if is re-entered — landing a reader who'd
+    // already joined back on the join-code form instead of their own
+    // landing page. Cleared back to nil by "Sign Out" below, the same way
+    // LibraryHomeView's own Sign Out clears its own equivalent state.
     @Binding var joinedLibraryUid: String?
 
     // The same key HomeView's onboarding name step writes to — this is
@@ -1670,10 +1678,6 @@ struct ReaderAccountView: View {
     // separately at submit time. See formattedJoinCode(from:) below for
     // why keeping the hyphen inline here is simpler now.
     @State private var joinCode: String = ""
-
-    // nil until a code is looked up successfully; once set, this view shows
-    // the reader's own landing page instead of the join form.
-    @State private var joinedLibraryName: String? = nil
 
     // nil until a submit fails (malformed code, no match, or a network
     // error); cleared again as soon as the field's own value changes.
@@ -1693,7 +1697,7 @@ struct ReaderAccountView: View {
     @State private var isShowingSettings: Bool = false
 
     var body: some View {
-        if joinedLibraryName != nil {
+        if joinedLibraryUid != nil {
             if isShowingSettings {
                 SettingsView(isShowingSettings: $isShowingSettings)
             } else {
@@ -1845,8 +1849,11 @@ struct ReaderAccountView: View {
         Task {
             do {
                 if let library = try await authService.fetchJoinedLibrary(forJoinCode: joinCode) {
+                    // Setting this is what flips body above from the join
+                    // form to readerHomeContent — library.name itself
+                    // isn't kept anywhere; see readerHomeContent's own doc
+                    // comment for why nothing downstream shows it.
                     joinedLibraryUid = library.uid
-                    joinedLibraryName = library.name
                 } else {
                     errorMessage = "We couldn't find a library with that code."
                 }
@@ -1937,8 +1944,16 @@ struct ChooseView: View {
                 }
             }
 
+            // .account, not .home — a reader reaching this page always has
+            // hasCompletedOnboarding set, so .home would just immediately
+            // redirect to .account anyway (see HomeView's own body); going
+            // there directly skips that redirect hop. Lands back on
+            // ReaderAccountView's own readerHomeContent ("Hi, {name}" +
+            // Settings), not the join-code form, since joinedLibraryUid is
+            // still set — see that view's own doc comment on why it reads
+            // that Binding rather than its own local state for this.
             OnboardingBackButton(action: {
-                currentPage = .home
+                currentPage = .account
             })
         }
         .padding(.horizontal, Spacing.large)
@@ -2118,198 +2133,32 @@ struct ReadView: View {
         }
     }
 
+    // "M:SS left" at the current wpm, based on however many words remain
+    // after the one currently showing. Purely derived from existing state
+    // (words, indexNum, wpm) — nothing new is stored, so this can't drift
+    // out of sync the way a separately-tracked countdown could.
+    private var timeRemainingLabel: String {
+        let wordsRemaining = max(words.count - 1 - indexNum, 0)
+        let secondsRemaining = Int((Double(wordsRemaining) * 60.0 / Double(wpm)).rounded())
+        return String(format: "%d:%02d left", secondsRemaining / 60, secondsRemaining % 60)
+    }
+
     var body: some View {
-        VStack(spacing: Spacing.large) {
-            // "indexNum + 1" (not indexNum) so the bar reads as "words shown
-            // so far out of the total" — it starts at a sliver of progress
-            // on the very first word, rather than at empty.
-            ProgressView(value: Double(indexNum + 1), total: Double(words.count))
-                .tint(Color.accentPrimary)
-                .padding(.horizontal)
-
-            Spacer()
-
-            // Rather than one Text centered as a block (which would put the
-            // focal-color letter in a different screen position for every
-            // word, depending on how many letters come before/after it),
-            // "before" and "after" each get a flexible container of equal
-            // width via .frame(maxWidth: .infinity) and pull their text
-            // toward the middle with alignment. Since both containers
-            // always claim the same share of the remaining space, "center"
-            // (a fixed size, so it's never squeezed) ends up fixed at
-            // screen-center every time.
-            HStack(spacing: 0) {
-                // Muted gray, medium weight (not the heavy black/white of
-                // the focal letter below) — in this app's monochrome
-                // palette there's no separate hue to lean on the way a
-                // colored accent used to provide, so the before/after
-                // letters are pushed back with BOTH a lighter color and a
-                // lighter weight, leaving the focal letter to stand out
-                // through contrast on two axes at once, not just one.
-                Text(wordParts.before)
-                    .foregroundStyle(Color.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .trailing)
-                Text(wordParts.center)
-                    .foregroundStyle(Color.rsvpFocalLetter)
-                    // Overrides just the weight from the heavier .medium
-                    // base set below, up to the heaviest weight available
-                    // — the focal letter reads as unmistakably "the point
-                    // of emphasis" even though it's the same hue family
-                    // as everything else on screen.
-                    .fontWeight(.black)
-                    .fixedSize()
-                Text(wordParts.after)
-                    .foregroundStyle(Color.textSecondary)
-                    .frame(maxWidth: .infinity, alignment: .leading)
-            }
-            // Large, since this word is the whole point of the screen —
-            // everything else (progress bar, controls) is secondary to
-            // it. Applied to the HStack (rather than each Text) since
-            // font is an environment value that flows down to all three,
-            // with each Text's own .fontWeight() above adjusting weight
-            // on top of this shared base. Uses focalWordSize (see
-            // @ScaledMetric above) rather than a plain fixed 60, so this
-            // still grows for someone using a larger system text size,
-            // within a sensible clamp.
-            .font(.system(size: focalWordSize, weight: .medium))
-
-            Spacer()
-
-            // Side-by-side buttons to step through words one at a time, play/
-            // pause, and stop — each labeled with both an icon and a short
-            // word underneath, rather than an icon alone, since an icon-only
-            // button can be ambiguous (is "⏸" pause, or something else?) for
-            // readers less familiar with media-player icon conventions.
-            HStack(spacing: Spacing.medium) {
-                Button(action: {
-                    updateIndex(increment: -1)
-                }, label: {
-                    VStack(spacing: Spacing.small / 2) {
-                        Image(systemName: "arrow.left")
-                            .font(.system(size: 26))
-                        Text("Back")
-                            .font(.buttonCaption)
-                    }
-                })
-                .buttonStyle(PrimaryButtonStyle())
-                // Manually stepping while the timer is also advancing indexNum
-                // would fight with playback, so stepping is disabled while playing.
-                .disabled(isPlaying)
-                .accessibilityLabel("Previous word")
-
-                // Same button throughout — only its icon, label, and action
-                // change depending on isPlaying, rather than showing two
-                // buttons and hiding whichever one doesn't apply.
-                Button(action: {
-                    if isPlaying {
-                        pause()
-                    } else {
-                        play()
-                    }
-                }, label: {
-                    VStack(spacing: Spacing.small / 2) {
-                        Image(systemName: isPlaying ? "pause.fill" : "play.fill")
-                            .font(.system(size: 26))
-                        Text(isPlaying ? "Pause" : "Play")
-                            .font(.buttonCaption)
-                    }
-                })
-                .buttonStyle(PrimaryButtonStyle())
-                .accessibilityLabel(isPlaying ? "Pause" : "Play")
-
-                Button(action: {
-                    updateIndex(increment: 1)
-                }, label: {
-                    VStack(spacing: Spacing.small / 2) {
-                        Image(systemName: "arrow.right")
-                            .font(.system(size: 26))
-                        Text("Forward")
-                            .font(.buttonCaption)
-                    }
-                })
-                .buttonStyle(PrimaryButtonStyle())
-                .disabled(isPlaying)
-                .accessibilityLabel("Next word")
-
-                // Unlike the step buttons, stays enabled while playing — it
-                // needs to be able to interrupt playback, not just adjust
-                // position within it.
-                Button(action: {
-                    stop()
-                }, label: {
-                    VStack(spacing: Spacing.small / 2) {
-                        Image(systemName: "stop.fill")
-                            .font(.system(size: 26))
-                        Text("Stop")
-                            .font(.buttonCaption)
-                    }
-                })
-                .buttonStyle(PrimaryButtonStyle())
-                .accessibilityLabel("Stop and rewind to the beginning")
-            }
-
-            // "-"/"+" buttons give an exact, easy way to change speed one
-            // step at a time — an alternative to dragging the thin Slider
-            // below, which takes more precision than tapping a big button.
-            HStack(spacing: Spacing.medium) {
-                Button(action: {
-                    adjustWPM(by: -20)
-                }, label: {
-                    Image(systemName: "minus")
-                })
-                .buttonStyle(SecondaryButtonStyle())
-                .frame(width: Spacing.compactButtonWidth)
-                .accessibilityLabel("Decrease speed")
-
-                Text("\(wpm) words per minute")
-                    .font(.sectionTitle)
-                    .foregroundStyle(Color.textPrimary)
-                    .frame(minWidth: 220)
-
-                Button(action: {
-                    adjustWPM(by: 20)
-                }, label: {
-                    Image(systemName: "plus")
-                })
-                .buttonStyle(SecondaryButtonStyle())
-                .frame(width: Spacing.compactButtonWidth)
-                .accessibilityLabel("Increase speed")
-            }
-
-            // Slider only works with a floating-point Binding, so this wraps
-            // wpm (an Int) in a Binding<Double> that converts on the way in
-            // and out — nothing is stored twice, wpm is still the only source
-            // of truth.
-            Slider(
-                value: Binding(
-                    get: { Double(wpm) },
-                    set: { wpm = Int($0) }
-                ),
-                in: 60...600,
-                step: 20
-            )
-            .tint(Color.accentPrimary)
-            .padding(.horizontal)
-            // Only rebuilds the timer if playback is already running —
-            // otherwise there's no timer to update, and play() will start
-            // one at the current wpm anyway once tapped.
-            .onChange(of: wpm) { _, _ in
-                if isPlaying {
-                    startTimer()
-                }
-            }
-
-            // Sends the user back to ChooseView to pick something else;
-            // .onDisappear below stops playback the same way it would for
-            // any other reason this view goes away.
-            Button(action: {
-                currentPage = .choose
-            }, label: {
-                Text("Choose Something Different")
-            })
-            .buttonStyle(SecondaryButtonStyle())
+        // Landscape-only side-rail layout (see design_handoff_onboarding_flow's
+        // "Read Page Redesign - Landscape" reference, option 2a/2b): the word
+        // display, its progress bar, and the corner close button all live in
+        // the wide left pane; every playback control is stacked in a
+        // fixed-width right rail instead of the old bottom row of buttons +
+        // slider. Deliberately still Theme.swift's own tokens (surfaceCard/
+        // surfaceBackground/textPrimary/textSecondary), not
+        // OnboardingTheme.swift's — this screen isn't part of that separate
+        // onboarding flow, and specifically drops Color.accentPrimary/
+        // .rsvpFocalLetter entirely in favor of weight-only emphasis, so nothing
+        // here competes with the neutral, monochrome reading experience.
+        HStack(spacing: 0) {
+            mainReadingArea
+            controlRail
         }
-        .padding(Spacing.large)
         // Locks the screen into landscape the instant this view appears
         // — see lockOrientation(to:) in ios_accessibleApp.swift — rather
         // than asking the reader to rotate their device by hand (which
@@ -2328,6 +2177,402 @@ struct ReadView: View {
             lockOrientation(to: .portrait)
         }
     }
+
+    // The wide left pane: corner close button + progress bar in one row,
+    // the focal word centered, and a small "Word N of Total · time left"
+    // caption underneath.
+    private var mainReadingArea: some View {
+        VStack(spacing: 0) {
+            HStack(spacing: Spacing.medium) {
+                // Replaces the old "Choose Something Different" text
+                // button below the controls — same destination
+                // (currentPage = .choose sends the reader back to
+                // ChooseView; .onDisappear above still stops playback the
+                // same way it always did), just relocated to match this
+                // layout's own corner-close convention instead of a
+                // bottom-of-screen text link.
+                Button(action: {
+                    currentPage = .choose
+                }, label: {
+                    CloseXShape()
+                        .stroke(Color.textPrimary, style: StrokeStyle(lineWidth: 3.5, lineCap: .round, lineJoin: .round))
+                        .frame(width: 16, height: 16)
+                        .frame(width: 44, height: 44)
+                        .contentShape(Rectangle())
+                })
+                .buttonStyle(HapticButtonStyle())
+                .accessibilityLabel("Close and choose something different")
+
+                readingProgressBar
+            }
+            .padding(.horizontal, Spacing.large)
+            .padding(.top, Spacing.large)
+
+            Spacer()
+
+            wordDisplay
+
+            Spacer()
+
+            Text("Word \(indexNum + 1) of \(words.count) · \(timeRemainingLabel)")
+                .font(.buttonCaption)
+                .foregroundStyle(Color.textSecondary)
+                .padding(.bottom, Spacing.large)
+        }
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.surfaceBackground.ignoresSafeArea())
+    }
+
+    // A thin, fully custom capsule track rather than SwiftUI's own
+    // ProgressView — ProgressView's default linear style doesn't give
+    // precise control over height/corner radius, and its .tint(_:) would
+    // otherwise need Color.accentPrimary (the one color this whole screen
+    // deliberately avoids) to read clearly against either fill.
+    private var readingProgressBar: some View {
+        GeometryReader { geometry in
+            ZStack(alignment: .leading) {
+                Capsule()
+                    .fill(Color.textSecondary.opacity(0.25))
+                Capsule()
+                    .fill(Color.textPrimary)
+                    // "indexNum + 1" (not indexNum) so the bar reads as
+                    // "words shown so far out of the total" — it starts at
+                    // a sliver of progress on the very first word, rather
+                    // than at empty.
+                    .frame(width: geometry.size.width * CGFloat(indexNum + 1) / CGFloat(words.count))
+            }
+        }
+        .frame(height: 5)
+    }
+
+    // Rather than one Text centered as a block (which would put the focal
+    // letter in a different screen position for every word, depending on
+    // how many letters come before/after it), "before" and "after" each
+    // get a flexible container of equal width via .frame(maxWidth: .infinity)
+    // and pull their text toward the middle with alignment. Since both
+    // containers always claim the same share of the remaining space,
+    // "center" (a fixed size, so it's never squeezed) ends up fixed at
+    // screen-center every time — which is also what keeps the fixation
+    // ticks below correctly centered on it regardless of word length.
+    private var wordDisplay: some View {
+        HStack(spacing: 0) {
+            // Muted, medium weight (not the heavy weight of the focal
+            // letter below) — in this app's monochrome palette there's no
+            // separate hue to lean on the way a colored accent used to
+            // provide, so the before/after letters are pushed back with
+            // BOTH a lighter color and a lighter weight, leaving the focal
+            // letter to stand out through contrast on two axes at once,
+            // not just one.
+            Text(wordParts.before)
+                .foregroundStyle(Color.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            Text(wordParts.center)
+                // Plain textPrimary, not the old accentPrimary-adjacent
+                // Color.rsvpFocalLetter — this screen's emphasis comes
+                // entirely from weight now, not a second hue.
+                .foregroundStyle(Color.textPrimary)
+                // Overrides just the weight from the .medium base set
+                // below, up to the heaviest weight available — the focal
+                // letter reads as unmistakably "the point of emphasis"
+                // through weight alone.
+                .fontWeight(.black)
+                .fixedSize()
+            Text(wordParts.after)
+                .foregroundStyle(Color.textSecondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        // Large, since this word is the whole point of the screen —
+        // everything else (progress bar, rail) is secondary to it. Applied
+        // to the HStack (rather than each Text) since font is an
+        // environment value that flows down to all three, with each
+        // Text's own .fontWeight() above adjusting weight on top of this
+        // shared base. Uses focalWordSize (see @ScaledMetric above) rather
+        // than a plain fixed 60, so this still grows for someone using a
+        // larger system text size, within a sensible clamp.
+        .font(.system(size: focalWordSize, weight: .medium))
+        // RSVP fixation-guide ticks: small marks fixed just above and
+        // below the focal letter's position, the same reading aid a
+        // physical RSVP device's center marker provides — a constant
+        // visual anchor for where the eye should stay, independent of
+        // which word (and which letter count) is currently showing.
+        // Overlay alignment (rather than a separate absolutely-positioned
+        // view) rides on the same "before/after claim equal width" trick
+        // above, so these land exactly on the focal letter's fixed
+        // horizontal center for free.
+        .overlay(alignment: .top) {
+            Capsule()
+                .fill(Color.textSecondary)
+                .frame(width: 3, height: 16)
+                .offset(y: -focalWordSize * 0.3)
+        }
+        .overlay(alignment: .bottom) {
+            Capsule()
+                .fill(Color.textSecondary)
+                .frame(width: 3, height: 16)
+                .offset(y: focalWordSize * 0.3)
+        }
+    }
+
+    // The fixed-width right rail: step back/forward, play or pause, a
+    // small stop control, and the WPM stepper — replacing the old bottom
+    // row of labeled buttons + slider. Icon-only (no text caption under
+    // each button, unlike the row it replaces) to fit this narrower
+    // column at the same generous tap-target sizes; VoiceOver still gets
+    // the exact same wording via each button's own .accessibilityLabel,
+    // so nothing is lost for a screen reader even though sighted readers
+    // no longer see a printed word under every icon.
+    private var controlRail: some View {
+        VStack(spacing: Spacing.medium) {
+            Spacer()
+
+            Button(action: {
+                updateIndex(increment: -1)
+            }, label: {
+                ChevronShape(pointsLeft: true)
+                    .stroke(railIconColor, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .frame(width: 22, height: 22)
+                    .frame(width: 56, height: 56)
+                    .contentShape(Rectangle())
+            })
+            .buttonStyle(HapticButtonStyle())
+            // Manually stepping while the timer is also advancing indexNum
+            // would fight with playback, so stepping is disabled while playing.
+            .disabled(isPlaying)
+            .accessibilityLabel("Previous word")
+
+            // Same button throughout — only its glyph and action change
+            // depending on isPlaying, rather than showing two buttons and
+            // hiding whichever one doesn't apply.
+            Button(action: {
+                if isPlaying {
+                    pause()
+                } else {
+                    play()
+                }
+            }, label: {
+                ZStack {
+                    Circle()
+                        .fill(Color.textPrimary)
+                    if isPlaying {
+                        HStack(spacing: 5) {
+                            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                                .fill(Color.surfaceBackground)
+                                .frame(width: 6, height: 22)
+                            RoundedRectangle(cornerRadius: 2, style: .continuous)
+                                .fill(Color.surfaceBackground)
+                                .frame(width: 6, height: 22)
+                        }
+                    } else {
+                        // A gently rounded-corner triangle (see
+                        // RoundedPlayGlyph below) rather than SF Symbol's
+                        // sharp-cornered "play.fill", matching this
+                        // screen's own rounded, hand-drawn icon language —
+                        // offset slightly right since a triangle's own
+                        // visual center sits left of its bounding box's
+                        // true center.
+                        RoundedPlayGlyph()
+                            .fill(Color.surfaceBackground)
+                            .frame(width: 22, height: 22)
+                            .offset(x: 2)
+                    }
+                }
+                .frame(width: 68, height: 68)
+            })
+            .buttonStyle(HapticButtonStyle())
+            .accessibilityLabel(isPlaying ? "Pause" : "Play")
+
+            Button(action: {
+                updateIndex(increment: 1)
+            }, label: {
+                ChevronShape(pointsLeft: false)
+                    .stroke(railIconColor, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .frame(width: 22, height: 22)
+                    .frame(width: 56, height: 56)
+                    .contentShape(Rectangle())
+            })
+            .buttonStyle(HapticButtonStyle())
+            .disabled(isPlaying)
+            .accessibilityLabel("Next word")
+
+            Capsule()
+                .fill(Color.textSecondary.opacity(0.3))
+                .frame(width: 36, height: 1)
+
+            // "-"/"+" buttons give an exact, easy way to change speed one
+            // step at a time — this rail has no room for the old Slider
+            // alongside them, and the stepper alone already covers the
+            // same adjustWPM(by:)/wpm state a slider would.
+            HStack(spacing: Spacing.small) {
+                Button(action: {
+                    adjustWPM(by: -20)
+                }, label: {
+                    Text("−")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(Color.textPrimary)
+                        .frame(width: 36, height: 36)
+                        .overlay(Circle().stroke(Color.textSecondary.opacity(0.3), lineWidth: 2))
+                        .contentShape(Circle())
+                })
+                .buttonStyle(HapticButtonStyle())
+                .accessibilityLabel("Decrease speed")
+
+                Text("\(wpm)")
+                    .font(.system(size: 16, weight: .bold, design: .rounded))
+                    .foregroundStyle(Color.textPrimary)
+                    .frame(minWidth: 44)
+
+                Button(action: {
+                    adjustWPM(by: 20)
+                }, label: {
+                    Text("+")
+                        .font(.system(size: 18, weight: .bold))
+                        .foregroundStyle(Color.textPrimary)
+                        .frame(width: 36, height: 36)
+                        .overlay(Circle().stroke(Color.textSecondary.opacity(0.3), lineWidth: 2))
+                        .contentShape(Circle())
+                })
+                .buttonStyle(HapticButtonStyle())
+                .accessibilityLabel("Increase speed")
+            }
+            // wpm has no separate .onChange(of:) here — adjustWPM(by:)
+            // itself already rebuilds the timer mid-playback (see its own
+            // doc comment), which is what the old Slider's .onChange used
+            // to do too.
+
+            Text("words / min")
+                .font(.system(size: 11, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.textSecondary)
+
+            // Unlike the step buttons, stays enabled while playing — it
+            // needs to be able to interrupt playback, not just adjust
+            // position within it. Sits below the stepper rather than
+            // alongside back/play/forward, the same "supplementary rail
+            // action" spot the reference design reserves for its own
+            // Exit button in the variant this layout is drawn from.
+            Button(action: {
+                stop()
+            }, label: {
+                RoundedRectangle(cornerRadius: 3, style: .continuous)
+                    .fill(railIconColor)
+                    .frame(width: 14, height: 14)
+                    .frame(width: 40, height: 40)
+                    .contentShape(Rectangle())
+            })
+            .buttonStyle(HapticButtonStyle())
+            .accessibilityLabel("Stop and rewind to the beginning")
+
+            Spacer()
+        }
+        .frame(width: 190)
+        .frame(maxHeight: .infinity)
+        .background(Color.surfaceCard.ignoresSafeArea())
+    }
+
+    // Dims back/forward (and, by extension, would dim any other rail icon
+    // that reused this) while playback is disabling them, the same way
+    // PrimaryButtonStyle's own disabled state dims elsewhere — needed by
+    // hand here since HapticButtonStyle itself has no opinion on color at
+    // all, unlike Primary/SecondaryButtonStyle.
+    private var railIconColor: Color {
+        Color.textPrimary.opacity(isPlaying ? 0.35 : 1.0)
+    }
+}
+
+// A "<"/">" chevron built from two straight strokes (not SF Symbol's
+// "chevron.left"/".right") so the exact stroke width, cap, and join can be
+// controlled directly — this screen's whole icon language is rounded caps
+// + rounded joins throughout, which a system glyph doesn't guarantee.
+private struct ChevronShape: Shape {
+    let pointsLeft: Bool
+
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        let tipX = pointsLeft ? rect.minX : rect.maxX
+        let farX = pointsLeft ? rect.maxX : rect.minX
+        let verticalInset = rect.height * 0.15
+        path.move(to: CGPoint(x: farX, y: rect.minY + verticalInset))
+        path.addLine(to: CGPoint(x: tipX, y: rect.midY))
+        path.addLine(to: CGPoint(x: farX, y: rect.maxY - verticalInset))
+        return path
+    }
+}
+
+// A close "X" drawn as two independent crossing strokes (not one
+// four-point zigzag) so each one gets its own two rounded caps, the same
+// way a real "X" glyph reads — a single continuous zigzag path would only
+// round the two OUTER ends, leaving a sharp mitered corner in the middle
+// where the strokes cross.
+private struct CloseXShape: Shape {
+    func path(in rect: CGRect) -> Path {
+        var path = Path()
+        path.move(to: CGPoint(x: rect.minX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.maxX, y: rect.maxY))
+        path.move(to: CGPoint(x: rect.maxX, y: rect.minY))
+        path.addLine(to: CGPoint(x: rect.minX, y: rect.maxY))
+        return path
+    }
+}
+
+// A solid triangle with gently rounded corners for the rail's own Play
+// glyph — SF Symbol's "play.fill" is sharp-cornered, which doesn't match
+// this screen's rounded icon language (see ChevronShape/CloseXShape
+// above). Built with roundedPolygon(points:radius:) below rather than a
+// one-off hand-written Bezier path, since "a triangle with its corners
+// rounded off" is really a general shape operation, not something
+// specific to a play glyph.
+private struct RoundedPlayGlyph: Shape {
+    func path(in rect: CGRect) -> Path {
+        let corners = [
+            CGPoint(x: rect.minX, y: rect.minY),
+            CGPoint(x: rect.maxX, y: rect.midY),
+            CGPoint(x: rect.minX, y: rect.maxY),
+        ]
+        return roundedPolygon(points: corners, radius: rect.width * 0.22)
+    }
+}
+
+// Builds a closed polygon through the given points with each corner
+// rounded off by cutting in "radius" along both adjacent edges and
+// bridging the gap with a quadratic curve back through the original
+// corner point — a standard rounded-polygon construction, general enough
+// to round any convex shape's corners this same way, not just a triangle.
+// Clamps radius per-corner to half of whichever adjacent edge is shorter,
+// so it can't cut past an edge's own midpoint on a very small or narrow
+// shape.
+private func roundedPolygon(points: [CGPoint], radius: CGFloat) -> Path {
+    var path = Path()
+    let count = points.count
+
+    for i in 0..<count {
+        let previous = points[(i - 1 + count) % count]
+        let current = points[i]
+        let next = points[(i + 1) % count]
+
+        let toPrevious = CGVector(dx: previous.x - current.x, dy: previous.y - current.y)
+        let toNext = CGVector(dx: next.x - current.x, dy: next.y - current.y)
+        let previousLength = (toPrevious.dx * toPrevious.dx + toPrevious.dy * toPrevious.dy).squareRoot()
+        let nextLength = (toNext.dx * toNext.dx + toNext.dy * toNext.dy).squareRoot()
+        let cornerRadius = min(radius, previousLength / 2, nextLength / 2)
+
+        let cutStart = CGPoint(
+            x: current.x + toPrevious.dx / previousLength * cornerRadius,
+            y: current.y + toPrevious.dy / previousLength * cornerRadius
+        )
+        let cutEnd = CGPoint(
+            x: current.x + toNext.dx / nextLength * cornerRadius,
+            y: current.y + toNext.dy / nextLength * cornerRadius
+        )
+
+        if i == 0 {
+            path.move(to: cutStart)
+        } else {
+            path.addLine(to: cutStart)
+        }
+        path.addQuadCurve(to: cutEnd, control: current)
+    }
+
+    path.closeSubpath()
+    return path
 }
 
 // Shown inside the modal sheet for whichever content was tapped.

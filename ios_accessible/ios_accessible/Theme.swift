@@ -88,9 +88,6 @@ extension Font {
     // Size > Larger Text. Given this app's audience, respecting that
     // setting matters more than pixel-perfect control over exact sizes.
 
-    // Smaller headings within a screen (e.g. "Your Join Code").
-    static let sectionTitle = Font.system(.title, design: .rounded).weight(.semibold)
-
     // The everyday body/label/paragraph text style used almost
     // everywhere in this app. Deliberately several steps larger than
     // SwiftUI's default ".body" (17pt) — "comfortable" reading size is
@@ -135,11 +132,6 @@ enum Spacing {
     // older adults on average have less precise fine motor control than
     // Apple's baseline guidance assumes.
     static let buttonHeight: CGFloat = 60
-
-    // A smaller, roughly-square button size used for the WPM +/- steppers
-    // in ReadView, where a full-width button wouldn't make sense sitting
-    // next to a number.
-    static let compactButtonWidth: CGFloat = 64
 }
 
 // MARK: - Button styles
