@@ -2116,19 +2116,83 @@ struct ReadView: View {
         indexNum = min(max(indexNum + increment, 0), words.count - 1)
     }
 
-    // (Re)creates the repeating Timer at the current wpm's interval. Pulled
-    // out of play() so a wpm change made mid-playback can rebuild the timer
-    // at the new speed too — a Timer's own interval can't be edited in place
-    // once it's scheduled, so the only way to change speed is to replace it.
+    // Punctuation that earns a brief extra beat when it ends a word — the
+    // reader takes a short breath here, but the sentence keeps going.
+    // Deliberately NOT a plain ASCII hyphen "-": that shows up at the end
+    // of a whitespace-split "word" too easily for unrelated reasons (a
+    // hard-hyphenated compound word broken across a line, for instance),
+    // where it wouldn't actually mean "pause here" the way an em/en dash
+    // does.
+    private static let shortPauseCharacters: Set<Character> = [",", ";", ":", "—", "–"]
+
+    // Punctuation that ends a full sentence (or trails off, for an
+    // ellipsis) — worth noticeably longer than a mid-sentence comma. "…"
+    // is the single-character ellipsis glyph; a literal "..." needs no
+    // separate entry here since its LAST character is still a plain "."
+    // already in this set.
+    private static let sentenceEndCharacters: Set<Character> = [".", "!", "?", "…", "‽"]
+
+    // Closing quotes/brackets that can trail the REAL punctuation mark —
+    // e.g. the closing " in `He said, "Stop."` — stripped off first (see
+    // pauseBeats(after:) below) so the mark underneath still gets
+    // recognized instead of being masked by whatever's wrapping it.
+    // Covers straight and curly quotes, both common angle-quote
+    // directions, and the three bracket styles, since any of them could
+    // plausibly sit between the real mark and the end of the word.
+    private static let trailingClosingCharacters: Set<Character> = [
+        "\"", "'", "”", "’", "»", "«", "›", "‹", ")", "]", "}",
+    ]
+
+    // How many "beats" (one beat = the current wpm's own word-to-word
+    // interval) to hold on a given word before advancing past it —
+    // reading punctuation off the word just shown, not the one about to
+    // appear, mirrors how a reader's eyes actually pause AFTER a comma or
+    // period, not before it. Strips any trailing closing quotes/brackets
+    // first so punctuation like `."` (a period immediately before a
+    // closing quote) is still recognized as sentence-ending, not masked
+    // by the quote sitting on top of it.
+    private func pauseBeats(after word: String) -> Double {
+        var characters = Array(word)
+        while let last = characters.last, Self.trailingClosingCharacters.contains(last) {
+            characters.removeLast()
+        }
+        guard let last = characters.last else { return 1.0 }
+        if Self.sentenceEndCharacters.contains(last) {
+            return 3.5
+        }
+        if Self.shortPauseCharacters.contains(last) {
+            return 2.0
+        }
+        return 1.0
+    }
+
+    // (Re)creates the Timer driving playback at the current wpm and
+    // current word's own pause length. Pulled out of play() so a wpm
+    // change made mid-playback can rebuild it at the new speed too — a
+    // Timer's own interval can't be edited in place once it's scheduled,
+    // so the only way to change speed (or, now, the next word's pause
+    // length) is to replace it.
     func startTimer() -> Void {
         timer?.invalidate()
-        timer = Timer.scheduledTimer(withTimeInterval: 60.0 / Double(wpm), repeats: true) { _ in
+        scheduleNextAdvance()
+    }
+
+    // A single one-shot Timer (not a repeating one) sized to however long
+    // the word CURRENTLY shown should hold — see pauseBeats(after:) —
+    // which, once it fires, advances and schedules the next one the same
+    // way. A repeating Timer can't vary its own interval between ticks,
+    // which is what showing a longer pause after a period than after an
+    // ordinary word actually requires.
+    private func scheduleNextAdvance() -> Void {
+        let interval = (60.0 / Double(wpm)) * pauseBeats(after: words[indexNum])
+        timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
             // Stop instead of advancing once the last word is reached, so
             // playback doesn't keep firing forever with nothing left to show.
             if indexNum >= words.count - 1 {
                 pause()
             } else {
                 updateIndex(increment: 1)
+                scheduleNextAdvance()
             }
         }
     }
@@ -2168,12 +2232,22 @@ struct ReadView: View {
     }
 
     // "M:SS left" at the current wpm, based on however many words remain
-    // after the one currently showing. Purely derived from existing state
-    // (words, indexNum, wpm) — nothing new is stored, so this can't drift
-    // out of sync the way a separately-tracked countdown could.
+    // after the one currently showing — summed via pauseBeats(after:)
+    // rather than assuming a flat 1 beat per word, so a passage full of
+    // commas and periods doesn't show a "time left" that's optimistic
+    // about how long it'll actually take to finish at this speed. Purely
+    // derived from existing state (words, indexNum, wpm), nothing new is
+    // stored, so this can't drift out of sync the way a separately-tracked
+    // countdown could.
     private var timeRemainingLabel: String {
-        let wordsRemaining = max(words.count - 1 - indexNum, 0)
-        let secondsRemaining = Int((Double(wordsRemaining) * 60.0 / Double(wpm)).rounded())
+        let lastIndex = words.count - 1
+        guard indexNum < lastIndex else {
+            return "0:00 left"
+        }
+        let remainingBeats = (indexNum..<lastIndex).reduce(into: 0.0) { total, i in
+            total += pauseBeats(after: words[i])
+        }
+        let secondsRemaining = Int((remainingBeats * 60.0 / Double(wpm)).rounded())
         return String(format: "%d:%02d left", secondsRemaining / 60, secondsRemaining % 60)
     }
 
