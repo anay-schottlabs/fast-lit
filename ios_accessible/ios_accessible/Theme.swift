@@ -143,9 +143,22 @@ enum Spacing {
 // calls this from its own makeBody(configuration:), so every button in
 // the app — old design and new — gets the same tactile click without
 // each style re-implementing it by hand.
+//
+// Reads "hapticsEnabled" straight from UserDefaults (rather than an
+// @AppStorage property on each ButtonStyle struct that would call this)
+// since this is a plain extension method, not a View/ButtonStyle of its
+// own — a direct read is simplest, and it's read fresh on every tap
+// anyway rather than needing to redraw when the setting changes, so
+// there's no reactivity to lose by skipping @AppStorage here. Missing
+// key (nothing in UserDefaults yet, e.g. a reader who's never opened
+// Settings) defaults to true — haptics on, matching this app's behavior
+// before the toggle existed — rather than the false a plain
+// ".bool(forKey:)" would silently fall back to.
 extension View {
     func buttonPressHaptic(_ isPressed: Bool) -> some View {
-        sensoryFeedback(.impact, trigger: isPressed) { old, new in new }
+        sensoryFeedback(.impact, trigger: isPressed) { _, isPressedNow in
+            isPressedNow && (UserDefaults.standard.object(forKey: "hapticsEnabled") as? Bool ?? true)
+        }
     }
 }
 

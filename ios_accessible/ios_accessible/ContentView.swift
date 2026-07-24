@@ -473,6 +473,13 @@ struct SettingsView: View {
     // before account type is even chosen (see HomeView's nameStep).
     @AppStorage("readerName") private var readerName: String = ""
 
+    // The same key buttonPressHaptic(_:) (Theme.swift) reads before firing
+    // any button's tap haptic — this Toggle is the only place that key
+    // ever gets written, so every button in the app respects it live the
+    // instant it's flipped, the same way appColorSchemeRaw's own live
+    // effect works.
+    @AppStorage("hapticsEnabled") private var hapticsEnabled: Bool = true
+
     // Treats the untouched default ("system," from before this app
     // offered a real choice) as "Light" for DISPLAY purposes only — same
     // reasoning as HomeView's own displayedScheme. Nothing here ever
@@ -490,6 +497,7 @@ struct SettingsView: View {
 
                 nameSection
                 appearanceSection
+                hapticsSection
 
                 Spacer(minLength: Spacing.large)
 
@@ -555,6 +563,32 @@ struct SettingsView: View {
             ) {
                 appColorSchemeRaw = AppColorScheme.dark.rawValue
             }
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // A single on/off switch for the tap haptic every button in the app
+    // fires (see buttonPressHaptic(_:) in Theme.swift) — some readers find
+    // continuous tap feedback distracting or uncomfortable, the same
+    // reasoning OnboardingMascot's own breathing animation respects
+    // Reduce Motion for.
+    private var hapticsSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Text("Haptics")
+                .font(OnboardingFont.body(16, weight: .semiBold))
+                .foregroundStyle(Color.onboardingTextSecondary)
+
+            Toggle("Tap Feedback", isOn: $hapticsEnabled)
+                .font(OnboardingFont.body(18, weight: .semiBold))
+                .foregroundStyle(Color.onboardingText)
+                .padding(Spacing.medium)
+                .background(Color.onboardingCard)
+                .clipShape(RoundedRectangle(cornerRadius: 16, style: .continuous))
+                // A hand-drawn switch (see OnboardingToggleStyle in
+                // OnboardingTheme.swift), not the system ".switch" style —
+                // recent iOS versions render that with a translucent glass
+                // material that doesn't fit this flow's flat, opaque look.
+                .toggleStyle(OnboardingToggleStyle())
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
