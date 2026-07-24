@@ -450,8 +450,9 @@ struct HomeView: View {
 }
 
 // A signed-in reader or library account's own settings — reachable via a
-// gear icon on ChooseView (a reader's catalog, once joined) or
-// LibraryHomeView (once signed in), never from AccountView's own picker,
+// gear icon on each account type's own landing page (ReaderAccountView's
+// readerHomeContent, once joined, or LibraryHomeView, once signed in),
+// never from ChooseView (a reader's catalog) or AccountView's own picker,
 // since there's nothing to configure before an account actually exists.
 // A real full screen, not a sheet — same reasoning, and same
 // Binding-owned-by-the-presenting-view pattern, as
@@ -594,8 +595,8 @@ struct AccountView: View {
             // here). No Settings access here either — this is a
             // sign-in/sign-up screen, not an account's own home, so
             // there's nothing yet to configure; see LibraryHomeView and
-            // ChooseView's own gear icons for where Settings actually
-            // lives once signed in.
+            // ReaderAccountView's own gear icons for where Settings
+            // actually lives once signed in.
             AccountChoiceScreen(onContinue: { chosen in
                 accountType = chosen
             })
@@ -1639,9 +1640,11 @@ struct LibraryCatalogManagementView: View {
 
 // Lets a reader join an organization/library with just its join code — no
 // account, no name, no log in/sign up split. Once a code resolves to a real
-// library (via AuthService.fetchLibraryName), hands off to the shared
-// OnboardingSuccessScreen (see joinedLibraryName below) instead of the
-// join form.
+// library (via AuthService.fetchLibraryName), hands off to this reader's
+// own proper landing page (see readerHomeContent below) instead of the
+// join form — the reader-path equivalent of LibraryHomeView, reached the
+// same way (directly, once "signed in," rather than via a separate
+// generic success screen first).
 struct ReaderAccountView: View {
     @Binding var accountType: AccountType?
 
@@ -1650,8 +1653,14 @@ struct ReaderAccountView: View {
     @Binding var currentPage: Page
 
     // Reported back up to ContentView so ChooseView knows whose
-    // libraryCatalogSelections to filter the catalog against.
+    // libraryCatalogSelections to filter the catalog against. Cleared
+    // back to nil by "Sign Out" below, the same way LibraryHomeView's own
+    // Sign Out clears its own equivalent state.
     @Binding var joinedLibraryUid: String?
+
+    // The same key HomeView's onboarding name step writes to — this is
+    // what readerHomeContent's greeting below reads to say "Hi, {name}".
+    @AppStorage("readerName") private var readerName: String = ""
 
     @Environment(AuthService.self) private var authService
 
@@ -1663,7 +1672,7 @@ struct ReaderAccountView: View {
     @State private var joinCode: String = ""
 
     // nil until a code is looked up successfully; once set, this view shows
-    // the joined-org page instead of the join form.
+    // the reader's own landing page instead of the join form.
     @State private var joinedLibraryName: String? = nil
 
     // nil until a submit fails (malformed code, no match, or a network
@@ -1677,21 +1686,18 @@ struct ReaderAccountView: View {
     // beyond the reference.
     @State private var isSubmitting: Bool = false
 
+    // Toggled on by the gear icon below — swaps this whole view's own
+    // body over to SettingsView, same pattern LibraryHomeView uses for
+    // its own gear icon (see SettingsView's own doc comment for why it's
+    // not a sheet).
+    @State private var isShowingSettings: Bool = false
+
     var body: some View {
         if joinedLibraryName != nil {
-            // The one shared OnboardingSuccessScreen every completion
-            // path in onboarding converges on (see OnboardingTheme.swift)
-            // — matches the design's own generic reader-path copy
-            // exactly, rather than the joined library's actual name this
-            // screen used to show before (in the old accent color).
-            // Nothing downstream shows that name either now — a genuine,
-            // deliberate trade against pixel-for-pixel matching the
-            // shared screen the handoff doc specifies.
-            OnboardingSuccessScreen(
-                subtitle: "You're in. Time to find your next great read.",
-                buttonLabel: "Start Reading"
-            ) {
-                currentPage = .choose
+            if isShowingSettings {
+                SettingsView(isShowingSettings: $isShowingSettings)
+            } else {
+                readerHomeContent
             }
         } else {
             VStack(spacing: Spacing.medium) {
@@ -1752,6 +1758,66 @@ struct ReaderAccountView: View {
             .padding(Spacing.large)
             .frame(maxWidth: .infinity, maxHeight: .infinity)
             .background(Color.onboardingBackground.ignoresSafeArea())
+        }
+    }
+
+    // A reader's own landing page once joined — the reader-path
+    // equivalent of LibraryHomeView's homeContent, right down to the
+    // gear icon and Sign Out button in the same spots. "Hi, {name}"
+    // reuses the exact same greeting HomeView's own onboarding greeting
+    // step shows, so a reader sees a familiar, personal welcome here
+    // too, not just a generic "you're in" message. Sign Out (not "Go
+    // Back") is deliberate: a reader who leaves this page has nowhere
+    // meaningful to "go back" to — clearing joinedLibraryUid and
+    // accountType and landing on AccountView's own picker is a real
+    // sign-out, exactly like LibraryHomeView's own Sign Out, even though
+    // a reader was never actually authenticated with Firebase to begin
+    // with (there's no authService.signOut() call to make here).
+    private var readerHomeContent: some View {
+        VStack(spacing: Spacing.large) {
+            Spacer()
+
+            OnboardingMascot(size: 130, sparkleCount: 2)
+
+            OnboardingPageHeader(
+                title: "Hi, \(readerName)",
+                titleSize: 44,
+                subtitle: "You're in. Time to find your next great read.",
+                subtitleSize: 18
+            )
+
+            Spacer()
+
+            Button(action: {
+                currentPage = .choose
+            }, label: {
+                Text("Start Reading")
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+
+            Button(action: {
+                joinedLibraryUid = nil
+                accountType = nil
+                currentPage = .account
+            }, label: {
+                Text("Sign Out")
+            })
+            .buttonStyle(OnboardingSecondaryButtonStyle())
+        }
+        .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
+        .overlay(alignment: .topTrailing) {
+            Button(action: {
+                isShowingSettings = true
+            }, label: {
+                Image(systemName: "gearshape.fill")
+                    .font(.system(size: 24))
+                    .foregroundStyle(Color.onboardingTextSecondary)
+                    .padding(Spacing.large)
+            })
+            .buttonStyle(HapticButtonStyle())
+            .accessibilityLabel("Settings")
         }
     }
 
@@ -1818,21 +1884,7 @@ struct ChooseView: View {
     @State private var isLoading: Bool = true
     @State private var loadError: String? = nil
 
-    // Toggled on by the gear icon below — swaps this whole view's own
-    // body over to SettingsView, same pattern LibraryHomeView uses for
-    // its own gear icon (see SettingsView's own doc comment for why it's
-    // not a sheet).
-    @State private var isShowingSettings: Bool = false
-
     var body: some View {
-        if isShowingSettings {
-            SettingsView(isShowingSettings: $isShowingSettings)
-        } else {
-            catalogContent
-        }
-    }
-
-    private var catalogContent: some View {
         VStack(spacing: Spacing.medium) {
             PageHeader(eyebrow: "Reading Catalog", title: "Choose Something to Read")
 
@@ -1884,18 +1936,6 @@ struct ChooseView: View {
             })
         }
         .padding(Spacing.large)
-        .overlay(alignment: .topTrailing) {
-            Button(action: {
-                isShowingSettings = true
-            }, label: {
-                Image(systemName: "gearshape.fill")
-                    .font(.system(size: 24))
-                    .foregroundStyle(Color.textSecondary)
-                    .padding(Spacing.large)
-            })
-            .buttonStyle(HapticButtonStyle())
-            .accessibilityLabel("Settings")
-        }
         // .sheet(item:) shows a modal whenever the bound value is non-nil,
         // passing the unwrapped value in. "$" turns @State into a two-way
         // Binding. Attached to the whole VStack (rather than nested inside
