@@ -2,12 +2,15 @@ import SwiftUI // brings in Apple's UI framework
 import FirebaseCore
 
 // enum = a fixed set of named cases; used here as a simple "which page" switch.
+// No ".library" case — a library account's own home screen
+// (LibraryHomeView) is reached directly from within LibrarySignUpView/
+// LibraryLoginView's own local state once auth succeeds, not via a
+// separate top-level page the way ChooseView is for readers.
 enum Page {
     case home
     case choose
     case read
     case account
-    case library
 }
 
 // Which kind of account the user is logging into or signing up for, chosen
@@ -93,8 +96,6 @@ struct ContentView: View {
                     }
                 } else if currentPage == .account {
                     AccountView(currentPage: $currentPage, joinedLibraryUid: $joinedLibraryUid, accountType: $accountType)
-                } else if currentPage == .library {
-                    LibraryView(currentPage: $currentPage)
                 } else if currentPage == .read {
                     // "if let" only unwraps and shows ReadView once contentToRead is
                     // actually set, which it always is by the time we reach this page.
@@ -836,17 +837,17 @@ private func sanitizedUsername(_ input: String) -> String {
 // above, with two stacked ghost fields (left-aligned, Quicksand — NOT
 // the single centered Baloo-2 field the sign-up steps use, since two
 // fields sharing one screen read better smaller and left-aligned than
-// centered and oversized). A successful sign-in now lands on the shared
-// OnboardingSuccessScreen (see didSignIn below) rather than jumping
-// straight to LibraryView the way this screen used to.
+// centered and oversized). A successful sign-in now lands directly on
+// LibraryHomeView (see didSignIn below), same as LibrarySignUpView's own
+// terminal state.
 struct LibraryLoginView: View {
     // @Binding so "Go Back" can clear it, returning to LibraryAccountView's
     // log in/sign up picker.
     @Binding var authMode: AuthMode?
 
-    // Set to .library once the reader taps Continue on the success
-    // screen below — not the instant sign-in itself succeeds (see
-    // didSignIn just below).
+    // Passed straight through to LibraryHomeView once sign-in succeeds
+    // (see didSignIn just below) — that screen's own "Sign Out" is the
+    // only thing that actually changes this, back to .home.
     @Binding var currentPage: Page
 
     @Environment(AuthService.self) private var authService
@@ -862,25 +863,15 @@ struct LibraryLoginView: View {
     // several sign-ins at once.
     @State private var isSubmitting: Bool = false
 
-    // Set once sign-in actually succeeds — the design's own flow always
-    // shows a confirmation screen before landing in the app proper, even
-    // here, where the old version of this screen used to skip straight
-    // to currentPage = .library the instant Firebase confirmed sign-in.
+    // Set once sign-in actually succeeds — lands directly on the
+    // library's own home screen (see LibraryHomeView) rather than the
+    // old version of this screen's own "skip straight to currentPage =
+    // .library the instant Firebase confirmed sign-in."
     @State private var didSignIn: Bool = false
 
     var body: some View {
         if didSignIn {
-            // The one shared OnboardingSuccessScreen every completion
-            // path in onboarding converges on (see OnboardingTheme.swift)
-            // — same copy as LibrarySignUpView's own success step, since
-            // this is the same library path just reached by logging in
-            // to an existing account instead of creating a new one.
-            OnboardingSuccessScreen(
-                subtitle: "Your library is ready. Time to start building your collection.",
-                buttonLabel: "Continue"
-            ) {
-                currentPage = .library
-            }
+            LibraryHomeView(greeting: .loggedIn, currentPage: $currentPage)
         } else {
             loginForm
         }
@@ -1020,10 +1011,10 @@ private enum LibrarySignUpStep {
 struct LibrarySignUpView: View {
     @Binding var authMode: AuthMode?
 
-    // Set to .library once the reader taps "Continue" on the shared
-    // OnboardingSuccessScreen below — not the instant the account is
-    // actually created — so there's always a clear confirmation moment
-    // first.
+    // Passed straight through to LibraryHomeView once the account is
+    // actually created (see successStep below) — that screen's own
+    // "Sign Out" is the only thing that actually changes this, back to
+    // .home.
     @Binding var currentPage: Page
 
     @Environment(AuthService.self) private var authService
@@ -1329,16 +1320,11 @@ struct LibrarySignUpView: View {
         .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
-    // The terminal step, once the account is actually created — the one
-    // shared OnboardingSuccessScreen every completion path in onboarding
-    // converges on (see OnboardingTheme.swift), not a screen of its own.
+    // The terminal step, once the account is actually created — lands
+    // directly on the library's own home screen (see LibraryHomeView),
+    // not a separate generic "you're all set" screen first.
     private var successStep: some View {
-        OnboardingSuccessScreen(
-            subtitle: "Your library is ready. Time to start building your collection.",
-            buttonLabel: "Continue"
-        ) {
-            currentPage = .library
-        }
+        LibraryHomeView(greeting: .signedUp, currentPage: $currentPage)
     }
 
     // Same fixed-domain trick LibraryLoginView uses, so a username signed
@@ -1402,7 +1388,7 @@ struct LibrarySignUpView: View {
                 // registry is briefly out of date for the next person's
                 // "is this taken" check.
                 try? await authService.registerUsername(username)
-                // Also best-effort, for the same reason — LibraryView
+                // Also best-effort, for the same reason — LibraryHomeView
                 // handles a missing join code (e.g. from this failing)
                 // gracefully rather than this blocking sign-up.
                 try? await authService.createLibraryProfile(
@@ -1419,10 +1405,36 @@ struct LibrarySignUpView: View {
     }
 }
 
-// Shown once a library account is signed in — a placeholder for now.
-// Library accounts don't get access to ChooseView/ReadView at all; those
-// pages are reader-only, so nothing here leads to them.
-struct LibraryView: View {
+// Which flow just landed a library account here — Sign Up and Log In
+// both end on the exact same screen (same join code, same Manage
+// Catalog/Sign Out actions), differing only in the very first thing it
+// says.
+enum LibraryHomeGreeting {
+    case signedUp
+    case loggedIn
+
+    var title: String {
+        switch self {
+        case .signedUp: return "You're all set!"
+        case .loggedIn: return "Welcome back!"
+        }
+    }
+}
+
+// A library account's actual home screen — reached directly from either
+// LibrarySignUpView or LibraryLoginView the moment auth succeeds (see
+// each of their own terminal states), replacing the old separate
+// "Welcome Back" LibraryView entirely. There's no reason to route
+// through a generic "you're all set" screen and THEN a second, separate
+// welcome screen when one screen can say hello and show the join code
+// together — and styled with OnboardingTheme.swift's components, not
+// Theme.swift's, since that's the direction the rest of the app is
+// headed too, not just onboarding proper.
+struct LibraryHomeView: View {
+    let greeting: LibraryHomeGreeting
+
+    // Set to .home by "Sign Out" below — there's nowhere else in the app
+    // a signed-out library account should land.
     @Binding var currentPage: Page
 
     @Environment(AuthService.self) private var authService
@@ -1438,56 +1450,61 @@ struct LibraryView: View {
     @State private var isManagingCatalog: Bool = false
 
     var body: some View {
-        VStack(spacing: Spacing.medium) {
-            PageHeader(
-                eyebrow: "Your Library",
-                title: "Welcome Back",
-                subtitle: "Share your join code below so your readers can join your library."
-            )
+        VStack(spacing: Spacing.large) {
+            Spacer()
 
-            // Readers use this to find and sign up for this specific
-            // library — see ReaderAccountView's "Library/Org Code" field.
-            if let joinCode {
-                VStack(spacing: Spacing.small) {
-                    Text("Your Join Code")
-                        .font(.sectionTitle)
-                        .foregroundStyle(Color.textPrimary)
-                    Text(joinCode)
-                        .font(.joinCode)
-                        .foregroundStyle(Color.accentPrimary)
+            OnboardingMascot(size: 130, sparkleCount: 2)
+
+            OnboardingPageHeader(title: greeting.title, titleSize: 44)
+
+            // Readers use this to find and join THIS specific library —
+            // see ReaderAccountView's own join-code field.
+            Group {
+                if let joinCode {
+                    VStack(spacing: Spacing.small) {
+                        Text("Your Join Code")
+                            .font(OnboardingFont.body(16, weight: .semiBold))
+                            .foregroundStyle(Color.onboardingTextSecondary)
+                        Text(joinCode)
+                            .font(OnboardingFont.display(32))
+                            .tracking(4)
+                            .foregroundStyle(Color.onboardingText)
+                    }
+                    .padding(Spacing.large)
+                    .frame(maxWidth: .infinity)
+                    .background(Color.onboardingCard)
+                    .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+                } else if let loadError {
+                    OnboardingErrorLabel(message: loadError)
+                } else {
+                    ProgressView()
                 }
-                .padding(Spacing.large)
-                .frame(maxWidth: .infinity)
-                .cardStyle()
-                .padding(.bottom)
-            } else if let loadError {
-                ErrorLabel(message: loadError)
-                    .padding(.bottom)
-            } else {
-                ProgressView()
-                    .padding(.bottom)
             }
+
+            Spacer()
 
             Button(action: {
                 isManagingCatalog = true
             }, label: {
                 Text("Manage Catalog")
             })
-            .buttonStyle(PrimaryButtonStyle())
+            .buttonStyle(OnboardingPrimaryButtonStyle())
 
             Button(action: {
                 // try? rather than try: sign-out failing here isn't
-                // something the placeholder page needs to react to, and
-                // there's nowhere more useful to send the user than home
+                // something this screen needs to react to, and there's
+                // nowhere more useful to send the user than home
                 // regardless of the outcome.
                 try? authService.signOut()
                 currentPage = .home
             }, label: {
                 Text("Sign Out")
             })
-            .buttonStyle(SecondaryButtonStyle())
+            .buttonStyle(OnboardingSecondaryButtonStyle())
         }
         .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
         // .task (rather than .onAppear) ties this to the view's lifecycle —
         // it's automatically cancelled if the view disappears before the
         // fetch finishes, so a slow network can't set state on a view
@@ -1514,10 +1531,11 @@ struct LibraryView: View {
 }
 
 // Lets a signed-in library account choose which catalog items its readers
-// are allowed to read — presented as a sheet from LibraryView's "Manage
-// Catalog" button. Every toggle flip saves immediately (see save() below)
-// rather than needing a separate "Save" button, since there's nothing else
-// on this screen a half-saved toggle could conflict with.
+// are allowed to read — presented as a sheet from LibraryHomeView's
+// "Manage Catalog" button. Every toggle flip saves immediately (see
+// save() below) rather than needing a separate "Save" button, since
+// there's nothing else on this screen a half-saved toggle could conflict
+// with.
 struct LibraryCatalogManagementView: View {
     @Environment(AuthService.self) private var authService
     @Environment(\.dismiss) private var dismiss

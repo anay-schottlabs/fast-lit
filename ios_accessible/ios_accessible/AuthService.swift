@@ -124,9 +124,9 @@ class AuthService {
         return "\(randomTriplet())-\(randomTriplet())"
     }
 
-    // A library account's own profile — the data LibraryView reads back to
-    // display "your join code", as opposed to libraryUsernames above, which
-    // exists purely for the sign-up uniqueness check.
+    // A library account's own profile — the data LibraryHomeView reads back
+    // to display "your join code", as opposed to libraryUsernames above,
+    // which exists purely for the sign-up uniqueness check.
     struct LibraryProfile {
         let username: String
         let joinCode: String
@@ -246,7 +246,8 @@ class AuthService {
 
     // Reads the signed-in library account's own profile. nil means there's
     // no profile doc yet (e.g. createLibraryProfile failed silently during
-    // sign-up) rather than an error — LibraryView treats those differently.
+    // sign-up) rather than an error — LibraryHomeView treats those
+    // differently.
     func fetchLibraryProfile() async throws -> LibraryProfile? {
         guard let uid = Auth.auth().currentUser?.uid else { return nil }
         let document = try await libraries.document(uid).getDocument()
