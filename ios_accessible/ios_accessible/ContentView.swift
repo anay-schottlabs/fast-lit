@@ -2424,43 +2424,19 @@ struct ReadView: View {
         }
     }
 
-    // The wide left pane: a true corner-pinned close button (absolute
-    // overlay, not inline with the progress bar) plus a full-width
-    // progress bar margined clear of it, the focal word centered, and a
-    // small "Word N of Total · time left" caption underneath. This is the
-    // design doc's own "isSeparate" layout (button top:20/left:20, bar
-    // margin 24/24/0/76) rather than the "isInline" one this screen used
-    // before — locked to .landscapeRight (see lockOrientation(to:) in
+    // The wide left pane: a corner-pinned close button and the progress
+    // bar sharing a single header row (as one HStack overlay, not two
+    // independently-positioned pieces), the focal word centered, and a
+    // small "Word N of Total · time left" caption underneath. Both the
+    // button's own top:20/left:20 position and the 16pt gap after it (=
+    // the design doc's own isSeparate margin-left 76, minus the button's
+    // 20 inset and 40 width) come straight from the doc — locked to
+    // .landscapeRight (see lockOrientation(to:) in
     // ios_accessibleApp.swift), the sensor housing lands on this pane's
     // LEFT edge but is vertically centered on it, not sitting in the top
-    // corner itself, so the true top-left corner is safe for the button
-    // without the two needing to share a row.
+    // corner itself, so the true top-left corner is safe for both.
     private var mainReadingArea: some View {
         VStack(spacing: 0) {
-            // A bespoke bar rather than OnboardingProgressBar: the doc's
-            // own track is a RoundedRectangle(cornerRadius: 3) at height
-            // 5, not OnboardingProgressBar's Capsule at height 6, against
-            // ReadColor's own divider/primary (not onboardingTrack/
-            // onboardingText). Left margin (76 = button's own 20 left
-            // inset + 40 width + 16 gap) keeps it clear of the corner
-            // button below without the two being laid out in the same
-            // HStack.
-            GeometryReader { geometry in
-                ZStack(alignment: .leading) {
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(ReadColor.divider)
-                    RoundedRectangle(cornerRadius: 3, style: .continuous)
-                        .fill(ReadColor.primary)
-                        .frame(width: geometry.size.width * CGFloat(indexNum + 1) / CGFloat(words.count))
-                }
-            }
-            .frame(height: 5)
-            .animation(.easeInOut(duration: 0.3), value: indexNum)
-            .accessibilityHidden(true)
-            .padding(.leading, 76)
-            .padding(.trailing, 24)
-            .padding(.top, 24)
-
             Spacer()
 
             wordDisplay
@@ -2476,35 +2452,65 @@ struct ReadView: View {
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(ReadColor.background.ignoresSafeArea())
         .overlay(alignment: .topLeading) {
-            // Replaces the old "Choose Something Different" text button
-            // below the controls — same destination (currentPage =
-            // .choose sends the reader back to ChooseView; .onDisappear
-            // above still stops playback the same way it always did),
-            // just pinned to the actual top-left corner (20/20 inset)
-            // instead of sharing a row with the progress bar. The
-            // .ignoresSafeArea below is load-bearing, not decorative:
-            // without it, this overlay's own layout still respects the
-            // system's LEADING safe area inset (reserved edge-to-edge for
-            // the sensor housing, not just the small band it physically
-            // occupies), which stacked on top of the 20pt padding and
-            // pushed the button well past the doc's intended inset from
-            // the true corner. The corner itself is still safe from the
-            // island (see mainReadingArea's own doc comment above) — this
-            // just stops SwiftUI from being conservative about it.
-            Button(action: {
-                currentPage = .choose
-            }, label: {
-                CloseXShape()
-                    .stroke(ReadColor.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                    .frame(width: 18, height: 18)
-                    .frame(width: 40, height: 40)
-                    .background(Circle().fill(ReadColor.closeButtonBackground))
-                    .contentShape(Circle())
-            })
-            .buttonStyle(HapticButtonStyle())
-            .accessibilityLabel("Close and choose something different")
+            // One HStack, not two separately-positioned pieces: putting
+            // the button and bar in the same container is what actually
+            // guarantees they read as a single aligned row — vertically
+            // centered against each other via the HStack's own default
+            // alignment, and both sharing the exact same
+            // .ignoresSafeArea treatment below, rather than the button
+            // ignoring it while the bar's own leading padding silently
+            // stacked on top of the system's leading safe-area inset
+            // (reserved edge-to-edge for the sensor housing) and pushed
+            // it much further right than the intended 16pt gap.
+            HStack(alignment: .center, spacing: 16) {
+                // Replaces the old "Choose Something Different" text
+                // button below the controls — same destination
+                // (currentPage = .choose sends the reader back to
+                // ChooseView; .onDisappear above still stops playback the
+                // same way it always did), just pinned to this row's
+                // leading edge instead.
+                Button(action: {
+                    currentPage = .choose
+                }, label: {
+                    CloseXShape()
+                        .stroke(ReadColor.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                        .frame(width: 18, height: 18)
+                        .frame(width: 40, height: 40)
+                        .background(Circle().fill(ReadColor.closeButtonBackground))
+                        .contentShape(Circle())
+                })
+                .buttonStyle(HapticButtonStyle())
+                .accessibilityLabel("Close and choose something different")
+
+                // A bespoke bar rather than OnboardingProgressBar: the
+                // doc's own track is a RoundedRectangle(cornerRadius: 3)
+                // at height 5, not OnboardingProgressBar's Capsule at
+                // height 6, against ReadColor's own divider/primary (not
+                // onboardingTrack/onboardingText).
+                GeometryReader { geometry in
+                    ZStack(alignment: .leading) {
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            .fill(ReadColor.divider)
+                        RoundedRectangle(cornerRadius: 3, style: .continuous)
+                            .fill(ReadColor.primary)
+                            .frame(width: geometry.size.width * CGFloat(indexNum + 1) / CGFloat(words.count))
+                    }
+                }
+                .frame(height: 5)
+                .animation(.easeInOut(duration: 0.3), value: indexNum)
+                .accessibilityHidden(true)
+            }
             .padding(.top, 20)
             .padding(.leading, 20)
+            .padding(.trailing, 24)
+            .frame(maxWidth: .infinity)
+            // Load-bearing, not decorative: without this, the row still
+            // respects the system's LEADING safe-area inset on top of
+            // the 20pt padding above, pushing the whole row (button
+            // included) past the doc's intended inset from the true
+            // corner. The corner itself is still safe from the island
+            // (see this view's own doc comment above) — this just stops
+            // SwiftUI from being conservative about it.
             .ignoresSafeArea(edges: [.top, .leading])
         }
     }
