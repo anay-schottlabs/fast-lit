@@ -2764,7 +2764,6 @@ struct ReadView: View {
                 .overlay(Circle().stroke(ReadColor.divider, lineWidth: 2))
                 .contentShape(Circle())
         })
-        .buttonStyle(HapticButtonStyle())
         .accessibilityLabel(accessibilityLabel)
     }
 
