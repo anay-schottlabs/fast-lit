@@ -2415,28 +2415,54 @@ struct ReadView: View {
         // NOT OnboardingTheme's own Quicksand/Baloo 2 fonts either — the
         // doc's own CSS asks for the system's rounded font family here,
         // not this app's branded onboarding typography.
-        wordDisplay
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(ReadColor.background.ignoresSafeArea())
-            .overlay(alignment: .top) { headerRow }
-            .overlay(alignment: .bottom) { bottomBar }
-            // Locks the screen into landscape the instant this view appears
-            // — see lockOrientation(to:) in ios_accessibleApp.swift — rather
-            // than asking the reader to rotate their device by hand (which
-            // is what the OrientView screen this replaced used to do).
-            .onAppear {
-                lockOrientation(to: .landscape)
-            }
-            // Stops any running timer if this view goes away while playing, so
-            // it doesn't keep firing pointlessly in the background, and locks
-            // the screen back to portrait — every other screen in this app
-            // expects portrait, so this needs to happen on the way OUT of
-            // ReadView, not just rely on whatever screen comes next to ask
-            // for it themselves.
-            .onDisappear {
-                pause()
-                lockOrientation(to: .portrait)
-            }
+        // GeometryReader (not a plain composition) specifically so
+        // bottomBar can read geometry.safeAreaInsets.bottom below —
+        // measured this pixel-for-pixel against the design's flat 16pt
+        // margin: .ignoresSafeArea() on the base view (still applied
+        // below) does make the leading/trailing/top margins land exactly
+        // on their coded values, verified at exactly 16.0pt each with no
+        // residual gap. The BOTTOM edge alone still had a consistent
+        // ~21pt leftover on top of its own coded 16pt (36.7pt measured
+        // instead of 16pt) even with the identical .ignoresSafeArea
+        // treatment — matching the home indicator's own reserved height
+        // almost exactly, so rather than fight SwiftUI's safe-area
+        // resolution for that one edge, bottomBar cancels it explicitly
+        // with a measured offset instead of trusting ignoresSafeArea
+        // alone to zero it out.
+        GeometryReader { geometry in
+            wordDisplay
+                .frame(maxWidth: .infinity, maxHeight: .infinity)
+                .background(ReadColor.background)
+                // .ignoresSafeArea() here (on the whole base view, BEFORE
+                // the two .overlay calls below) rather than only on the
+                // background is load-bearing: .overlay(alignment:)
+                // positions its content relative to THIS view's own
+                // reported frame, so if this view didn't ignore the safe
+                // area, both overlays' alignment anchors would
+                // themselves sit inset from the true edges.
+                .ignoresSafeArea()
+                .overlay(alignment: .top) { headerRow }
+                .overlay(alignment: .bottom) {
+                    bottomBar(bottomSafeAreaInset: geometry.safeAreaInsets.bottom)
+                }
+        }
+        // Locks the screen into landscape the instant this view appears
+        // — see lockOrientation(to:) in ios_accessibleApp.swift — rather
+        // than asking the reader to rotate their device by hand (which
+        // is what the OrientView screen this replaced used to do).
+        .onAppear {
+            lockOrientation(to: .landscape)
+        }
+        // Stops any running timer if this view goes away while playing, so
+        // it doesn't keep firing pointlessly in the background, and locks
+        // the screen back to portrait — every other screen in this app
+        // expects portrait, so this needs to happen on the way OUT of
+        // ReadView, not just rely on whatever screen comes next to ask
+        // for it themselves.
+        .onDisappear {
+            pause()
+            lockOrientation(to: .portrait)
+        }
     }
 
     // The header row: close button + progress bar, floating over the top
@@ -2504,7 +2530,7 @@ struct ReadView: View {
     // the remaining width via .frame(maxWidth: .infinity), so the fixed-
     // size center group ends up truly centered in the bar regardless of
     // how wide the caption or stepper text happen to be.
-    private var bottomBar: some View {
+    private func bottomBar(bottomSafeAreaInset: CGFloat) -> some View {
         HStack(spacing: 0) {
             // TimelineView (not a plain Text) is what makes this redraw
             // once a second on its own — without it, this only recomputes
@@ -2556,8 +2582,19 @@ struct ReadView: View {
         // Same reasoning as headerRow's own .ignoresSafeArea above — the
         // doc's flat 16px bottom/left/right margin is meant against the
         // true screen edges, not further in from wherever the system's
-        // own safe-area insets would otherwise land it.
+        // own safe-area insets would otherwise land it. This alone gets
+        // leading/trailing exactly right (measured), but leaves the
+        // home indicator's own reservation still in effect for .bottom
+        // specifically — the offset below is what actually cancels that.
         .ignoresSafeArea(edges: [.bottom, .leading, .trailing])
+        // Pixel-measured fix, not a guess: even with the ignoresSafeArea
+        // above, the bar's actual bottom margin came out to ~36.7pt
+        // instead of the coded 16pt — a leftover ~21pt matching the home
+        // indicator's own safe-area reservation almost exactly, still in
+        // effect despite ignoresSafeArea. Shifting down by the real
+        // system-reported bottomSafeAreaInset (not a hardcoded 21) cancels
+        // exactly that leftover on whatever device this runs on.
+        .offset(y: bottomSafeAreaInset)
     }
 
     private var playPauseButton: some View {
