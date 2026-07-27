@@ -2233,9 +2233,16 @@ struct ReadView: View {
 
     // Shared by all four rail tiles below so their icon and corner radius
     // stay a single source of truth instead of four independently-typed
-    // literals that could drift apart again.
-    private let railIconSize: CGFloat = 34
-    private let railTileCornerRadius: CGFloat = 20
+    // literals that could drift apart again. Values (28pt icon, 18pt
+    // corner radius) are traced from the design doc's own 2a/2b markup
+    // (claude.ai/design project bc14e680, "Read Page Redesign -
+    // Landscape.dc.html") — NOT normalized to a uniform footprint across
+    // the four glyphs the way an earlier pass here guessed at; the real
+    // doc's own icons are different relative sizes (chevron ~25% of its
+    // box, triangle ~42%, stop square ~67%), so ChevronShape/
+    // PlayTriangleShape/stopTile below trace those exact proportions.
+    private let railIconSize: CGFloat = 28
+    private let railTileCornerRadius: CGFloat = 18
 
     // "M:SS left" at the current wpm, based on however many words remain
     // after the one currently showing — summed via pauseBeats(after:)
@@ -2466,7 +2473,7 @@ struct ReadView: View {
             Spacer()
         }
         .padding(20)
-        .frame(width: 210)
+        .frame(width: 184)
         .frame(maxHeight: .infinity)
         .background(Color.onboardingCard.ignoresSafeArea())
     }
@@ -2477,8 +2484,8 @@ struct ReadView: View {
     // the grid's own equal-width columns + .aspectRatio(1, .fit) on each
     // one) and the same railTileCornerRadius corner radius.
     private var controlGrid: some View {
-        let columns = [GridItem(.flexible(), spacing: 12), GridItem(.flexible(), spacing: 12)]
-        return LazyVGrid(columns: columns, spacing: 12) {
+        let columns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
+        return LazyVGrid(columns: columns, spacing: 10) {
             playPauseTile
             stopTile
             backTile
@@ -2499,17 +2506,19 @@ struct ReadView: View {
         }, label: {
             Group {
                 if isPlaying {
-                    // Two rounded bars, sized to the same ~50%-of-box
-                    // footprint every other glyph on this rail now shares
-                    // (see railIconSize/ChevronShape/PlayTriangleShape/
-                    // stopTile) instead of its own one-off proportions.
-                    HStack(spacing: railIconSize * 6 / 24) {
+                    // Two rounded bars — already inherently "rounded
+                    // corner", no custom Shape needed the way the
+                    // triangle below requires. No pause state in the
+                    // design doc to trace exact proportions from (2a/2b
+                    // only show the Play glyph), so these keep their own
+                    // pre-existing size.
+                    HStack(spacing: 5) {
                         RoundedRectangle(cornerRadius: 2, style: .continuous)
                             .fill(Color.onboardingOnPrimary)
-                            .frame(width: railIconSize * 5 / 24, height: railIconSize * 12 / 24)
+                            .frame(width: 6, height: 22)
                         RoundedRectangle(cornerRadius: 2, style: .continuous)
                             .fill(Color.onboardingOnPrimary)
-                            .frame(width: railIconSize * 5 / 24, height: railIconSize * 12 / 24)
+                            .frame(width: 6, height: 22)
                     }
                 } else {
                     // A plain, symmetric triangle — filled AND stroked
@@ -2547,14 +2556,11 @@ struct ReadView: View {
         Button(action: {
             stop()
         }, label: {
-            // rect x=6 y=6 width=12 height=12 rx=3 in a 24×24 box — the
-            // same 12/24 (50%) footprint PlayTriangleShape and
-            // ChevronShape now trace, so all four glyphs read as the
-            // same size instead of stop's old 16/24 box dwarfing the
-            // chevrons' old 6/24 one.
-            RoundedRectangle(cornerRadius: railIconSize * 3 / 24, style: .continuous)
+            // rect x=4 y=4 width=16 height=16 rx=4 in a 24×24 box, traced
+            // directly from the design doc's own stop glyph.
+            RoundedRectangle(cornerRadius: railIconSize * 4 / 24, style: .continuous)
                 .fill(Color.onboardingText)
-                .frame(width: railIconSize * 12 / 24, height: railIconSize * 12 / 24)
+                .frame(width: railIconSize * 16 / 24, height: railIconSize * 16 / 24)
                 .frame(width: railIconSize, height: railIconSize)
         })
         .buttonStyle(HapticButtonStyle())
@@ -2570,7 +2576,7 @@ struct ReadView: View {
             updateIndex(increment: -1)
         }, label: {
             ChevronShape(pointsLeft: true)
-                .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+                .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
                 .frame(width: railIconSize, height: railIconSize)
         })
         .buttonStyle(HapticButtonStyle())
@@ -2590,7 +2596,7 @@ struct ReadView: View {
             updateIndex(increment: 1)
         }, label: {
             ChevronShape(pointsLeft: false)
-                .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round))
+                .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
                 .frame(width: railIconSize, height: railIconSize)
         })
         .buttonStyle(HapticButtonStyle())
@@ -2620,18 +2626,17 @@ struct ReadView: View {
 // A "<"/">" chevron built from two straight strokes (not SF Symbol's
 // "chevron.left"/".right") so the exact stroke width, cap, and join can be
 // controlled directly — this screen's whole icon language is rounded caps
-// + rounded joins throughout, which a system glyph doesn't guarantee. Its
-// "V" spans the same 12/24 (50%) footprint as PlayTriangleShape/stopTile
-// below — the original 6/24-wide V (from the raw reference SVG) read as
-// noticeably smaller than the other three rail glyphs once seen side by
-// side in the app, so it's widened here to match.
+// + rounded joins throughout, which a system glyph doesn't guarantee.
+// Traces the design doc's own SVG path proportions exactly (in a 24×24
+// box: M15 6l-6 6 6 6 for left, M9 6l6 6-6 6 for right — a compact "V"
+// occupying the middle half of the box, not a full edge-to-edge chevron).
 private struct ChevronShape: Shape {
     let pointsLeft: Bool
 
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let nearX = rect.minX + rect.width * (6.0 / 24.0)
-        let farX = rect.minX + rect.width * (18.0 / 24.0)
+        let nearX = rect.minX + rect.width * (9.0 / 24.0)
+        let farX = rect.minX + rect.width * (15.0 / 24.0)
         let tipX = pointsLeft ? nearX : farX
         let baseX = pointsLeft ? farX : nearX
         let topY = rect.minY + rect.height * (6.0 / 24.0)
@@ -2669,18 +2674,16 @@ private struct CloseXShape: Shape {
 }
 
 // The rail's own Play glyph: a plain, symmetric triangle — points at
-// (6,6), (6,18), (18,12) in a 24×24 box, widened from the reference's own
-// (8,6)/(8,18)/(18,12) so its 12/24 (50%) footprint matches ChevronShape
-// and stopTile's rect exactly, rather than the narrower 10/24 it traced
-// before. Deliberately NOT a hand-tuned "rounded" bezier shape and NOT
-// manually re-centered — this shape stays perfectly sharp-cornered and
-// symmetric; playPauseTile above rounds its corners by filling AND
-// stroking it with the same thick, round-joined line, which also keeps
-// it correctly centered on its own with no offset needed.
+// (8,6), (8,18), (18,12) in a 24×24 box, same as the design doc's own SVG
+// path exactly (M8 6L8 18L18 12Z). Deliberately NOT a hand-tuned "rounded"
+// bezier shape and NOT manually re-centered — this shape stays perfectly
+// sharp-cornered and symmetric; playPauseTile above rounds its corners by
+// filling AND stroking it with the same thick, round-joined line, which
+// also keeps it correctly centered on its own with no offset needed.
 private struct PlayTriangleShape: Shape {
     func path(in rect: CGRect) -> Path {
         var path = Path()
-        let left = rect.minX + rect.width * (6.0 / 24.0)
+        let left = rect.minX + rect.width * (8.0 / 24.0)
         let right = rect.minX + rect.width * (18.0 / 24.0)
         let top = rect.minY + rect.height * (6.0 / 24.0)
         let bottom = rect.minY + rect.height * (18.0 / 24.0)
