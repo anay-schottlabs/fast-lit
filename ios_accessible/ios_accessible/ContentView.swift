@@ -2731,49 +2731,44 @@ struct ReadView: View {
     }
 
     private var backButton: some View {
-        Button(action: {
+        RepeatableControl(accessibilityLabel: "Previous word", isEnabled: !isPlaying, action: {
             updateIndex(increment: -1)
-        }, label: {
+        }) {
             ChevronShape(pointsLeft: true)
                 .stroke(ReadColor.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
                 .frame(width: 22, height: 22)
-        })
+        }
         .frame(width: 48, height: 48)
         .background(ReadColor.inactiveTileBackground)
         .clipShape(Circle())
         // Manually stepping while the timer is also advancing indexNum
         // would fight with playback, so stepping is disabled while playing.
-        .disabled(isPlaying)
         .opacity(isPlaying ? 0.35 : 1.0)
-        .accessibilityLabel("Previous word")
     }
 
     private var forwardButton: some View {
-        Button(action: {
+        RepeatableControl(accessibilityLabel: "Next word", isEnabled: !isPlaying, action: {
             updateIndex(increment: 1)
-        }, label: {
+        }) {
             ChevronShape(pointsLeft: false)
                 .stroke(ReadColor.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
                 .frame(width: 22, height: 22)
-        })
+        }
         .frame(width: 48, height: 48)
         .background(ReadColor.inactiveTileBackground)
         .clipShape(Circle())
-        .disabled(isPlaying)
         .opacity(isPlaying ? 0.35 : 1.0)
-        .accessibilityLabel("Next word")
     }
 
     private func wpmStepperButton(symbol: String, accessibilityLabel: String, action: @escaping () -> Void) -> some View {
-        Button(action: action, label: {
+        RepeatableControl(accessibilityLabel: accessibilityLabel, isEnabled: true, action: action) {
             Text(symbol)
                 .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundStyle(ReadColor.primary)
                 .frame(width: 30, height: 30)
                 .overlay(Circle().stroke(ReadColor.divider, lineWidth: 2))
                 .contentShape(Circle())
-        })
-        .accessibilityLabel(accessibilityLabel)
+        }
     }
 
     // Rather than one Text centered as a block (which would put the focal
@@ -2820,6 +2815,84 @@ struct ReadView: View {
         // leftover from a different layout.
         .font(.system(size: focalWordSize, weight: .medium, design: .rounded))
         .kerning(-2)
+    }
+}
+
+// A button-like control that fires `action` once immediately on press,
+// then keeps firing it repeatedly for as long as the press is held —
+// used by backButton/forwardButton and the WPM +/- steppers so a
+// reader can hold one down instead of tapping it over and over.
+// Deliberately NOT a plain Button with an added hold gesture: a
+// Button's own tap-completion and a second, simultaneous press gesture
+// both watching the same touch would each fire their own action() for
+// one ordinary tap, double-counting it. Driving everything (the single
+// immediate fire AND the hold-repeat) off the one pressing-state
+// callback avoids that.
+private struct RepeatableControl<Label: View>: View {
+    let accessibilityLabel: String
+    let isEnabled: Bool
+    let action: () -> Void
+    @ViewBuilder let label: () -> Label
+
+    @State private var repeatTimer: Timer?
+
+    // How long a press has to be held before it starts auto-repeating
+    // (comfortably longer than any ordinary tap's press duration, so a
+    // normal tap only ever fires action() the one time), and how fast
+    // it repeats once it does.
+    private static var initialDelay: TimeInterval { 0.45 }
+    private static var repeatInterval: TimeInterval { 0.12 }
+
+    var body: some View {
+        label()
+            .contentShape(Rectangle())
+            // minimumDuration near-zero (not literally 0 — that value
+            // has historically been unreliable) so "pressing" reflects
+            // real finger-down/finger-up, not a genuine long-press
+            // recognition delay; maximumDistance generous so ordinary
+            // hand tremor during a hold doesn't cancel it the way the
+            // default (10pt) would.
+            .onLongPressGesture(minimumDuration: 0.01, maximumDistance: 50, pressing: { isPressing in
+                guard isEnabled else { return }
+                if isPressing {
+                    startRepeating()
+                } else {
+                    stopRepeating()
+                }
+            }, perform: {})
+            .accessibilityElement()
+            .accessibilityAddTraits(.isButton)
+            .accessibilityLabel(accessibilityLabel)
+            .accessibilityAction {
+                if isEnabled {
+                    action()
+                }
+            }
+            // Guards against a hold that's still repeating the instant
+            // isEnabled flips to false mid-press (e.g. isPlaying
+            // becoming true while backButton is held) — without this,
+            // the repeat timer would keep firing an action its own
+            // control no longer permits.
+            .onChange(of: isEnabled) { _, stillEnabled in
+                if !stillEnabled {
+                    stopRepeating()
+                }
+            }
+    }
+
+    private func startRepeating() {
+        guard repeatTimer == nil else { return }
+        action()
+        repeatTimer = Timer.scheduledTimer(withTimeInterval: Self.initialDelay, repeats: false) { _ in
+            repeatTimer = Timer.scheduledTimer(withTimeInterval: Self.repeatInterval, repeats: true) { _ in
+                action()
+            }
+        }
+    }
+
+    private func stopRepeating() {
+        repeatTimer?.invalidate()
+        repeatTimer = nil
     }
 }
 
