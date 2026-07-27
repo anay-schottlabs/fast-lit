@@ -2303,41 +2303,30 @@ struct ReadView: View {
         }
     }
 
-    // The wide left pane: corner close button + progress bar in one row,
-    // the focal word centered, and a small "Word N of Total · time left"
-    // caption underneath.
+    // The wide left pane: a true corner-pinned close button (absolute
+    // overlay, not inline with the progress bar) plus a full-width
+    // progress bar margined clear of it, the focal word centered, and a
+    // small "Word N of Total · time left" caption underneath. This is the
+    // design doc's own "isSeparate" layout (button top:20/left:20, bar
+    // margin 24/24/0/76) rather than the "isInline" one this screen used
+    // before — locked to .landscapeRight (see lockOrientation(to:) in
+    // ios_accessibleApp.swift), the sensor housing lands on this pane's
+    // LEFT edge but is vertically centered on it, not sitting in the top
+    // corner itself, so the true top-left corner is safe for the button
+    // without the two needing to share a row.
     private var mainReadingArea: some View {
         VStack(spacing: 0) {
-            HStack(spacing: 14) {
-                // Replaces the old "Choose Something Different" text
-                // button below the controls — same destination
-                // (currentPage = .choose sends the reader back to
-                // ChooseView; .onDisappear above still stops playback the
-                // same way it always did), just relocated to match this
-                // layout's own corner-close convention instead of a
-                // bottom-of-screen text link.
-                Button(action: {
-                    currentPage = .choose
-                }, label: {
-                    CloseXShape()
-                        .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                        .frame(width: 18, height: 18)
-                        .frame(width: 40, height: 40)
-                        .background(Circle().fill(Color.onboardingText.opacity(0.08)))
-                        .contentShape(Circle())
-                })
-                .buttonStyle(HapticButtonStyle())
-                .accessibilityLabel("Close and choose something different")
-
-                // Reuses OnboardingTheme.swift's own progress bar exactly
-                // as onboarding uses it — same Capsule track/fill
-                // construction against the same onboardingTrack/
-                // onboardingText tokens, just fed indexNum/words.count
-                // instead of a fixed step/total.
-                OnboardingProgressBar(step: indexNum + 1, total: words.count)
-            }
-            .padding(.horizontal, 24)
-            .padding(.top, 20)
+            // Reuses OnboardingTheme.swift's own progress bar exactly as
+            // onboarding uses it — same Capsule track/fill construction
+            // against the same onboardingTrack/onboardingText tokens,
+            // just fed indexNum/words.count instead of a fixed
+            // step/total. Left margin (76 = button's own 20 left inset +
+            // 40 width + 16 gap) keeps it clear of the corner button
+            // below without the two being laid out in the same HStack.
+            OnboardingProgressBar(step: indexNum + 1, total: words.count)
+                .padding(.leading, 76)
+                .padding(.trailing, 24)
+                .padding(.top, 24)
 
             Spacer()
 
@@ -2353,6 +2342,28 @@ struct ReadView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.onboardingBackground.ignoresSafeArea())
+        .overlay(alignment: .topLeading) {
+            // Replaces the old "Choose Something Different" text button
+            // below the controls — same destination (currentPage =
+            // .choose sends the reader back to ChooseView; .onDisappear
+            // above still stops playback the same way it always did),
+            // just pinned to the actual top-left corner (20/20 inset)
+            // instead of sharing a row with the progress bar.
+            Button(action: {
+                currentPage = .choose
+            }, label: {
+                CloseXShape()
+                    .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .frame(width: 18, height: 18)
+                    .frame(width: 40, height: 40)
+                    .background(Circle().fill(Color.onboardingText.opacity(0.08)))
+                    .contentShape(Circle())
+            })
+            .buttonStyle(HapticButtonStyle())
+            .accessibilityLabel("Close and choose something different")
+            .padding(.top, 20)
+            .padding(.leading, 20)
+        }
     }
 
     // Rather than one Text centered as a block (which would put the focal
@@ -2469,7 +2480,17 @@ struct ReadView: View {
 
             Spacer()
         }
-        .padding(20)
+        // Asymmetric, not a plain .padding(20): this rail sits at the
+        // screen's true trailing edge in .landscapeRight, where there's
+        // no sensor housing to clear (that's on mainReadingArea's
+        // leading edge instead — see its own doc comment above), so
+        // holding back a full 20pt of empty margin here was pure waste.
+        // Trimming it to 8 lets the grid/stepper actually grow into that
+        // reclaimed width rather than sitting centered inside a wider
+        // margin that no orientation constraint actually calls for.
+        .padding(.leading, 20)
+        .padding(.trailing, 8)
+        .padding(.vertical, 20)
         .frame(width: 260)
         .frame(maxHeight: .infinity)
         .background(Color.onboardingCard.ignoresSafeArea())
