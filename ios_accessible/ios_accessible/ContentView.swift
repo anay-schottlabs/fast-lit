@@ -2417,7 +2417,16 @@ struct ReadView: View {
             // .choose sends the reader back to ChooseView; .onDisappear
             // above still stops playback the same way it always did),
             // just pinned to the actual top-left corner (20/20 inset)
-            // instead of sharing a row with the progress bar.
+            // instead of sharing a row with the progress bar. The
+            // .ignoresSafeArea below is load-bearing, not decorative:
+            // without it, this overlay's own layout still respects the
+            // system's LEADING safe area inset (reserved edge-to-edge for
+            // the sensor housing, not just the small band it physically
+            // occupies), which stacked on top of the 20pt padding and
+            // pushed the button well past the doc's intended inset from
+            // the true corner. The corner itself is still safe from the
+            // island (see mainReadingArea's own doc comment above) — this
+            // just stops SwiftUI from being conservative about it.
             Button(action: {
                 currentPage = .choose
             }, label: {
@@ -2432,6 +2441,7 @@ struct ReadView: View {
             .accessibilityLabel("Close and choose something different")
             .padding(.top, 20)
             .padding(.leading, 20)
+            .ignoresSafeArea(edges: [.top, .leading])
         }
     }
 
