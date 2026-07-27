@@ -2438,7 +2438,17 @@ struct ReadView: View {
     // corner itself, so the true top-left corner is safe for both.
     private var mainReadingArea: some View {
         VStack(spacing: 0) {
-            Spacer()
+            // minLength (not a plain Spacer()) so wordDisplay can never
+            // get pulled up closer than this to the header row above —
+            // the header (close button + progress bar) is an .overlay,
+            // not part of this VStack's own flow, so without a floor
+            // here this Spacer would happily shrink to 0 at a large
+            // enough Dynamic Type size and let the word (and its
+            // fixation ticks, which reach further above it than the
+            // word's own box — see wordDisplay below) collide with the
+            // progress bar. 60 matches the header row's own rough height
+            // (20pt top inset + 40pt button).
+            Spacer(minLength: 60)
 
             wordDisplay
 
@@ -2570,19 +2580,30 @@ struct ReadView: View {
         // horizontal center for free. Offsets are deliberately NOT
         // symmetric — the doc's own values are top: calc(50% - 82px) and
         // bottom: calc(50% + 68px) against its 104px word, i.e. -82/104
-        // and +68/104 of focalWordSize, not a plain ±0.3 fraction.
+        // and +68/104 of focalWordSize, not a plain ±0.3 fraction. Capped
+        // via tickOffsetBasis (below), not focalWordSize directly: an
+        // uncapped offset tied 1:1 to focalWordSize grows without limit
+        // at the largest Dynamic Type accessibility sizes, and the top
+        // tick in particular would eventually reach up into the header
+        // row (close button + progress bar) above. The cap (130, above
+        // the 104 base) only ever engages at those largest sizes — at
+        // and below the default, focalWordSize < 130 so this is a no-op.
         .overlay(alignment: .top) {
             Capsule()
                 .fill(ReadColor.secondary)
                 .frame(width: 3, height: 16)
-                .offset(y: -focalWordSize * 82.0 / 104.0)
+                .offset(y: -tickOffsetBasis * 82.0 / 104.0)
         }
         .overlay(alignment: .bottom) {
             Capsule()
                 .fill(ReadColor.secondary)
                 .frame(width: 3, height: 16)
-                .offset(y: focalWordSize * 68.0 / 104.0)
+                .offset(y: tickOffsetBasis * 68.0 / 104.0)
         }
+    }
+
+    private var tickOffsetBasis: CGFloat {
+        min(focalWordSize, 130)
     }
 
     // The fixed-width right rail: a 2×2 icon grid (Play, Stop / Back,
