@@ -2636,14 +2636,21 @@ struct ReadView: View {
             Spacer()
         }
         // Plain .padding(20), matching the doc's own "padding:20px" on
-        // this div literally — an earlier pass here trimmed the trailing
-        // side to reclaim space, but this is a from-scratch rebuild
-        // against the doc as the pixel-for-pixel source of truth, so
-        // that asymmetry is gone again.
+        // this div literally.
         .padding(20)
         .frame(width: 184)
         .frame(maxHeight: .infinity)
         .background(ReadColor.rail.ignoresSafeArea())
+        // Load-bearing, not decorative — same fix as mainReadingArea's
+        // header row above: without this, the rail's own LAYOUT (not
+        // just its background fill, which already ignoresSafeArea on
+        // its own) still respects the system's trailing safe-area inset
+        // on top of the 20pt padding, which read as a much bigger gap
+        // between the grid and the true right edge than the matching
+        // 20pt inset at the close button's corner. This side of the
+        // screen has no sensor housing to actually guard against, so
+        // there's nothing to be conservative about here either.
+        .ignoresSafeArea(edges: .trailing)
     }
 
     // The 2×2 grid itself: top row is Play (the one filled/primary tile)
