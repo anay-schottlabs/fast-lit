@@ -2397,6 +2397,20 @@ struct ReadView: View {
         return String(format: "%d:%02d left", secondsRemaining / 60, secondsRemaining % 60)
     }
 
+    // "M:SS total" — how long the whole passage takes at the current
+    // wpm, start to finish. Unlike timeRemainingLabel(asOf:), this
+    // doesn't depend on indexNum or wall-clock time at all (just words
+    // and wpm), so it's a plain computed property rather than a
+    // TimelineView-driven function — it only needs to change when wpm
+    // itself does, which a normal body recompute already covers.
+    private var totalDurationLabel: String {
+        let totalBeats = (0..<words.count - 1).reduce(into: 0.0) { total, i in
+            total += pauseBeats(after: words[i])
+        }
+        let totalSeconds = Int((totalBeats * 60.0 / Double(wpm)).rounded())
+        return String(format: "%d:%02d total", totalSeconds / 60, totalSeconds % 60)
+    }
+
     var body: some View {
         // Bottom-bar layout, rebuilt pixel-for-pixel from the design
         // MCP's live copy of "Read Page Redesign - Landscape.dc.html"
@@ -2537,8 +2551,11 @@ struct ReadView: View {
             // when indexNum/wpm/isPlaying change, i.e. it'd sit frozen for
             // however long the current word holds and then jump, same
             // problem timeRemainingLabel(asOf:) itself is solving.
+            // Time left and total time, not "Word N of Total" — a
+            // reader cares more about how much longer this'll take (now
+            // and overall) than the current word's raw index.
             TimelineView(.periodic(from: .now, by: 1)) { context in
-                Text("Word \(indexNum + 1) of \(words.count) · \(timeRemainingLabel(asOf: context.date))")
+                Text("\(timeRemainingLabel(asOf: context.date)) · \(totalDurationLabel)")
             }
             .font(.system(size: 13, weight: .semibold, design: .rounded))
             .foregroundStyle(ReadColor.secondary)
