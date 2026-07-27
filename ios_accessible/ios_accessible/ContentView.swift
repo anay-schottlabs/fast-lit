@@ -699,6 +699,46 @@ private struct AccountChoiceScreen: View {
 
     var body: some View {
         VStack(spacing: Spacing.medium) {
+            // DEV-ONLY: skips straight past both the library/reader
+            // forms AND ChooseView's own catalog picker, landing
+            // directly in ReadView with an arbitrary catalog item — for
+            // exercising ReadView itself (the piece under active
+            // development/testing right now) without re-walking the
+            // whole account flow every time. At the very top of the page
+            // (rather than down by "Go Back") so it's reachable without
+            // scrolling past the rest of the screen first. #if DEBUG
+            // keeps this out of Release/App Store builds entirely, not
+            // just visually hidden.
+            #if DEBUG
+            if let currentPage, let contentToRead {
+                Button(action: {
+                    Task {
+                        do {
+                            let catalog = try await authService.fetchCatalog()
+                            guard let item = catalog.randomElement() else {
+                                devJumpError = "Catalog is empty."
+                                return
+                            }
+                            contentToRead.wrappedValue = item
+                            currentPage.wrappedValue = .read
+                        } catch {
+                            devJumpError = error.localizedDescription
+                        }
+                    }
+                }, label: {
+                    Text("DEV: Jump to Reader")
+                })
+                .font(.system(size: 13, weight: .semibold, design: .rounded))
+                .foregroundStyle(Color.onboardingTextSecondary)
+
+                if let devJumpError {
+                    Text(devJumpError)
+                        .font(.system(size: 11, design: .rounded))
+                        .foregroundStyle(.red)
+                }
+            }
+            #endif
+
             if showProgress {
                 OnboardingProgressBar(step: 4, total: 5)
                     .padding(.bottom, Spacing.small)
@@ -751,45 +791,6 @@ private struct AccountChoiceScreen: View {
             if let onBack {
                 OnboardingBackButton(action: onBack)
             }
-
-            // DEV-ONLY: skips straight past both the library/reader
-            // forms AND ChooseView's own catalog picker, landing
-            // directly in ReadView with an arbitrary catalog item — for
-            // exercising ReadView itself (the piece under active
-            // development/testing right now) without re-walking the
-            // whole account flow every time. #if DEBUG keeps this out of
-            // Release/App Store builds entirely, not just visually
-            // hidden.
-            #if DEBUG
-            if let currentPage, let contentToRead {
-                Button(action: {
-                    Task {
-                        do {
-                            let catalog = try await authService.fetchCatalog()
-                            guard let item = catalog.randomElement() else {
-                                devJumpError = "Catalog is empty."
-                                return
-                            }
-                            contentToRead.wrappedValue = item
-                            currentPage.wrappedValue = .read
-                        } catch {
-                            devJumpError = error.localizedDescription
-                        }
-                    }
-                }, label: {
-                    Text("DEV: Jump to Reader")
-                })
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.onboardingTextSecondary)
-                .padding(.top, Spacing.small)
-
-                if let devJumpError {
-                    Text(devJumpError)
-                        .font(.system(size: 11, design: .rounded))
-                        .foregroundStyle(.red)
-                }
-            }
-            #endif
         }
         .padding(Spacing.large)
         .frame(maxWidth: .infinity, maxHeight: .infinity)
