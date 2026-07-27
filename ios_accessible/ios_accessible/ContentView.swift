@@ -2205,6 +2205,13 @@ struct ReadView: View {
     // jumping down all at once the moment it advances.
     @State private var wordShownAt: Date = Date()
 
+    // True only while a finger is actually down on the progress bar —
+    // @GestureState (not plain @State) so it resets itself back to
+    // false automatically the instant the drag ends, without needing an
+    // explicit onEnded to set it back. headerRow's progress bar reads
+    // this to skip its own eased animation while actively scrubbing.
+    @GestureState private var isDraggingProgress: Bool = false
+
     // @ScaledMetric ties a value to Dynamic Type the same way a built-in
     // text style would, but for a plain number rather than a Font — the
     // base value below (100, the design doc's own literal font-size for
@@ -2507,19 +2514,65 @@ struct ReadView: View {
             // own track is a RoundedRectangle(cornerRadius: 3) at height
             // 5, not OnboardingProgressBar's Capsule at height 6, against
             // ReadColor's own divider/primary (not onboardingTrack/
-            // onboardingText).
+            // onboardingText). Draggable to seek — the visual bar stays a
+            // thin 5pt, but the GeometryReader itself gets a taller 24pt
+            // frame (below) purely so the drag/tap target isn't a
+            // frustratingly thin 5pt-tall sliver.
             GeometryReader { geometry in
                 ZStack(alignment: .leading) {
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
                         .fill(ReadColor.divider)
+                        .frame(height: 5)
                     RoundedRectangle(cornerRadius: 3, style: .continuous)
                         .fill(ReadColor.primary)
-                        .frame(width: geometry.size.width * CGFloat(indexNum + 1) / CGFloat(words.count))
+                        .frame(width: geometry.size.width * CGFloat(indexNum + 1) / CGFloat(words.count), height: 5)
+                }
+                .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
+                .contentShape(Rectangle())
+                .gesture(
+                    // minimumDistance: 0 so a plain tap seeks too, not
+                    // just an actual drag.
+                    DragGesture(minimumDistance: 0)
+                        .updating($isDraggingProgress) { _, state, _ in
+                            state = true
+                        }
+                        .onChanged { value in
+                            // Scrubbing while playing would otherwise
+                            // fight with the auto-advance timer the same
+                            // way manually stepping while playing would
+                            // — same reasoning as backButton/forwardButton
+                            // disabling themselves while isPlaying, except
+                            // here it's more natural to just pause once
+                            // (like a video scrubber) than to block the
+                            // drag outright.
+                            if isPlaying {
+                                pause()
+                            }
+                            let fraction = min(max(value.location.x / geometry.size.width, 0), 1)
+                            indexNum = min(Int(fraction * Double(words.count)), words.count - 1)
+                        }
+                )
+            }
+            .frame(height: 24)
+            // .animation(nil) while actively dragging so the filled bar
+            // tracks the finger 1:1 instead of chasing it through a
+            // 0.3s ease each time indexNum changes multiple times a
+            // second during a drag — the eased animation is only for the
+            // ordinary word-by-word auto-advance tick.
+            .animation(isDraggingProgress ? nil : .easeInOut(duration: 0.3), value: indexNum)
+            .accessibilityElement()
+            .accessibilityLabel("Reading progress")
+            .accessibilityValue("Word \(indexNum + 1) of \(words.count)")
+            .accessibilityAdjustableAction { direction in
+                switch direction {
+                case .increment:
+                    updateIndex(increment: 1)
+                case .decrement:
+                    updateIndex(increment: -1)
+                @unknown default:
+                    break
                 }
             }
-            .frame(height: 5)
-            .animation(.easeInOut(duration: 0.3), value: indexNum)
-            .accessibilityHidden(true)
         }
         .padding(.top, 20)
         .padding(.horizontal, 20)
