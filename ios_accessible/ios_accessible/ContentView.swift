@@ -2530,9 +2530,20 @@ struct ReadView: View {
                 .frame(maxWidth: .infinity, maxHeight: .infinity, alignment: .leading)
                 .contentShape(Rectangle())
                 .gesture(
-                    // minimumDistance: 0 so a plain tap seeks too, not
-                    // just an actual drag.
-                    DragGesture(minimumDistance: 0)
+                    // minimumDistance: 8, not 0 — a plain tap still seeks
+                    // fine (real touches almost always carry a few points
+                    // of natural jitter between touch-down and lift-off),
+                    // but this stops a merely-resting or grazing thumb
+                    // from silently reseeking the passage. This bar spans
+                    // nearly the full screen width right at the top edge
+                    // — with 0, ANY incidental contact there (not just an
+                    // intentional drag) immediately jumped indexNum to
+                    // that x-position, which read exactly like "RSVP is
+                    // randomly skipping words" from the reader's side,
+                    // even though the actual advance timer never skips
+                    // anything on its own (verified with frame-precise
+                    // timestamped captures at both 60 and 300 wpm).
+                    DragGesture(minimumDistance: 8)
                         .updating($isDraggingProgress) { _, state, _ in
                             state = true
                         }
