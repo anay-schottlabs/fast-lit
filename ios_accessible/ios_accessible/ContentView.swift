@@ -2131,13 +2131,17 @@ private enum ReadColor {
     // in dark mode, same as "background" above but named for what it's
     // actually used for at each call site.
     static let onPrimary = adaptive(light: 0xFBF3E7, dark: 0x1E1C1A)
-    // Doc's own close-button alpha differs by appearance (.08 light /
+    // Doc's own close-button alpha differs by appearance (.06 light /
     // .1 dark), not just its base hex, so this can't be expressed as a
     // plain "primary.opacity(x)" the way a single shared alpha could.
-    static let closeButtonBackground = adaptive(light: 0x3D3226, lightAlpha: 0.08, dark: 0xF2EFE9, darkAlpha: 0.1)
-    // Same story for the three non-Play tiles' background (.05 light /
+    static let closeButtonBackground = adaptive(light: 0x3D3226, lightAlpha: 0.06, dark: 0xF2EFE9, darkAlpha: 0.1)
+    // Same story for the Back/Forward buttons' background (.05 light /
     // .06 dark).
     static let inactiveTileBackground = adaptive(light: 0x3D3226, lightAlpha: 0.05, dark: 0xF2EFE9, darkAlpha: 0.06)
+    // The bottom bar's own drop shadow: "0 4px 16px rgba(61,50,38,.08)"
+    // light, "0 4px 16px rgba(0,0,0,.3)" dark — a different base color in
+    // dark mode (plain black), not just a different alpha on "primary".
+    static let bottomBarShadow = adaptive(light: 0x3D3226, lightAlpha: 0.08, dark: 0x000000, darkAlpha: 0.3)
 
     private static func adaptive(light: UInt32, lightAlpha: CGFloat = 1, dark: UInt32, darkAlpha: CGFloat = 1) -> Color {
         Color(UIColor { traits in
@@ -2191,15 +2195,13 @@ struct ReadView: View {
 
     // @ScaledMetric ties a value to Dynamic Type the same way a built-in
     // text style would, but for a plain number rather than a Font — the
-    // base value below (104, the design doc's own literal font-size for
+    // base value below (100, the design doc's own literal font-size for
     // this word) is what this renders at under the system's default text
     // size, and it scales up or down from there as someone adjusts their
     // text size setting. "relativeTo: .largeTitle" caps how aggressively
     // it grows, since this word display already sits at the large end of
-    // the scale and the three-segment layout below (before/focal-letter/
-    // after) needs to stay roughly stable rather than ballooning without
-    // limit at the most extreme accessibility sizes.
-    @ScaledMetric(relativeTo: .largeTitle) private var focalWordSize: CGFloat = 104
+    // the scale.
+    @ScaledMetric(relativeTo: .largeTitle) private var focalWordSize: CGFloat = 100
 
     // A computed property, not a stored one: a stored property's initial
     // value runs before "self" exists, so it can't reference "content" (another
@@ -2333,13 +2335,6 @@ struct ReadView: View {
         timer = nil
     }
 
-    // Stops playback like pause(), but also rewinds to the first word,
-    // unlike pause() which just freezes wherever playback was.
-    func stop() -> Void {
-        pause()
-        indexNum = 0
-    }
-
     // Nudges wpm up or down by a fixed step, clamped to the Slider's own
     // 60...600 range so the +/- buttons below can never push it out of
     // bounds the way an unclamped tap could. A separate, explicit control
@@ -2352,17 +2347,6 @@ struct ReadView: View {
             startTimer()
         }
     }
-
-    // Shared by all four rail tiles below so their icon and corner radius
-    // stay a single source of truth instead of four independently-typed
-    // literals that could drift apart again. Literal values (28pt icon,
-    // 18pt corner radius) straight from the design doc's own 2a/2b
-    // markup — an earlier pass here scaled these up because they read
-    // small on screen, but this is a from-scratch rebuild against that
-    // doc as the literal pixel-for-pixel source of truth, so that
-    // enlargement is gone again.
-    private let railIconSize: CGFloat = 28
-    private let railTileCornerRadius: CGFloat = 18
 
     // "M:SS left" at the current wpm, based on however many words remain
     // after the one currently showing — summed via pauseBeats(after:)
@@ -2385,311 +2369,162 @@ struct ReadView: View {
     }
 
     var body: some View {
-        // Landscape-only side-rail layout, rebuilt pixel-for-pixel from
-        // the design MCP's live copy of "Read Page Redesign -
-        // Landscape.dc.html" (claude.ai/design project bc14e680, options
-        // 2a light / 2b dark) — the word display, its progress bar, and
-        // the corner close button all live in the wide left pane; every
-        // playback control sits in a fixed-width right rail as a 2×2
-        // icon grid + WPM stepper instead of the old bottom row of
-        // buttons + slider. Uses this file's own ReadColor palette
-        // (above), NOT OnboardingTheme.swift's Color.onboarding* tokens
-        // — those match the doc's DARK values exactly but not its LIGHT
-        // ones (2a's own light palette is a distinct warm cream/tan, not
-        // an approximation of OnboardingTheme's neutral gray), so reusing
-        // them would have been silently wrong in light mode. Deliberately
-        // still NOT Color.accentPrimary anywhere, and NOT OnboardingTheme's
-        // own Quicksand/Baloo 2 fonts either — the doc's own CSS asks for
-        // the system's rounded font family here, not this app's branded
-        // onboarding typography.
-        HStack(spacing: 0) {
-            mainReadingArea
-            controlRail
-        }
-        // Locks the screen into landscape the instant this view appears
-        // — see lockOrientation(to:) in ios_accessibleApp.swift — rather
-        // than asking the reader to rotate their device by hand (which
-        // is what the OrientView screen this replaced used to do).
-        .onAppear {
-            lockOrientation(to: .landscape)
-        }
-        // Stops any running timer if this view goes away while playing, so
-        // it doesn't keep firing pointlessly in the background, and locks
-        // the screen back to portrait — every other screen in this app
-        // expects portrait, so this needs to happen on the way OUT of
-        // ReadView, not just rely on whatever screen comes next to ask
-        // for it themselves.
-        .onDisappear {
-            pause()
-            lockOrientation(to: .portrait)
-        }
+        // Bottom-bar layout, rebuilt pixel-for-pixel from the design
+        // MCP's live copy of "Read Page Redesign - Landscape.dc.html"
+        // (claude.ai/design project bc14e680, turn 4 "Bottom bar v2 —
+        // island-aware, no stop, centered controls + counter", options
+        // 4a light / 4b dark) — replaces the previous side-rail layout
+        // entirely. The word fills the whole screen, centered (no
+        // fixation ticks in this version — 4a/4b's markup doesn't have
+        // them); a header row (close button + progress bar) floats over
+        // the top; a single pill floats over the bottom holding the
+        // word-count/time caption (left), Back/Play/Forward (center, no
+        // Stop anymore), and the WPM stepper (right). Uses this file's
+        // own ReadColor palette (above), NOT OnboardingTheme.swift's
+        // Color.onboarding* tokens — see ReadColor's own doc comment for
+        // why. Deliberately still NOT Color.accentPrimary anywhere, and
+        // NOT OnboardingTheme's own Quicksand/Baloo 2 fonts either — the
+        // doc's own CSS asks for the system's rounded font family here,
+        // not this app's branded onboarding typography.
+        wordDisplay
+            .frame(maxWidth: .infinity, maxHeight: .infinity)
+            .background(ReadColor.background.ignoresSafeArea())
+            .overlay(alignment: .top) { headerRow }
+            .overlay(alignment: .bottom) { bottomBar }
+            // Locks the screen into landscape the instant this view appears
+            // — see lockOrientation(to:) in ios_accessibleApp.swift — rather
+            // than asking the reader to rotate their device by hand (which
+            // is what the OrientView screen this replaced used to do).
+            .onAppear {
+                lockOrientation(to: .landscape)
+            }
+            // Stops any running timer if this view goes away while playing, so
+            // it doesn't keep firing pointlessly in the background, and locks
+            // the screen back to portrait — every other screen in this app
+            // expects portrait, so this needs to happen on the way OUT of
+            // ReadView, not just rely on whatever screen comes next to ask
+            // for it themselves.
+            .onDisappear {
+                pause()
+                lockOrientation(to: .portrait)
+            }
     }
 
-    // The wide left pane: a corner-pinned close button and the progress
-    // bar sharing a single header row (as one HStack overlay, not two
-    // independently-positioned pieces), the focal word centered, and a
-    // small "Word N of Total · time left" caption underneath. Both the
-    // button's own top:20/left:20 position and the 16pt gap after it (=
-    // the design doc's own isSeparate margin-left 76, minus the button's
-    // 20 inset and 40 width) come straight from the doc — locked to
-    // .landscapeRight (see lockOrientation(to:) in
-    // ios_accessibleApp.swift), the sensor housing lands on this pane's
-    // LEFT edge but is vertically centered on it, not sitting in the top
-    // corner itself, so the true top-left corner is safe for both.
-    private var mainReadingArea: some View {
-        VStack(spacing: 0) {
-            // minLength (not a plain Spacer()) so wordDisplay can never
-            // get pulled up closer than this to the header row above —
-            // the header (close button + progress bar) is an .overlay,
-            // not part of this VStack's own flow, so without a floor
-            // here this Spacer would happily shrink to 0 at a large
-            // enough Dynamic Type size and let the word (and its
-            // fixation ticks, which reach further above it than the
-            // word's own box — see wordDisplay below) collide with the
-            // progress bar. 60 matches the header row's own rough height
-            // (20pt top inset + 40pt button).
-            Spacer(minLength: 60)
+    // The header row: close button + progress bar, floating over the top
+    // of the whole screen. Doc's own margin is a plain 20px on top/left/
+    // right (no bottom — nothing sits below it in its own flex column)
+    // and a 14px gap between the two, not the old layout's separate
+    // corner-pinned button + asymmetric 76px-margined bar.
+    private var headerRow: some View {
+        HStack(alignment: .center, spacing: 14) {
+            // Replaces the old "Choose Something Different" text button
+            // below the controls — same destination (currentPage =
+            // .choose sends the reader back to ChooseView; .onDisappear
+            // above still stops playback the same way it always did).
+            Button(action: {
+                currentPage = .choose
+            }, label: {
+                CloseXShape()
+                    .stroke(ReadColor.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                    .frame(width: 18, height: 18)
+                    .frame(width: 40, height: 40)
+                    .background(Circle().fill(ReadColor.closeButtonBackground))
+                    .contentShape(Circle())
+            })
+            .buttonStyle(HapticButtonStyle())
+            .accessibilityLabel("Close and choose something different")
 
-            wordDisplay
+            // A bespoke bar rather than OnboardingProgressBar: the doc's
+            // own track is a RoundedRectangle(cornerRadius: 3) at height
+            // 5, not OnboardingProgressBar's Capsule at height 6, against
+            // ReadColor's own divider/primary (not onboardingTrack/
+            // onboardingText).
+            GeometryReader { geometry in
+                ZStack(alignment: .leading) {
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(ReadColor.divider)
+                    RoundedRectangle(cornerRadius: 3, style: .continuous)
+                        .fill(ReadColor.primary)
+                        .frame(width: geometry.size.width * CGFloat(indexNum + 1) / CGFloat(words.count))
+                }
+            }
+            .frame(height: 5)
+            .animation(.easeInOut(duration: 0.3), value: indexNum)
+            .accessibilityHidden(true)
+        }
+        .padding(.top, 20)
+        .padding(.horizontal, 20)
+        .frame(maxWidth: .infinity)
+        // Load-bearing, not decorative: without this, the row still
+        // respects the system's leading/trailing safe-area insets on top
+        // of the 20pt padding above (landscapeRight's sensor housing
+        // reserves the whole LEADING edge, not just the band it
+        // physically occupies, and the trailing edge picks up its own
+        // small inset too), pushing the row in from the true edges
+        // further than the doc's own flat 20px margin. The top-left
+        // corner itself is still safe from the island (see
+        // lockOrientation(to:) in ios_accessibleApp.swift) — this just
+        // stops SwiftUI from being conservative about it.
+        .ignoresSafeArea(edges: [.top, .leading, .trailing])
+    }
 
-            Spacer()
-
+    // The bottom pill: word-count/time caption (left), Back/Play/Forward
+    // (center), WPM stepper (right) — CSS grid's "1fr auto 1fr" columns,
+    // recreated the same way wordDisplay keeps its focal letter fixed at
+    // screen-center: the two OUTER groups each claim an equal share of
+    // the remaining width via .frame(maxWidth: .infinity), so the fixed-
+    // size center group ends up truly centered in the bar regardless of
+    // how wide the caption or stepper text happen to be.
+    private var bottomBar: some View {
+        HStack(spacing: 0) {
             Text("Word \(indexNum + 1) of \(words.count) · \(timeRemainingLabel)")
                 .font(.system(size: 13, weight: .semibold, design: .rounded))
                 .foregroundStyle(ReadColor.secondary)
-                .padding(.horizontal, 24)
-                .padding(.bottom, 20)
-        }
-        .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(ReadColor.background.ignoresSafeArea())
-        .overlay(alignment: .topLeading) {
-            // One HStack, not two separately-positioned pieces: putting
-            // the button and bar in the same container is what actually
-            // guarantees they read as a single aligned row — vertically
-            // centered against each other via the HStack's own default
-            // alignment, and both sharing the exact same
-            // .ignoresSafeArea treatment below, rather than the button
-            // ignoring it while the bar's own leading padding silently
-            // stacked on top of the system's leading safe-area inset
-            // (reserved edge-to-edge for the sensor housing) and pushed
-            // it much further right than the intended 16pt gap.
-            HStack(alignment: .center, spacing: 16) {
-                // Replaces the old "Choose Something Different" text
-                // button below the controls — same destination
-                // (currentPage = .choose sends the reader back to
-                // ChooseView; .onDisappear above still stops playback the
-                // same way it always did), just pinned to this row's
-                // leading edge instead.
-                Button(action: {
-                    currentPage = .choose
-                }, label: {
-                    CloseXShape()
-                        .stroke(ReadColor.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                        .frame(width: 18, height: 18)
-                        .frame(width: 40, height: 40)
-                        .background(Circle().fill(ReadColor.closeButtonBackground))
-                        .contentShape(Circle())
-                })
-                .buttonStyle(HapticButtonStyle())
-                .accessibilityLabel("Close and choose something different")
-
-                // A bespoke bar rather than OnboardingProgressBar: the
-                // doc's own track is a RoundedRectangle(cornerRadius: 3)
-                // at height 5, not OnboardingProgressBar's Capsule at
-                // height 6, against ReadColor's own divider/primary (not
-                // onboardingTrack/onboardingText).
-                GeometryReader { geometry in
-                    ZStack(alignment: .leading) {
-                        RoundedRectangle(cornerRadius: 3, style: .continuous)
-                            .fill(ReadColor.divider)
-                        RoundedRectangle(cornerRadius: 3, style: .continuous)
-                            .fill(ReadColor.primary)
-                            .frame(width: geometry.size.width * CGFloat(indexNum + 1) / CGFloat(words.count))
-                    }
-                }
-                .frame(height: 5)
-                .animation(.easeInOut(duration: 0.3), value: indexNum)
-                .accessibilityHidden(true)
-            }
-            .padding(.top, 20)
-            .padding(.leading, 20)
-            .padding(.trailing, 24)
-            .frame(maxWidth: .infinity)
-            // Load-bearing, not decorative: without this, the row still
-            // respects the system's LEADING safe-area inset on top of
-            // the 20pt padding above, pushing the whole row (button
-            // included) past the doc's intended inset from the true
-            // corner. The corner itself is still safe from the island
-            // (see this view's own doc comment above) — this just stops
-            // SwiftUI from being conservative about it.
-            .ignoresSafeArea(edges: [.top, .leading])
-        }
-    }
-
-    // Rather than one Text centered as a block (which would put the focal
-    // letter in a different screen position for every word, depending on
-    // how many letters come before/after it), "before" and "after" each
-    // get a flexible container of equal width via .frame(maxWidth: .infinity)
-    // and pull their text toward the middle with alignment. Since both
-    // containers always claim the same share of the remaining space,
-    // "center" (a fixed size, so it's never squeezed) ends up fixed at
-    // screen-center every time — which is also what keeps the fixation
-    // ticks below correctly centered on it regardless of word length.
-    private var wordDisplay: some View {
-        HStack(spacing: 0) {
-            // Muted — in this app's monochrome palette there's no separate
-            // hue to lean on the way a colored accent used to provide, so
-            // the before/after letters are pushed back with a lighter
-            // color, leaving the focal letter (plain ReadColor.primary,
-            // same .medium weight as these) to stand out through color
-            // contrast alone — the fixation ticks above/below it carry
-            // the rest of the emphasis.
-            Text(wordParts.before)
-                .foregroundStyle(ReadColor.secondary)
-                .frame(maxWidth: .infinity, alignment: .trailing)
-            Text(wordParts.center)
-                // Color contrast only, same weight as before/after — no
-                // heavier fontWeight override.
-                .foregroundStyle(ReadColor.primary)
-                .fixedSize()
-            Text(wordParts.after)
-                .foregroundStyle(ReadColor.secondary)
+                .lineLimit(1)
                 .frame(maxWidth: .infinity, alignment: .leading)
-        }
-        // Large, since this word is the whole point of the screen —
-        // everything else (progress bar, rail) is secondary to it. Applied
-        // to the HStack (rather than each Text) since font/kerning are
-        // environment values that flow down to all three. Uses
-        // focalWordSize (see @ScaledMetric above, base 104 — the doc's own
-        // font-size) rather than a plain fixed number, so this still grows
-        // for someone using a larger system text size, within a sensible
-        // clamp. ".rounded" design matches the doc's own "ui-rounded"
-        // font-family — this is still the system font, not OnboardingTheme's
-        // Quicksand/Baloo 2. ".kerning(-2)" matches the doc's own
-        // letter-spacing: -2px exactly.
-        .font(.system(size: focalWordSize, weight: .medium, design: .rounded))
-        .kerning(-2)
-        // RSVP fixation-guide ticks: small marks fixed just above and
-        // below the focal letter's position, the same reading aid a
-        // physical RSVP device's center marker provides — a constant
-        // visual anchor for where the eye should stay, independent of
-        // which word (and which letter count) is currently showing.
-        // Overlay alignment (rather than a separate absolutely-positioned
-        // view) rides on the same "before/after claim equal width" trick
-        // above, so these land exactly on the focal letter's fixed
-        // horizontal center for free. Offsets are deliberately NOT
-        // symmetric — the doc's own values are top: calc(50% - 82px) and
-        // bottom: calc(50% + 68px) against its 104px word, i.e. -82/104
-        // and +68/104 of focalWordSize, not a plain ±0.3 fraction. Capped
-        // via tickOffsetBasis (below), not focalWordSize directly: an
-        // uncapped offset tied 1:1 to focalWordSize grows without limit
-        // at the largest Dynamic Type accessibility sizes, and the top
-        // tick in particular would eventually reach up into the header
-        // row (close button + progress bar) above. The cap (130, above
-        // the 104 base) only ever engages at those largest sizes — at
-        // and below the default, focalWordSize < 130 so this is a no-op.
-        .overlay(alignment: .top) {
-            Capsule()
-                .fill(ReadColor.secondary)
-                .frame(width: 3, height: 16)
-                .offset(y: -tickOffsetBasis * 82.0 / 104.0)
-        }
-        .overlay(alignment: .bottom) {
-            Capsule()
-                .fill(ReadColor.secondary)
-                .frame(width: 3, height: 16)
-                .offset(y: tickOffsetBasis * 68.0 / 104.0)
-        }
-    }
 
-    private var tickOffsetBasis: CGFloat {
-        min(focalWordSize, 130)
-    }
+            HStack(spacing: 14) {
+                backButton
+                playPauseButton
+                forwardButton
+            }
 
-    // The fixed-width right rail: a 2×2 icon grid (Play, Stop / Back,
-    // Forward), a divider, then the WPM stepper — replacing the old
-    // linear stack of circular buttons. Icon-only (no text caption under
-    // each tile) to fit this narrower column at the same generous
-    // tap-target sizes; VoiceOver still gets the exact same wording via
-    // each button's own .accessibilityLabel, so nothing is lost for a
-    // screen reader even though sighted readers no longer see a printed
-    // word under every icon.
-    private var controlRail: some View {
-        VStack(spacing: 0) {
-            Spacer()
-
-            VStack(spacing: 14) {
-                controlGrid
-
-                Rectangle()
-                    .fill(ReadColor.divider)
-                    .frame(height: 1)
-                    .frame(maxWidth: .infinity)
-
-                // "-"/"+" buttons give an exact, easy way to change speed
-                // one step at a time — this rail has no room for the old
-                // Slider alongside them, and the stepper alone already
-                // covers the same adjustWPM(by:)/wpm state a slider would.
-                HStack(spacing: 10) {
-                    wpmStepperButton(symbol: "−", accessibilityLabel: "Decrease speed") {
-                        adjustWPM(by: -20)
-                    }
-
-                    Text("\(wpm)")
-                        .font(.system(size: 15, weight: .bold, design: .rounded))
-                        .foregroundStyle(ReadColor.primary)
-                        .frame(minWidth: 40)
-
-                    wpmStepperButton(symbol: "+", accessibilityLabel: "Increase speed") {
-                        adjustWPM(by: 20)
-                    }
+            HStack(spacing: 8) {
+                wpmStepperButton(symbol: "−", accessibilityLabel: "Decrease speed") {
+                    adjustWPM(by: -20)
                 }
+
+                Text("\(wpm) wpm")
+                    .font(.system(size: 13, weight: .bold, design: .rounded))
+                    .foregroundStyle(ReadColor.primary)
+                    .lineLimit(1)
                 // wpm has no separate .onChange(of:) here — adjustWPM(by:)
                 // itself already rebuilds the timer mid-playback (see its
                 // own doc comment), which is what the old Slider's
                 // .onChange used to do too.
 
-                Text("words / min")
-                    .font(.system(size: 11, weight: .semibold, design: .rounded))
-                    .foregroundStyle(ReadColor.secondary)
+                wpmStepperButton(symbol: "+", accessibilityLabel: "Increase speed") {
+                    adjustWPM(by: 20)
+                }
             }
-
-            Spacer()
+            .frame(maxWidth: .infinity, alignment: .trailing)
         }
-        // Plain .padding(20), matching the doc's own "padding:20px" on
-        // this div literally.
-        .padding(20)
-        .frame(width: 184)
-        .frame(maxHeight: .infinity)
-        .background(ReadColor.rail.ignoresSafeArea())
-        // Load-bearing, not decorative — same fix as mainReadingArea's
-        // header row above: without this, the rail's own LAYOUT (not
-        // just its background fill, which already ignoresSafeArea on
-        // its own) still respects the system's trailing safe-area inset
-        // on top of the 20pt padding, which read as a much bigger gap
-        // between the grid and the true right edge than the matching
-        // 20pt inset at the close button's corner. This side of the
-        // screen has no sensor housing to actually guard against, so
-        // there's nothing to be conservative about here either.
-        .ignoresSafeArea(edges: .trailing)
+        .padding(.horizontal, 20)
+        .frame(height: 76)
+        .frame(maxWidth: .infinity)
+        .background(ReadColor.rail)
+        .clipShape(RoundedRectangle(cornerRadius: 40, style: .continuous))
+        .shadow(color: ReadColor.bottomBarShadow, radius: 8, x: 0, y: 4)
+        .padding(.horizontal, 16)
+        .padding(.bottom, 16)
+        // Same reasoning as headerRow's own .ignoresSafeArea above — the
+        // doc's flat 16px bottom/left/right margin is meant against the
+        // true screen edges, not further in from wherever the system's
+        // own safe-area insets would otherwise land it.
+        .ignoresSafeArea(edges: [.bottom, .leading, .trailing])
     }
 
-    // The 2×2 grid itself: top row is Play (the one filled/primary tile)
-    // and Stop, bottom row is Back and Forward — matching the doc's own
-    // CSS grid order exactly. All four tiles share the same size (via
-    // the grid's own equal-width columns + .aspectRatio(1, .fit) on each
-    // one) and the same railTileCornerRadius corner radius.
-    private var controlGrid: some View {
-        let columns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
-        return LazyVGrid(columns: columns, spacing: 10) {
-            playPauseTile
-            stopTile
-            backTile
-            forwardTile
-        }
-    }
-
-    private var playPauseTile: some View {
+    private var playPauseButton: some View {
         // Same button throughout — only its glyph and action change
         // depending on isPlaying, rather than showing two buttons and
         // hiding whichever one doesn't apply.
@@ -2705,16 +2540,16 @@ struct ReadView: View {
                     // Two rounded bars — already inherently "rounded
                     // corner", no custom Shape needed the way the
                     // triangle below requires. No pause state in the
-                    // design doc to trace exact proportions from (2a/2b
+                    // design doc to trace exact proportions from (4a/4b
                     // only show the Play glyph), so these keep their own
                     // pre-existing size.
                     HStack(spacing: 5) {
                         RoundedRectangle(cornerRadius: 2, style: .continuous)
                             .fill(ReadColor.onPrimary)
-                            .frame(width: 6, height: 22)
+                            .frame(width: 6, height: 20)
                         RoundedRectangle(cornerRadius: 2, style: .continuous)
                             .fill(ReadColor.onPrimary)
-                            .frame(width: 6, height: 22)
+                            .frame(width: 6, height: 20)
                     }
                 } else {
                     // A plain, symmetric triangle — filled AND stroked
@@ -2730,56 +2565,29 @@ struct ReadView: View {
                             style: StrokeStyle(lineWidth: 4, lineCap: .round, lineJoin: .round)
                         )
                     }
-                    .frame(width: railIconSize, height: railIconSize)
+                    .frame(width: 26, height: 26)
                 }
             }
         })
         .buttonStyle(HapticButtonStyle())
-        // .frame(maxWidth: .infinity) + .aspectRatio(1, .fit) apply to the
-        // BUTTON itself (after its label is already fixed-size), not to
-        // the icon inside it — that's what lets the tile grow to fill its
-        // grid cell and become a perfect square without stretching or
-        // distorting the icon centered inside it. Same pattern on all
-        // four tiles below.
-        .frame(maxWidth: .infinity)
-        .aspectRatio(1, contentMode: .fit)
+        .frame(width: 62, height: 62)
         .background(ReadColor.primary)
-        .clipShape(RoundedRectangle(cornerRadius: railTileCornerRadius, style: .continuous))
+        .clipShape(Circle())
         .accessibilityLabel(isPlaying ? "Pause" : "Play")
     }
 
-    private var stopTile: some View {
-        Button(action: {
-            stop()
-        }, label: {
-            // rect x=4 y=4 width=16 height=16 rx=4 in a 24×24 box, traced
-            // directly from the design doc's own stop glyph.
-            RoundedRectangle(cornerRadius: railIconSize * 4 / 24, style: .continuous)
-                .fill(ReadColor.primary)
-                .frame(width: railIconSize * 16 / 24, height: railIconSize * 16 / 24)
-                .frame(width: railIconSize, height: railIconSize)
-        })
-        .buttonStyle(HapticButtonStyle())
-        .frame(maxWidth: .infinity)
-        .aspectRatio(1, contentMode: .fit)
-        .background(ReadColor.inactiveTileBackground)
-        .clipShape(RoundedRectangle(cornerRadius: railTileCornerRadius, style: .continuous))
-        .accessibilityLabel("Stop and rewind to the beginning")
-    }
-
-    private var backTile: some View {
+    private var backButton: some View {
         Button(action: {
             updateIndex(increment: -1)
         }, label: {
             ChevronShape(pointsLeft: true)
                 .stroke(ReadColor.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                .frame(width: railIconSize, height: railIconSize)
+                .frame(width: 22, height: 22)
         })
         .buttonStyle(HapticButtonStyle())
-        .frame(maxWidth: .infinity)
-        .aspectRatio(1, contentMode: .fit)
+        .frame(width: 48, height: 48)
         .background(ReadColor.inactiveTileBackground)
-        .clipShape(RoundedRectangle(cornerRadius: railTileCornerRadius, style: .continuous))
+        .clipShape(Circle())
         // Manually stepping while the timer is also advancing indexNum
         // would fight with playback, so stepping is disabled while playing.
         .disabled(isPlaying)
@@ -2787,19 +2595,18 @@ struct ReadView: View {
         .accessibilityLabel("Previous word")
     }
 
-    private var forwardTile: some View {
+    private var forwardButton: some View {
         Button(action: {
             updateIndex(increment: 1)
         }, label: {
             ChevronShape(pointsLeft: false)
                 .stroke(ReadColor.primary, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                .frame(width: railIconSize, height: railIconSize)
+                .frame(width: 22, height: 22)
         })
         .buttonStyle(HapticButtonStyle())
-        .frame(maxWidth: .infinity)
-        .aspectRatio(1, contentMode: .fit)
+        .frame(width: 48, height: 48)
         .background(ReadColor.inactiveTileBackground)
-        .clipShape(RoundedRectangle(cornerRadius: railTileCornerRadius, style: .continuous))
+        .clipShape(Circle())
         .disabled(isPlaying)
         .opacity(isPlaying ? 0.35 : 1.0)
         .accessibilityLabel("Next word")
@@ -2808,14 +2615,60 @@ struct ReadView: View {
     private func wpmStepperButton(symbol: String, accessibilityLabel: String, action: @escaping () -> Void) -> some View {
         Button(action: action, label: {
             Text(symbol)
-                .font(.system(size: 18, weight: .bold, design: .rounded))
+                .font(.system(size: 15, weight: .bold, design: .rounded))
                 .foregroundStyle(ReadColor.primary)
-                .frame(width: 36, height: 36)
+                .frame(width: 30, height: 30)
                 .overlay(Circle().stroke(ReadColor.divider, lineWidth: 2))
                 .contentShape(Circle())
         })
         .buttonStyle(HapticButtonStyle())
         .accessibilityLabel(accessibilityLabel)
+    }
+
+    // Rather than one Text centered as a block (which would put the focal
+    // letter in a different screen position for every word, depending on
+    // how many letters come before/after it), "before" and "after" each
+    // get a flexible container of equal width via .frame(maxWidth: .infinity)
+    // and pull their text toward the middle with alignment. Since both
+    // containers always claim the same share of the remaining space,
+    // "center" (a fixed size, so it's never squeezed) ends up fixed at
+    // screen-center every time.
+    private var wordDisplay: some View {
+        HStack(spacing: 0) {
+            // Muted — in this app's monochrome palette there's no separate
+            // hue to lean on the way a colored accent used to provide, so
+            // the before/after letters are pushed back with a lighter
+            // color, leaving the focal letter (plain ReadColor.primary,
+            // same .medium weight as these) to stand out through color
+            // contrast alone.
+            Text(wordParts.before)
+                .foregroundStyle(ReadColor.secondary)
+                .frame(maxWidth: .infinity, alignment: .trailing)
+            Text(wordParts.center)
+                // Color contrast only, same weight as before/after — no
+                // heavier fontWeight override.
+                .foregroundStyle(ReadColor.primary)
+                .fixedSize()
+            Text(wordParts.after)
+                .foregroundStyle(ReadColor.secondary)
+                .frame(maxWidth: .infinity, alignment: .leading)
+        }
+        // Large, since this word is the whole point of the screen —
+        // everything else (progress bar, bottom bar) is secondary to it.
+        // Applied to the HStack (rather than each Text) since font/
+        // kerning are environment values that flow down to all three.
+        // Uses focalWordSize (see @ScaledMetric above, base 100 — the
+        // doc's own font-size) rather than a plain fixed number, so this
+        // still grows for someone using a larger system text size, within
+        // a sensible clamp. ".rounded" design matches the doc's own
+        // "ui-rounded" font-family — this is still the system font, not
+        // OnboardingTheme's Quicksand/Baloo 2. ".kerning(-2)" matches the
+        // doc's own letter-spacing: -2px exactly. No fixation ticks here
+        // — 4a/4b's markup doesn't have them (unlike the older side-rail
+        // design this replaced), so they're gone rather than kept as a
+        // leftover from a different layout.
+        .font(.system(size: focalWordSize, weight: .medium, design: .rounded))
+        .kerning(-2)
     }
 }
 
