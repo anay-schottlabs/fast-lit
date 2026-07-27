@@ -2233,16 +2233,13 @@ struct ReadView: View {
 
     // Shared by all four rail tiles below so their icon and corner radius
     // stay a single source of truth instead of four independently-typed
-    // literals that could drift apart again. Values (28pt icon, 18pt
-    // corner radius) are traced from the design doc's own 2a/2b markup
-    // (claude.ai/design project bc14e680, "Read Page Redesign -
-    // Landscape.dc.html") — NOT normalized to a uniform footprint across
-    // the four glyphs the way an earlier pass here guessed at; the real
-    // doc's own icons are different relative sizes (chevron ~25% of its
-    // box, triangle ~42%, stop square ~67%), so ChevronShape/
-    // PlayTriangleShape/stopTile below trace those exact proportions.
-    private let railIconSize: CGFloat = 28
-    private let railTileCornerRadius: CGFloat = 18
+    // literals that could drift apart again. The design doc's own literal
+    // 28pt/18pt read as too small once actually on screen, so these are
+    // scaled up ~1.57x from that baseline (kept proportional, so the
+    // icon-to-tile ratio each glyph traces below is unchanged) rather
+    // than picked from scratch.
+    private let railIconSize: CGFloat = 44
+    private let railTileCornerRadius: CGFloat = 28
 
     // "M:SS left" at the current wpm, based on however many words remain
     // after the one currently showing — summed via pauseBeats(after:)
@@ -2473,7 +2470,7 @@ struct ReadView: View {
             Spacer()
         }
         .padding(20)
-        .frame(width: 184)
+        .frame(width: 260)
         .frame(maxHeight: .infinity)
         .background(Color.onboardingCard.ignoresSafeArea())
     }
@@ -2484,8 +2481,8 @@ struct ReadView: View {
     // the grid's own equal-width columns + .aspectRatio(1, .fit) on each
     // one) and the same railTileCornerRadius corner radius.
     private var controlGrid: some View {
-        let columns = [GridItem(.flexible(), spacing: 10), GridItem(.flexible(), spacing: 10)]
-        return LazyVGrid(columns: columns, spacing: 10) {
+        let columns = [GridItem(.flexible(), spacing: 14), GridItem(.flexible(), spacing: 14)]
+        return LazyVGrid(columns: columns, spacing: 14) {
             playPauseTile
             stopTile
             backTile
@@ -2566,7 +2563,7 @@ struct ReadView: View {
         .buttonStyle(HapticButtonStyle())
         .frame(maxWidth: .infinity)
         .aspectRatio(1, contentMode: .fit)
-        .background(Color.onboardingText.opacity(0.05))
+        .background(Color.onboardingText.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: railTileCornerRadius, style: .continuous))
         .accessibilityLabel("Stop and rewind to the beginning")
     }
@@ -2582,7 +2579,7 @@ struct ReadView: View {
         .buttonStyle(HapticButtonStyle())
         .frame(maxWidth: .infinity)
         .aspectRatio(1, contentMode: .fit)
-        .background(Color.onboardingText.opacity(0.05))
+        .background(Color.onboardingText.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: railTileCornerRadius, style: .continuous))
         // Manually stepping while the timer is also advancing indexNum
         // would fight with playback, so stepping is disabled while playing.
@@ -2602,7 +2599,7 @@ struct ReadView: View {
         .buttonStyle(HapticButtonStyle())
         .frame(maxWidth: .infinity)
         .aspectRatio(1, contentMode: .fit)
-        .background(Color.onboardingText.opacity(0.05))
+        .background(Color.onboardingText.opacity(0.08))
         .clipShape(RoundedRectangle(cornerRadius: railTileCornerRadius, style: .continuous))
         .disabled(isPlaying)
         .opacity(isPlaying ? 0.35 : 1.0)
