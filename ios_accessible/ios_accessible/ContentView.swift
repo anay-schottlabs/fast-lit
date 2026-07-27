@@ -699,16 +699,34 @@ private struct AccountChoiceScreen: View {
 
     var body: some View {
         VStack(spacing: Spacing.medium) {
+            if showProgress {
+                OnboardingProgressBar(step: 4, total: 5)
+                    .padding(.bottom, Spacing.small)
+            }
+
+            // The smallest, calmest size this mascot is ever drawn at —
+            // and, per the design, the only step with no glow or
+            // sparkles at all, since by this point a reader's attention
+            // should be entirely on the choice itself.
+            OnboardingMascot(size: 56, sparkleCount: 0, showsGlow: false)
+
+            OnboardingPageHeader(
+                title: "Who's Joining Us?",
+                titleSize: 25,
+                subtitle: "Pick whichever one sounds like you.",
+                subtitleSize: 15
+            )
+
             // DEV-ONLY: skips straight past both the library/reader
             // forms AND ChooseView's own catalog picker, landing
             // directly in ReadView with an arbitrary catalog item — for
             // exercising ReadView itself (the piece under active
             // development/testing right now) without re-walking the
-            // whole account flow every time. At the very top of the page
-            // (rather than down by "Go Back") so it's reachable without
-            // scrolling past the rest of the screen first. #if DEBUG
-            // keeps this out of Release/App Store builds entirely, not
-            // just visually hidden.
+            // whole account flow every time. Right under the subtitle,
+            // above the actual Library/Reader cards, so it reads as a
+            // dev aside rather than a third real choice. #if DEBUG keeps
+            // this out of Release/App Store builds entirely, not just
+            // visually hidden.
             #if DEBUG
             if let currentPage, let contentToRead {
                 Button(action: {
@@ -738,24 +756,6 @@ private struct AccountChoiceScreen: View {
                 }
             }
             #endif
-
-            if showProgress {
-                OnboardingProgressBar(step: 4, total: 5)
-                    .padding(.bottom, Spacing.small)
-            }
-
-            // The smallest, calmest size this mascot is ever drawn at —
-            // and, per the design, the only step with no glow or
-            // sparkles at all, since by this point a reader's attention
-            // should be entirely on the choice itself.
-            OnboardingMascot(size: 56, sparkleCount: 0, showsGlow: false)
-
-            OnboardingPageHeader(
-                title: "Who's Joining Us?",
-                titleSize: 25,
-                subtitle: "Pick whichever one sounds like you.",
-                subtitleSize: 15
-            )
 
             OnboardingSelectableCard(
                 leading: OnboardingIconTile(systemImage: "books.vertical.fill"),
