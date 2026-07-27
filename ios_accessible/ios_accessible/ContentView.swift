@@ -2193,6 +2193,18 @@ struct ReadView: View {
     // reference to it, not the timer's own state.
     @State private var timer: Timer? = nil
 
+    // When the word currently on screen started its hold — set fresh in
+    // scheduleNextAdvance() every time it (re)commits to a hold duration
+    // for whichever word is now current (a fresh word advancing into
+    // view, or play()/adjustWPM() restarting the current word's hold at
+    // a new speed). timeRemainingLabel(asOf:) below uses this to
+    // subtract elapsed real time from the current word's own hold, which
+    // is what makes the displayed countdown tick smoothly every second
+    // instead of holding flat for however many beats the current word is
+    // worth (e.g. 3.5 beats after a sentence-ending period) and then
+    // jumping down all at once the moment it advances.
+    @State private var wordShownAt: Date = Date()
+
     // @ScaledMetric ties a value to Dynamic Type the same way a built-in
     // text style would, but for a plain number rather than a Font — the
     // base value below (100, the design doc's own literal font-size for
@@ -2309,6 +2321,7 @@ struct ReadView: View {
     // ordinary word actually requires.
     private func scheduleNextAdvance() -> Void {
         let interval = (60.0 / Double(wpm)) * pauseBeats(after: words[indexNum])
+        wordShownAt = Date()
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
             // Stop instead of advancing once the last word is reached, so
             // playback doesn't keep firing forever with nothing left to show.
@@ -2352,19 +2365,35 @@ struct ReadView: View {
     // after the one currently showing — summed via pauseBeats(after:)
     // rather than assuming a flat 1 beat per word, so a passage full of
     // commas and periods doesn't show a "time left" that's optimistic
-    // about how long it'll actually take to finish at this speed. Purely
-    // derived from existing state (words, indexNum, wpm), nothing new is
-    // stored, so this can't drift out of sync the way a separately-tracked
-    // countdown could.
-    private var timeRemainingLabel: String {
+    // about how long it'll actually take to finish at this speed. Takes
+    // "now" rather than reading Date() internally so the TimelineView
+    // driving it (see mainReadingArea below) controls exactly when this
+    // recomputes.
+    //
+    // The current word's own remaining hold is handled separately from
+    // the ones after it: while playing, real time elapsed since
+    // wordShownAt is subtracted from its full hold duration, so the
+    // countdown actually ticks down second by second through a long
+    // pause (e.g. 3.5 beats after a period) instead of sitting flat
+    // for the word's whole hold and then jumping down all at once the
+    // moment it advances — which is what a plain sum over
+    // pauseBeats(after:) for every remaining word, current one
+    // included, used to do. While paused, elapsed is treated as 0 (the
+    // full current-word duration counts as "still remaining"), matching
+    // pause()/adjustWPM()'s own behavior of restarting a word's hold
+    // fully rather than resuming a partial one.
+    private func timeRemainingLabel(asOf now: Date) -> String {
         let lastIndex = words.count - 1
         guard indexNum < lastIndex else {
             return "0:00 left"
         }
-        let remainingBeats = (indexNum..<lastIndex).reduce(into: 0.0) { total, i in
+        let futureBeats = (indexNum + 1..<lastIndex).reduce(into: 0.0) { total, i in
             total += pauseBeats(after: words[i])
         }
-        let secondsRemaining = Int((remainingBeats * 60.0 / Double(wpm)).rounded())
+        let currentWordDuration = pauseBeats(after: words[indexNum]) * 60.0 / Double(wpm)
+        let elapsedInCurrentWord = isPlaying ? min(now.timeIntervalSince(wordShownAt), currentWordDuration) : 0
+        let secondsRemainingRaw = (currentWordDuration - elapsedInCurrentWord) + futureBeats * 60.0 / Double(wpm)
+        let secondsRemaining = max(0, Int(secondsRemainingRaw.rounded()))
         return String(format: "%d:%02d left", secondsRemaining / 60, secondsRemaining % 60)
     }
 
@@ -2477,11 +2506,18 @@ struct ReadView: View {
     // how wide the caption or stepper text happen to be.
     private var bottomBar: some View {
         HStack(spacing: 0) {
-            Text("Word \(indexNum + 1) of \(words.count) · \(timeRemainingLabel)")
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundStyle(ReadColor.secondary)
-                .lineLimit(1)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            // TimelineView (not a plain Text) is what makes this redraw
+            // once a second on its own — without it, this only recomputes
+            // when indexNum/wpm/isPlaying change, i.e. it'd sit frozen for
+            // however long the current word holds and then jump, same
+            // problem timeRemainingLabel(asOf:) itself is solving.
+            TimelineView(.periodic(from: .now, by: 1)) { context in
+                Text("Word \(indexNum + 1) of \(words.count) · \(timeRemainingLabel(asOf: context.date))")
+            }
+            .font(.system(size: 13, weight: .semibold, design: .rounded))
+            .foregroundStyle(ReadColor.secondary)
+            .lineLimit(1)
+            .frame(maxWidth: .infinity, alignment: .leading)
 
             HStack(spacing: 14) {
                 backButton
