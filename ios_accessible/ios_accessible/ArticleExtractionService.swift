@@ -86,14 +86,55 @@ final class ArticleExtractionService: NSObject, WKNavigationDelegate {
         // bridge for a long article's textContent than WKWebView's
         // object-graph bridging, which is pickier about non-JSON-safe
         // values.
+        //
+        // Deliberately NOT article.textContent directly: that's the DOM's
+        // native Node.textContent, which concatenates every text node
+        // with zero separator between them — a paragraph ending "...end
+        // of sentence." immediately followed by a new paragraph starting
+        // "Next line..." comes back as one glued-together
+        // "sentence.Next" with nothing between them, which then reads as
+        // a single (wrong) RSVP word. Walking article.content's own DOM
+        // ourselves and inserting a paragraph break at each block-level
+        // element's start fixes that at the source, before ReadView ever
+        // sees the text, rather than trying to guess it back out later.
         let script = readabilitySource + """
         (function () {
             try {
                 var article = new Readability(document.cloneNode(true)).parse();
                 if (!article || !article.textContent) { return null; }
+
+                var textContent = article.textContent;
+                if (article.content) {
+                    var container = document.createElement("div");
+                    container.innerHTML = article.content;
+                    var blockTags = {
+                        P: 1, DIV: 1, LI: 1, BLOCKQUOTE: 1, PRE: 1, TR: 1,
+                        H1: 1, H2: 1, H3: 1, H4: 1, H5: 1, H6: 1, BR: 1
+                    };
+                    var parts = [];
+                    (function walk(node) {
+                        if (node.nodeType === 3) {
+                            parts.push(node.textContent);
+                            return;
+                        }
+                        if (node.nodeType !== 1) { return; }
+                        if (blockTags[node.tagName] && parts.length > 0) {
+                            parts.push("\\n\\n");
+                        }
+                        for (var i = 0; i < node.childNodes.length; i++) {
+                            walk(node.childNodes[i]);
+                        }
+                    })(container);
+                    var walked = parts.join("")
+                        .replace(/\\n{3,}/g, "\\n\\n")
+                        .replace(/[ \\t]+\\n/g, "\\n")
+                        .trim();
+                    if (walked) { textContent = walked; }
+                }
+
                 return JSON.stringify({
                     title: article.title || "",
-                    textContent: article.textContent,
+                    textContent: textContent,
                     excerpt: article.excerpt || ""
                 });
             } catch (e) {

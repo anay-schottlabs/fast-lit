@@ -2488,7 +2488,7 @@ struct ReadView: View {
     // computed property originally, which reads fine for a short passage
     // but turned out to be the actual cause behind "RSVP skips words on
     // long passages" — words is read from several places per single word
-    // tick (scheduleNextAdvance's pauseBeats(after: words[indexNum]),
+    // tick (scheduleNextAdvance's pauseBeats(afterWordAt: indexNum),
     // wordParts, the progress bar's words.count, the caption labels), and
     // at 600 wpm that's every ~100ms. Re-splitting and re-allocating a
     // ~400-word array (the "Deep Sea" passage) that many times a second
@@ -2500,14 +2500,63 @@ struct ReadView: View {
     // splitting once here is correct, not just faster.
     private let words: [String]
 
-    // Custom init only because "words" above needs "content" to compute
-    // itself once, up front — every other property here still just takes
-    // its own declared default the way the compiler-synthesized
-    // memberwise init would have handed it.
+    // Parallel to words — hadLineBreakAfter[i] is true when the run of
+    // whitespace right after words[i] in the source text contained a
+    // newline (a paragraph break), not just a single space. A plain
+    // `.split(whereSeparator: isWhitespace)` (this file's old approach)
+    // throws that distinction away entirely, which is what let sentence-
+    // ending punctuation from one paragraph sit right next to the first
+    // word of the next with no beat between them — pauseBeats(afterWordAt:)
+    // below reads this to give line breaks their own, longer pause.
+    private let hadLineBreakAfter: [Bool]
+
+    // Custom init only because "words"/"hadLineBreakAfter" above need
+    // "content" to compute themselves once, up front — every other
+    // property here still just takes its own declared default the way
+    // the compiler-synthesized memberwise init would have handed it.
     init(content: ReadableContent, currentPage: Binding<Page>) {
         self.content = content
         self._currentPage = currentPage
-        self.words = content.text.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+        let tokenized = Self.tokenize(content.text)
+        self.words = tokenized.words
+        self.hadLineBreakAfter = tokenized.hadLineBreakAfter
+    }
+
+    // Hand-rolled instead of `.split(whereSeparator:)` specifically to
+    // keep the one thing that simpler call throws away: whether each
+    // gap between words was a newline or just a space. Every
+    // whitespace character still splits words exactly the same way
+    // .split(whereSeparator: { $0.isWhitespace }) did — this only adds
+    // bookkeeping on top of that, not different splitting behavior.
+    private static func tokenize(_ text: String) -> (words: [String], hadLineBreakAfter: [Bool]) {
+        var words: [String] = []
+        var hadLineBreakAfter: [Bool] = []
+        var currentWord = ""
+        var sawLineBreakSinceLastWord = false
+
+        for character in text {
+            if character.isWhitespace {
+                if !currentWord.isEmpty {
+                    words.append(currentWord)
+                    hadLineBreakAfter.append(false)
+                    currentWord = ""
+                }
+                if character.isNewline {
+                    sawLineBreakSinceLastWord = true
+                }
+            } else {
+                if sawLineBreakSinceLastWord, let lastIndex = hadLineBreakAfter.indices.last {
+                    hadLineBreakAfter[lastIndex] = true
+                }
+                sawLineBreakSinceLastWord = false
+                currentWord.append(character)
+            }
+        }
+        if !currentWord.isEmpty {
+            words.append(currentWord)
+            hadLineBreakAfter.append(false)
+        }
+        return (words, hadLineBreakAfter)
     }
 
     // Splits the current word into the letters before its middle letter (the
@@ -2555,7 +2604,7 @@ struct ReadView: View {
 
     // Closing quotes/brackets that can trail the REAL punctuation mark —
     // e.g. the closing " in `He said, "Stop."` — stripped off first (see
-    // pauseBeats(after:) below) so the mark underneath still gets
+    // pauseBeats(afterWordAt:) below) so the mark underneath still gets
     // recognized instead of being masked by whatever's wrapping it.
     // Covers straight and curly quotes, both common angle-quote
     // directions, and the three bracket styles, since any of them could
@@ -2563,6 +2612,15 @@ struct ReadView: View {
     private static let trailingClosingCharacters: Set<Character> = [
         "\"", "'", "”", "’", "»", "«", "›", "‹", ")", "]", "}",
     ]
+
+    // Bigger than sentenceEndCharacters' 3.5 — a paragraph break is a
+    // bigger pause for a reader's eyes than even a sentence ending
+    // mid-paragraph, so it gets the longest hold of the four beat
+    // amounts, checked first in pauseBeats(afterWordAt:) below and
+    // taking priority over whatever punctuation the word itself ends
+    // with (most line breaks land right after sentence-ending
+    // punctuation anyway, but this doesn't depend on that being true).
+    private static let lineBreakBeats: Double = 4.5
 
     // How many "beats" (one beat = the current wpm's own word-to-word
     // interval) to hold on a given word before advancing past it —
@@ -2572,8 +2630,11 @@ struct ReadView: View {
     // first so punctuation like `."` (a period immediately before a
     // closing quote) is still recognized as sentence-ending, not masked
     // by the quote sitting on top of it.
-    private func pauseBeats(after word: String) -> Double {
-        var characters = Array(word)
+    private func pauseBeats(afterWordAt index: Int) -> Double {
+        if hadLineBreakAfter[index] {
+            return Self.lineBreakBeats
+        }
+        var characters = Array(words[index])
         while let last = characters.last, Self.trailingClosingCharacters.contains(last) {
             characters.removeLast()
         }
@@ -2599,13 +2660,13 @@ struct ReadView: View {
     }
 
     // A single one-shot Timer (not a repeating one) sized to however long
-    // the word CURRENTLY shown should hold — see pauseBeats(after:) —
+    // the word CURRENTLY shown should hold — see pauseBeats(afterWordAt:) —
     // which, once it fires, advances and schedules the next one the same
     // way. A repeating Timer can't vary its own interval between ticks,
     // which is what showing a longer pause after a period than after an
     // ordinary word actually requires.
     private func scheduleNextAdvance() -> Void {
-        let interval = (60.0 / Double(wpm)) * pauseBeats(after: words[indexNum])
+        let interval = (60.0 / Double(wpm)) * pauseBeats(afterWordAt: indexNum)
         wordShownAt = Date()
         timer = Timer.scheduledTimer(withTimeInterval: interval, repeats: false) { _ in
             // Stop instead of advancing once the last word is reached, so
@@ -2647,7 +2708,7 @@ struct ReadView: View {
     }
 
     // "M:SS left" at the current wpm, based on however many words remain
-    // after the one currently showing — summed via pauseBeats(after:)
+    // after the one currently showing — summed via pauseBeats(afterWordAt:)
     // rather than assuming a flat 1 beat per word, so a passage full of
     // commas and periods doesn't show a "time left" that's optimistic
     // about how long it'll actually take to finish at this speed. Takes
@@ -2662,7 +2723,7 @@ struct ReadView: View {
     // pause (e.g. 3.5 beats after a period) instead of sitting flat
     // for the word's whole hold and then jumping down all at once the
     // moment it advances — which is what a plain sum over
-    // pauseBeats(after:) for every remaining word, current one
+    // pauseBeats(afterWordAt:) for every remaining word, current one
     // included, used to do. While paused, elapsed is treated as 0 (the
     // full current-word duration counts as "still remaining"), matching
     // pause()/adjustWPM()'s own behavior of restarting a word's hold
@@ -2673,9 +2734,9 @@ struct ReadView: View {
             return "0:00 left"
         }
         let futureBeats = (indexNum + 1..<lastIndex).reduce(into: 0.0) { total, i in
-            total += pauseBeats(after: words[i])
+            total += pauseBeats(afterWordAt: i)
         }
-        let currentWordDuration = pauseBeats(after: words[indexNum]) * 60.0 / Double(wpm)
+        let currentWordDuration = pauseBeats(afterWordAt: indexNum) * 60.0 / Double(wpm)
         let elapsedInCurrentWord = isPlaying ? min(now.timeIntervalSince(wordShownAt), currentWordDuration) : 0
         let secondsRemainingRaw = (currentWordDuration - elapsedInCurrentWord) + futureBeats * 60.0 / Double(wpm)
         let secondsRemaining = max(0, Int(secondsRemainingRaw.rounded()))
@@ -2690,7 +2751,7 @@ struct ReadView: View {
     // itself does, which a normal body recompute already covers.
     private var totalDurationLabel: String {
         let totalBeats = (0..<words.count - 1).reduce(into: 0.0) { total, i in
-            total += pauseBeats(after: words[i])
+            total += pauseBeats(afterWordAt: i)
         }
         let totalSeconds = Int((totalBeats * 60.0 / Double(wpm)).rounded())
         return String(format: "%d:%02d total", totalSeconds / 60, totalSeconds % 60)
