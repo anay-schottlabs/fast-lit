@@ -464,6 +464,25 @@ struct SettingsView: View {
     // presents this one, not this view itself.
     @Binding var isShowingSettings: Bool
 
+    // Sent to .home by "Reset App" below, the same way LibraryHomeView/
+    // ReaderAccountView's own Sign Out sends it to .account — reset goes
+    // one step further, back to the very start of onboarding rather than
+    // just the account picker.
+    @Binding var currentPage: Page
+
+    // Cleared to nil by "Reset App" below, same reasoning as Sign Out's
+    // own copy of this in LibraryHomeView/ReaderAccountView: without
+    // this, AccountView (reached again once onboarding finishes a second
+    // time) would see it already set and skip its own picker.
+    @Binding var accountType: AccountType?
+
+    // Only ReaderAccountView has this concept — LibraryHomeView passes
+    // nothing here, since a library account was never "joined" to
+    // anything. nil-safe throughout "Reset App" below.
+    var joinedLibraryUid: Binding<String?>? = nil
+
+    @Environment(AuthService.self) private var authService
+
     // The same key HomeView's own onboarding theme step writes to, so a
     // change here takes effect (and persists) exactly the same way.
     @AppStorage("appColorScheme") private var appColorSchemeRaw: String = AppColorScheme.system.rawValue
@@ -479,6 +498,16 @@ struct SettingsView: View {
     // instant it's flipped, the same way appColorSchemeRaw's own live
     // effect works.
     @AppStorage("hapticsEnabled") private var hapticsEnabled: Bool = true
+
+    // The same key HomeView's body reads to decide whether to skip
+    // straight to AccountView's picker — "Reset App" below is what flips
+    // this back to false.
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
+
+    // Guards the destructive reset below behind a confirmation, so a
+    // stray tap can't silently sign someone out and drop them back into
+    // onboarding.
+    @State private var isShowingResetConfirmation: Bool = false
 
     // Treats the untouched default ("system," from before this app
     // offered a real choice) as "Light" for DISPLAY purposes only — same
@@ -498,6 +527,7 @@ struct SettingsView: View {
                 nameSection
                 appearanceSection
                 hapticsSection
+                resetSection
 
                 Spacer(minLength: Spacing.large)
 
@@ -510,6 +540,29 @@ struct SettingsView: View {
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.onboardingBackground.ignoresSafeArea())
+        .alert("Reset App?", isPresented: $isShowingResetConfirmation) {
+            Button("Cancel", role: .cancel) {}
+            Button("Reset", role: .destructive) {
+                resetApp()
+            }
+        } message: {
+            Text("This signs you out and takes you back to the very start. Your name and settings will need to be entered again.")
+        }
+    }
+
+    // try? — same reasoning as Sign Out's own copy of this call
+    // elsewhere: failing to sign out of Firebase isn't something worth
+    // blocking the reset over, since every field this actually needs to
+    // clear (accountType, joinedLibraryUid, hasCompletedOnboarding,
+    // readerName) is local either way.
+    private func resetApp() {
+        try? authService.signOut()
+        accountType = nil
+        joinedLibraryUid?.wrappedValue = nil
+        readerName = ""
+        hasCompletedOnboarding = false
+        isShowingSettings = false
+        currentPage = .home
     }
 
     private var nameSection: some View {
@@ -589,6 +642,29 @@ struct SettingsView: View {
                 // recent iOS versions render that with a translucent glass
                 // material that doesn't fit this flow's flat, opaque look.
                 .toggleStyle(OnboardingToggleStyle())
+        }
+        .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // Signs out and clears every piece of onboarding/account state this
+    // app tracks, sending the reader all the way back to HomeView's first
+    // welcome screen — for someone who wants a genuinely fresh start
+    // (new name, re-pick light/dark, join a different library) rather
+    // than the ordinary Sign Out already available from their own
+    // account's home screen, which only returns to the account picker.
+    private var resetSection: some View {
+        VStack(alignment: .leading, spacing: Spacing.small) {
+            Text("Reset")
+                .font(OnboardingFont.body(16, weight: .semiBold))
+                .foregroundStyle(Color.onboardingTextSecondary)
+
+            Button(action: {
+                isShowingResetConfirmation = true
+            }, label: {
+                Text("Reset App")
+                    .frame(maxWidth: .infinity)
+            })
+            .buttonStyle(OnboardingSecondaryButtonStyle())
         }
         .frame(maxWidth: .infinity, alignment: .leading)
     }
@@ -1464,7 +1540,7 @@ struct LibraryHomeView: View {
         if isManagingCatalog {
             LibraryCatalogManagementView(isManagingCatalog: $isManagingCatalog)
         } else if isShowingSettings {
-            SettingsView(isShowingSettings: $isShowingSettings)
+            SettingsView(isShowingSettings: $isShowingSettings, currentPage: $currentPage, accountType: $accountType)
         } else {
             homeContent
         }
@@ -1733,7 +1809,7 @@ struct ReaderAccountView: View {
     var body: some View {
         if joinedLibraryUid != nil {
             if isShowingSettings {
-                SettingsView(isShowingSettings: $isShowingSettings)
+                SettingsView(isShowingSettings: $isShowingSettings, currentPage: $currentPage, accountType: $accountType, joinedLibraryUid: $joinedLibraryUid)
             } else {
                 readerHomeContent
             }
