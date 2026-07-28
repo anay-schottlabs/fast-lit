@@ -42,6 +42,12 @@ final class ShareViewController: UIViewController {
     }
     private var hostingController: UIHostingController<ShareStatusView>?
 
+    // Guards against starting extraction twice — viewDidAppear can fire
+    // more than once (e.g. if the system briefly re-presents this view),
+    // but extractSharedURL()'s work (loadItem, then open()) should only
+    // ever run once per share.
+    private var hasStartedExtraction = false
+
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -57,7 +63,22 @@ final class ShareViewController: UIViewController {
         ])
         hosting.didMove(toParent: self)
         hostingController = hosting
+    }
 
+    // extractSharedURL() (and, downstream of it, extensionContext.open())
+    // starts here instead of viewDidLoad — viewDidLoad fires before this
+    // view is actually on screen, and loadItem for a URL is fast enough
+    // that open() was reaching Apple's private implementation before the
+    // extension's own scene had finished becoming active. That lines up
+    // with what direct instrumentation showed: open()'s completion firing
+    // in under a millisecond, well before any real cross-process launch
+    // could round-trip — consistent with a readiness check failing
+    // locally, not a genuine system-level rejection. viewDidAppear is the
+    // earliest point UIKit confirms this view is actually presented.
+    override func viewDidAppear(_ animated: Bool) {
+        super.viewDidAppear(animated)
+        guard !hasStartedExtraction else { return }
+        hasStartedExtraction = true
         extractSharedURL()
     }
 
@@ -104,6 +125,18 @@ final class ShareViewController: UIViewController {
             return
         }
 
+        attemptOpen(callbackURL, remainingRetries: 2)
+    }
+
+    // open()'s failure was clocked at under a millisecond — far faster
+    // than a real cross-process launch — which points to a local
+    // readiness race rather than a hard rejection (see viewDidAppear's
+    // own comment). A couple of short-delayed retries are cheap and give
+    // that race a chance to resolve before falling back to the App
+    // Group-only path; completeRequest still only ever fires once, from
+    // whichever branch — success, out of retries, or malformed URL —
+    // actually finishes first.
+    private func attemptOpen(_ callbackURL: URL, remainingRetries: Int) {
         // completeRequest nested inside open's completion handler (not
         // fired alongside it) — the documented-safe ordering, so the
         // system has actually accepted the open-app request before this
@@ -112,10 +145,15 @@ final class ShareViewController: UIViewController {
         // theoretical one — shown to the reader instead of dismissed
         // silently.
         extensionContext?.open(callbackURL) { [weak self] success in
+            guard let self else { return }
             if success {
-                self?.extensionContext?.completeRequest(returningItems: nil, completionHandler: nil)
+                self.extensionContext?.completeRequest(returningItems: nil, completionHandler: nil)
+            } else if remainingRetries > 0 {
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.25) {
+                    self.attemptOpen(callbackURL, remainingRetries: remainingRetries - 1)
+                }
             } else {
-                self?.showNeedsManualOpen()
+                self.showNeedsManualOpen()
             }
         }
     }
