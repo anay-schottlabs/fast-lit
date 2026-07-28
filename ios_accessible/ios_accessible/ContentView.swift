@@ -62,6 +62,26 @@ struct ContentView: View {
     // asking the same question a second time.
     @State private var accountType: AccountType? = nil
 
+    // Set by .onOpenURL below when the Share Extension hands back a
+    // fastlit://share?url=... callback — the article URL a reader shared
+    // from Safari (or any other app). .task(id:) below picks this up and
+    // runs extraction; kept as its own @State (not going straight into
+    // contentToRead) since there's real async work between "URL arrived"
+    // and "have a ReadableContent to show."
+    @State private var pendingSharedURL: URL? = nil
+
+    // True only while ArticleExtractionService is fetching + parsing a
+    // shared URL — drives the spinner overlay below, so "automatically
+    // open in reader mode" still shows SOMETHING during the one
+    // unavoidable async step (the page has to actually load).
+    @State private var isExtractingSharedArticle: Bool = false
+
+    // Set if extraction throws — see ArticleExtractionError's own cases
+    // for why a shared link can fail in several genuinely different ways
+    // (dead link, paywall, timeout) that deserve their own message rather
+    // than a single generic "something went wrong."
+    @State private var sharedArticleExtractionError: String? = nil
+
     // Computed property SwiftUI calls whenever it needs to redraw the screen.
     // "some View" = "returns some type conforming to View, exact type not spelled out."
     var body: some View {
@@ -105,10 +125,93 @@ struct ContentView: View {
                     // "if let" only unwraps and shows ReadView once contentToRead is
                     // actually set, which it always is by the time we reach this page.
                     if let contentToRead {
+                        // .id(contentToRead.id) — load-bearing, not
+                        // decorative. ReadView's own words array is a
+                        // "let" computed once in its init, but indexNum/
+                        // isPlaying/timer are all @State, keyed by VIEW
+                        // IDENTITY, not by content. Every path into .read
+                        // before shared articles existed left .read and
+                        // came back (ChooseView's onAccept), which reset
+                        // that identity as a side effect. Sharing a
+                        // SECOND article while already mid-read is the
+                        // first path where contentToRead can change while
+                        // currentPage stays .read the whole time — without
+                        // this .id(), SwiftUI would reuse the OLD ReadView
+                        // instance, words would shrink to the new
+                        // article's length, but indexNum would still be
+                        // wherever the reader left off in the old one,
+                        // which can index past the end of the new words
+                        // array and crash.
                         ReadView(content: contentToRead, currentPage: $currentPage)
+                            .id(contentToRead.id)
                     }
                 }
             }
+
+            // Full-screen spinner while a shared article is being fetched
+            // + parsed — the one unavoidable delay between "tapped Fast
+            // Lit in the share sheet" and actually landing in ReadView,
+            // since the page has to load somewhere before Readability.js
+            // can pull real article text out of it.
+            if isExtractingSharedArticle {
+                ZStack {
+                    Color.black.opacity(0.4).ignoresSafeArea()
+                    VStack(spacing: 16) {
+                        ProgressView()
+                            .tint(.white)
+                        Text("Opening article…")
+                            .foregroundStyle(.white)
+                    }
+                }
+            }
+        }
+        // fastlit://share?url=<percent-encoded article URL> — the only
+        // callback ShareExtension/ShareViewController.swift ever sends.
+        // Attached here (not in ios_accessibleApp.swift's WindowGroup)
+        // since ContentView is that WindowGroup's sole content anyway, and
+        // keeping it here means ios_accessibleApp.swift needs zero edits —
+        // sidesteps having to reason about its own Firebase-init-ordering
+        // comment (see that file) for a code path that has no Firebase
+        // dependency in the first place.
+        .onOpenURL { url in
+            guard
+                url.scheme == "fastlit", url.host == "share",
+                let components = URLComponents(url: url, resolvingAgainstBaseURL: false),
+                let encodedURL = components.queryItems?.first(where: { $0.name == "url" })?.value,
+                let articleURL = URL(string: encodedURL)
+            else { return }
+            pendingSharedURL = articleURL
+        }
+        // .task(id:) (not .onChange) so this automatically re-runs — with
+        // its own fresh isExtractingSharedArticle/error state — if a
+        // reader shares a SECOND link while still on this same
+        // ContentView instance (which is always, since it's the app's one
+        // root view); .onChange would need that restart logic spelled out
+        // by hand.
+        .task(id: pendingSharedURL) {
+            guard let pendingSharedURL else { return }
+            isExtractingSharedArticle = true
+            sharedArticleExtractionError = nil
+            defer { isExtractingSharedArticle = false }
+            do {
+                let content = try await ArticleExtractionService.extract(from: pendingSharedURL)
+                contentToRead = content
+                currentPage = .read
+            } catch {
+                sharedArticleExtractionError = error.localizedDescription
+            }
+            self.pendingSharedURL = nil
+        }
+        .alert(
+            "Couldn't Open Article",
+            isPresented: Binding(
+                get: { sharedArticleExtractionError != nil },
+                set: { if !$0 { sharedArticleExtractionError = nil } }
+            )
+        ) {
+            Button("OK") { sharedArticleExtractionError = nil }
+        } message: {
+            Text(sharedArticleExtractionError ?? "")
         }
     }
 }
@@ -3171,10 +3274,14 @@ struct ReadableContentDetailView: View {
 }
 
 // Identifiable requires an "id" so List/ForEach/.sheet(item:) can tell rows
-// apart. id is the Firestore document ID from the "catalog" collection
-// (see AuthService.fetchCatalog) rather than a locally-generated UUID —
-// this content lives in Firestore now, imported once via
-// scripts/import-catalog.js, not shipped as static data in the app.
+// apart. For catalog content, id is the Firestore document ID (see
+// AuthService.fetchCatalog) — that content lives in Firestore, imported
+// once via scripts/import-catalog.js, not shipped as static data in the
+// app. A shared article (see ArticleExtractionService) has no Firestore
+// doc to key off of, so it synthesizes a UUID instead — nothing besides
+// Identifiable itself and ChooseView's "is this id in the library's
+// enabled set" filter (which a shared article never goes through) reads
+// this field, so either source is safe here.
 struct ReadableContent: Identifiable {
     let id: String
     let title: String

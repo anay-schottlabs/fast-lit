@@ -7,5 +7,16 @@
 		<string>Baloo2-Variable.ttf</string>
 		<string>Quicksand-Variable.ttf</string>
 	</array>
+	<key>CFBundleURLTypes</key>
+	<array>
+		<dict>
+			<key>CFBundleURLName</key>
+			<string>com.anaydandekar.ios-accessible.share</string>
+			<key>CFBundleURLSchemes</key>
+			<array>
+				<string>fastlit</string>
+			</array>
+		</dict>
+	</array>
 </dict>
 </plist>
