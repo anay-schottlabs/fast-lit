@@ -2290,6 +2290,45 @@ struct ReadView: View {
     // the scale.
     @ScaledMetric(relativeTo: .largeTitle) private var focalWordSize: CGFloat = 100
 
+    // A long word drawn at the full focalWordSize can run far enough
+    // toward either edge to sit under the Dynamic Island (the leading
+    // edge, in this landscape layout) or run past the trailing edge
+    // entirely — the before/after Text pieces in wordDisplay below have
+    // nothing stopping them from growing that wide. Scaling the whole
+    // word down around its own fixed center point (see wordDisplay's
+    // own .scaleEffect) instead of truncating or wrapping keeps RSVP's
+    // one-fixed-focal-point design intact while still pulling long words
+    // back in from the edges.
+    //
+    // Character count, not a measured render width: a GeometryReader
+    // here would re-measure on every single word tick, which is the
+    // exact per-tick cost that was just removed from this view for
+    // "words" itself (see that property's own comment) — a length
+    // threshold is free to compute and close enough, since this only
+    // needs to catch words that are ROUGHLY too long, not hit an exact
+    // pixel boundary.
+    private var focalWordScale: CGFloat {
+        let length = words[indexNum].count
+        guard length > Self.wordScaleThreshold else { return 1.0 }
+        let excess = CGFloat(length - Self.wordScaleThreshold)
+        return max(Self.minimumFocalWordScale, 1.0 - excess * Self.focalWordScaleStep)
+    }
+
+    // Below this many characters, a word gets no scale-down at all —
+    // this is comfortably longer than the vast majority of English
+    // words, so ordinary reading is never touched by this at all.
+    private static let wordScaleThreshold = 8
+
+    // How much smaller the word gets per character past the threshold —
+    // small enough that even a very long word (15-20 characters) scales
+    // down gradually rather than snapping straight to the floor below.
+    private static let focalWordScaleStep: CGFloat = 0.035
+
+    // However long a word gets, it never shrinks past this fraction of
+    // focalWordSize — keeps even extreme outliers (a long hyphenated
+    // compound, say) legible rather than shrinking toward illegibility.
+    private static let minimumFocalWordScale: CGFloat = 0.6
+
     // @State, split ONCE in the custom init below rather than a computed
     // property re-splitting content.text on every access. It was a
     // computed property originally, which reads fine for a short passage
@@ -2900,6 +2939,17 @@ struct ReadView: View {
         // leftover from a different layout.
         .font(.system(size: focalWordSize, weight: .medium, design: .rounded))
         .kerning(-2)
+        // Scales around the default center anchor, so a long word visibly
+        // shrinks back in toward the middle of the screen on both sides
+        // at once — exactly where it needed room. ".animation(_:value:)"
+        // (not a bare, unconditional animation) only actually eases
+        // between two DIFFERENT scale values, so back-to-back ordinary
+        // words — the overwhelming majority, both under the threshold —
+        // trigger no animation at all and stay an instant, un-eased word
+        // change, same as before this existed; only a short/long-word
+        // transition (or a long/longer one) visibly eases, and briefly.
+        .scaleEffect(focalWordScale)
+        .animation(.easeInOut(duration: 0.15), value: focalWordScale)
     }
 }
 
