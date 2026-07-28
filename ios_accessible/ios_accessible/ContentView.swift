@@ -533,37 +533,18 @@ struct SettingsView: View {
                 appearanceSection
                 hapticsSection
                 resetSection
-
-                Spacer(minLength: Spacing.large)
-
-                // The same round X CloseXShape button ReadView's own
-                // corner close button uses (see headerRow there) rather
-                // than OnboardingBackButton's plain "Go Back" text — a
-                // dedicated close icon reads more clearly as "done with
-                // Settings" than a back chevron does, since this screen
-                // is reached from a gear icon, not a forward step in a
-                // flow. Colored with this view's own onboardingText/
-                // onboardingCard tokens (not ReadColor, which CloseXShape
-                // was originally styled for) to match every other control
-                // on this screen.
-                Button(action: {
-                    isShowingSettings = false
-                }, label: {
-                    CloseXShape()
-                        .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
-                        .frame(width: 18, height: 18)
-                        .frame(width: 40, height: 40)
-                        .background(Circle().fill(Color.onboardingCard))
-                        .contentShape(Circle())
-                })
-                .buttonStyle(HapticButtonStyle())
-                .accessibilityLabel("Close Settings")
             }
             .padding(.horizontal, Spacing.large)
             .padding(.bottom, Spacing.large)
         }
         .frame(maxWidth: .infinity, maxHeight: .infinity)
         .background(Color.onboardingBackground.ignoresSafeArea())
+        // Top-left corner, like a modal sheet's own close button, rather
+        // than inline at the bottom of the scrolling content — an
+        // overlay (not part of the VStack above) so it stays fixed in
+        // place as the settings list scrolls under it, instead of
+        // scrolling away with everything else.
+        .overlay(alignment: .topLeading) { closeButton }
         .alert("Reset App?", isPresented: $isShowingResetConfirmation) {
             Button("Cancel", role: .cancel) {}
             Button("Reset", role: .destructive) {
@@ -691,6 +672,31 @@ struct SettingsView: View {
             .buttonStyle(OnboardingSecondaryButtonStyle())
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    // The same round X CloseXShape button ReadView's own corner close
+    // button uses (see headerRow there) rather than OnboardingBackButton's
+    // plain "Go Back" text — a dedicated close icon reads more clearly as
+    // "done with Settings" than a back chevron does, since this screen is
+    // reached from a gear icon, not a forward step in a flow. Colored
+    // with this view's own onboardingText/onboardingCard tokens (not
+    // ReadColor, which CloseXShape was originally styled for) to match
+    // every other control on this screen.
+    private var closeButton: some View {
+        Button(action: {
+            isShowingSettings = false
+        }, label: {
+            CloseXShape()
+                .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                .frame(width: 18, height: 18)
+                .frame(width: 40, height: 40)
+                .background(Circle().fill(Color.onboardingCard))
+                .contentShape(Circle())
+        })
+        .buttonStyle(HapticButtonStyle())
+        .accessibilityLabel("Close Settings")
+        .padding(.leading, Spacing.large)
+        .padding(.top, Spacing.large)
     }
 }
 
