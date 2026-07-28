@@ -8,15 +8,59 @@
 
 /* Begin PBXBuildFile section */
 		018553633CBE7F6536FF047C /* FirebaseCore in Frameworks */ = {isa = PBXBuildFile; productRef = 93FF83B6886743EDE0C77334 /* FirebaseCore */; };
+		0B53AA1930184752001FFDCB /* ShareExtension.appex in Embed Foundation Extensions */ = {isa = PBXBuildFile; fileRef = 0B53AA0F30184752001FFDCB /* ShareExtension.appex */; settings = {ATTRIBUTES = (RemoveHeadersOnCopy, ); }; };
 		5195FE8CA4C91E5B56E75063 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = B253A6FE323DE3D00FEFB508 /* FirebaseAuth */; };
 		5C5880136B9F31F225C78EA5 /* FirebaseFirestore in Frameworks */ = {isa = PBXBuildFile; productRef = 30C858930EA295DC68359562 /* FirebaseFirestore */; };
 /* End PBXBuildFile section */
 
+/* Begin PBXContainerItemProxy section */
+		0B53AA1730184752001FFDCB /* PBXContainerItemProxy */ = {
+			isa = PBXContainerItemProxy;
+			containerPortal = 0B9A6E6130105B6000C0B264 /* Project object */;
+			proxyType = 1;
+			remoteGlobalIDString = 0B53AA0E30184752001FFDCB;
+			remoteInfo = ShareExtension;
+		};
+/* End PBXContainerItemProxy section */
+
+/* Begin PBXCopyFilesBuildPhase section */
+		0B53AA1E30184752001FFDCB /* Embed Foundation Extensions */ = {
+			isa = PBXCopyFilesBuildPhase;
+			buildActionMask = 2147483647;
+			dstPath = "";
+			dstSubfolderSpec = 13;
+			files = (
+				0B53AA1930184752001FFDCB /* ShareExtension.appex in Embed Foundation Extensions */,
+			);
+			name = "Embed Foundation Extensions";
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXCopyFilesBuildPhase section */
+
 /* Begin PBXFileReference section */
+		0B53AA0F30184752001FFDCB /* ShareExtension.appex */ = {isa = PBXFileReference; explicitFileType = "wrapper.app-extension"; includeInIndex = 0; path = ShareExtension.appex; sourceTree = BUILT_PRODUCTS_DIR; };
 		0B9A6E6930105B6000C0B264 /* ios_accessible.app */ = {isa = PBXFileReference; explicitFileType = wrapper.application; includeInIndex = 0; path = ios_accessible.app; sourceTree = BUILT_PRODUCTS_DIR; };
 /* End PBXFileReference section */
 
+/* Begin PBXFileSystemSynchronizedBuildFileExceptionSet section */
+		0B53AA1A30184752001FFDCB /* Exceptions for "ShareExtension" folder in "ShareExtension" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				Info.plist,
+			);
+			target = 0B53AA0E30184752001FFDCB /* ShareExtension */;
+		};
+/* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
+
 /* Begin PBXFileSystemSynchronizedRootGroup section */
+		0B53AA1030184752001FFDCB /* ShareExtension */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				0B53AA1A30184752001FFDCB /* Exceptions for "ShareExtension" folder in "ShareExtension" target */,
+			);
+			path = ShareExtension;
+			sourceTree = "<group>";
+		};
 		0B9A6E6B30105B6000C0B264 /* ios_accessible */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
 			path = ios_accessible;
@@ -25,6 +69,13 @@
 /* End PBXFileSystemSynchronizedRootGroup section */
 
 /* Begin PBXFrameworksBuildPhase section */
+		0B53AA0C30184752001FFDCB /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0B9A6E6630105B6000C0B264 /* Frameworks */ = {
 			isa = PBXFrameworksBuildPhase;
 			buildActionMask = 2147483647;
@@ -42,6 +93,7 @@
 			isa = PBXGroup;
 			children = (
 				0B9A6E6B30105B6000C0B264 /* ios_accessible */,
+				0B53AA1030184752001FFDCB /* ShareExtension */,
 				0B9A6E6A30105B6000C0B264 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -50,6 +102,7 @@
 			isa = PBXGroup;
 			children = (
 				0B9A6E6930105B6000C0B264 /* ios_accessible.app */,
+				0B53AA0F30184752001FFDCB /* ShareExtension.appex */,
 			);
 			name = Products;
 			sourceTree = "<group>";
@@ -57,6 +110,28 @@
 /* End PBXGroup section */
 
 /* Begin PBXNativeTarget section */
+		0B53AA0E30184752001FFDCB /* ShareExtension */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = 0B53AA1B30184752001FFDCB /* Build configuration list for PBXNativeTarget "ShareExtension" */;
+			buildPhases = (
+				0B53AA0B30184752001FFDCB /* Sources */,
+				0B53AA0C30184752001FFDCB /* Frameworks */,
+				0B53AA0D30184752001FFDCB /* Resources */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				0B53AA1030184752001FFDCB /* ShareExtension */,
+			);
+			name = ShareExtension;
+			packageProductDependencies = (
+			);
+			productName = ShareExtension;
+			productReference = 0B53AA0F30184752001FFDCB /* ShareExtension.appex */;
+			productType = "com.apple.product-type.app-extension";
+		};
 		0B9A6E6830105B6000C0B264 /* ios_accessible */ = {
 			isa = PBXNativeTarget;
 			buildConfigurationList = 0B9A6E7430105B6100C0B264 /* Build configuration list for PBXNativeTarget "ios_accessible" */;
@@ -64,10 +139,12 @@
 				0B9A6E6530105B6000C0B264 /* Sources */,
 				0B9A6E6630105B6000C0B264 /* Frameworks */,
 				0B9A6E6730105B6000C0B264 /* Resources */,
+				0B53AA1E30184752001FFDCB /* Embed Foundation Extensions */,
 			);
 			buildRules = (
 			);
 			dependencies = (
+				0B53AA1830184752001FFDCB /* PBXTargetDependency */,
 			);
 			fileSystemSynchronizedGroups = (
 				0B9A6E6B30105B6000C0B264 /* ios_accessible */,
@@ -92,6 +169,9 @@
 				LastSwiftUpdateCheck = 2660;
 				LastUpgradeCheck = 2660;
 				TargetAttributes = {
+					0B53AA0E30184752001FFDCB = {
+						CreatedOnToolsVersion = 26.6;
+					};
 					0B9A6E6830105B6000C0B264 = {
 						CreatedOnToolsVersion = 26.6;
 					};
@@ -115,11 +195,19 @@
 			projectRoot = "";
 			targets = (
 				0B9A6E6830105B6000C0B264 /* ios_accessible */,
+				0B53AA0E30184752001FFDCB /* ShareExtension */,
 			);
 		};
 /* End PBXProject section */
 
 /* Begin PBXResourcesBuildPhase section */
+		0B53AA0D30184752001FFDCB /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0B9A6E6730105B6000C0B264 /* Resources */ = {
 			isa = PBXResourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -130,6 +218,13 @@
 /* End PBXResourcesBuildPhase section */
 
 /* Begin PBXSourcesBuildPhase section */
+		0B53AA0B30184752001FFDCB /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
 		0B9A6E6530105B6000C0B264 /* Sources */ = {
 			isa = PBXSourcesBuildPhase;
 			buildActionMask = 2147483647;
@@ -139,7 +234,71 @@
 		};
 /* End PBXSourcesBuildPhase section */
 
+/* Begin PBXTargetDependency section */
+		0B53AA1830184752001FFDCB /* PBXTargetDependency */ = {
+			isa = PBXTargetDependency;
+			target = 0B53AA0E30184752001FFDCB /* ShareExtension */;
+			targetProxy = 0B53AA1730184752001FFDCB /* PBXContainerItemProxy */;
+		};
+/* End PBXTargetDependency section */
+
 /* Begin XCBuildConfiguration section */
+		0B53AA1C30184752001FFDCB /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5J8RWQYAZR;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.anaydandekar.ios-accessible.ShareExtension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		0B53AA1D30184752001FFDCB /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				CODE_SIGN_STYLE = Automatic;
+				CURRENT_PROJECT_VERSION = 1;
+				DEVELOPMENT_TEAM = 5J8RWQYAZR;
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_FILE = ShareExtension/Info.plist;
+				INFOPLIST_KEY_CFBundleDisplayName = ShareExtension;
+				INFOPLIST_KEY_NSHumanReadableCopyright = "";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+					"@executable_path/../../Frameworks",
+				);
+				MARKETING_VERSION = 1.0;
+				PRODUCT_BUNDLE_IDENTIFIER = "com.anaydandekar.ios-accessible.ShareExtension";
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SKIP_INSTALL = YES;
+				STRING_CATALOG_GENERATE_SYMBOLS = YES;
+				SWIFT_APPROACHABLE_CONCURRENCY = YES;
+				SWIFT_EMIT_LOC_STRINGS = YES;
+				SWIFT_UPCOMING_FEATURE_MEMBER_IMPORT_VISIBILITY = YES;
+				SWIFT_VERSION = 5.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
 		0B9A6E7230105B6100C0B264 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
@@ -262,6 +421,7 @@
 		0B9A6E7530105B6100C0B264 /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconLight AppIconDark";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -295,6 +455,7 @@
 		0B9A6E7630105B6100C0B264 /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconLight AppIconDark";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
 				CODE_SIGN_STYLE = Automatic;
@@ -328,6 +489,15 @@
 /* End XCBuildConfiguration section */
 
 /* Begin XCConfigurationList section */
+		0B53AA1B30184752001FFDCB /* Build configuration list for PBXNativeTarget "ShareExtension" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				0B53AA1C30184752001FFDCB /* Debug */,
+				0B53AA1D30184752001FFDCB /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Release;
+		};
 		0B9A6E6430105B6000C0B264 /* Build configuration list for PBXProject "ios_accessible" */ = {
 			isa = XCConfigurationList;
 			buildConfigurations = (
