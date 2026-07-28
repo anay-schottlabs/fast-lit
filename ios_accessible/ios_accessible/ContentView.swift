@@ -536,9 +536,28 @@ struct SettingsView: View {
 
                 Spacer(minLength: Spacing.large)
 
-                OnboardingBackButton(action: {
+                // The same round X CloseXShape button ReadView's own
+                // corner close button uses (see headerRow there) rather
+                // than OnboardingBackButton's plain "Go Back" text — a
+                // dedicated close icon reads more clearly as "done with
+                // Settings" than a back chevron does, since this screen
+                // is reached from a gear icon, not a forward step in a
+                // flow. Colored with this view's own onboardingText/
+                // onboardingCard tokens (not ReadColor, which CloseXShape
+                // was originally styled for) to match every other control
+                // on this screen.
+                Button(action: {
                     isShowingSettings = false
+                }, label: {
+                    CloseXShape()
+                        .stroke(Color.onboardingText, style: StrokeStyle(lineWidth: 3, lineCap: .round, lineJoin: .round))
+                        .frame(width: 18, height: 18)
+                        .frame(width: 40, height: 40)
+                        .background(Circle().fill(Color.onboardingCard))
+                        .contentShape(Circle())
                 })
+                .buttonStyle(HapticButtonStyle())
+                .accessibilityLabel("Close Settings")
             }
             .padding(.horizontal, Spacing.large)
             .padding(.bottom, Spacing.large)
