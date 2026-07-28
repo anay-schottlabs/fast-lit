@@ -1,4 +1,5 @@
 import SwiftUI
+import UIKit
 
 // This file is the app's whole "design system" in one place: the colors,
 // fonts, spacing, and button chrome every screen in ContentView.swift
@@ -62,16 +63,51 @@ enum AppColorScheme: String {
     case dark
 
     // What gets handed to SwiftUI's ".preferredColorScheme(_:)" modifier.
-    // That modifier's parameter is ColorScheme? (optional) — nil there
-    // specifically means "don't override, follow the system setting,"
-    // which is exactly what .system should do; .light/.dark map onto
-    // ColorScheme's own .light/.dark cases to force one or the other.
+    // .system deliberately does NOT map to nil ("follow the system
+    // setting") — a fresh install (or a Settings reset, see
+    // SettingsView's resetApp()) has this as its untouched default, and
+    // the app must always open in Light that first time regardless of
+    // the device's own Dark Mode setting, matching what the Light/Dark
+    // picker already displays as selected in that untouched state (see
+    // this enum's own top comment). So .system forces .light exactly
+    // like an explicit .light choice would; only an explicit .dark pick
+    // ever produces Dark.
     var colorScheme: ColorScheme? {
         switch self {
-        case .system: return nil
+        case .system: return .light
         case .light: return .light
         case .dark: return .dark
         }
+    }
+
+    // The Home Screen icon Assets.xcassets registers for this
+    // appearance — AppIconLight.appiconset / AppIconDark.appiconset,
+    // wired up as alternates via ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES
+    // (NOT the same thing as AppIcon.appiconset's own light/dark
+    // "appearance" slots, which only ever follow the system's Dark
+    // Mode setting — this is what lets the reader's in-app Light/Dark
+    // pick override the Home Screen icon regardless of that system
+    // setting). .system maps to the light icon, matching colorScheme
+    // above forcing Light for that same untouched state.
+    private var alternateIconName: String {
+        switch self {
+        case .system, .light: return "AppIconLight"
+        case .dark: return "AppIconDark"
+        }
+    }
+
+    // Switches the Home Screen icon to match this appearance choice.
+    // UIApplication.setAlternateIconName(_:) always shows a system
+    // confirmation alert ("Fast Lit Wants to Change the App Icon") —
+    // no public API suppresses that — so this only calls it when the
+    // icon doesn't already match the target, rather than firing on
+    // every launch or every redundant write to the same choice.
+    func syncHomeScreenIcon() {
+        let application = UIApplication.shared
+        guard application.supportsAlternateIcons else { return }
+        let target = alternateIconName
+        guard application.alternateIconName != target else { return }
+        application.setAlternateIconName(target)
     }
 }
 

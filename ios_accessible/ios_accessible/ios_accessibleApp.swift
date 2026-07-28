@@ -119,12 +119,19 @@ struct ios_accessibleApp: App {
                 // an accent — Toggle, Slider, ProgressView, etc. — from
                 // a single place, rather than tinting each one by hand.
                 .tint(Color.accentPrimary)
-                // Forces Light or Dark regardless of the system setting
-                // when the reader has picked one explicitly; nil (from
-                // AppColorScheme.system) leaves this modifier a no-op, so
-                // the system's own setting keeps being followed as it
-                // always has been.
+                // Forces Light or Dark to match the reader's own pick
+                // (AppColorScheme.system, the untouched pre-pick
+                // default, forces Light too — see that enum's own
+                // comment for why).
                 .preferredColorScheme((AppColorScheme(rawValue: appColorSchemeRaw) ?? .system).colorScheme)
+                // Keeps the Home Screen icon in sync with the same
+                // pick. .task (not .onAppear) so this also re-runs if
+                // ContentView's identity ever changes; .onChange alone
+                // wouldn't fire for the value already in place at cold
+                // launch, so both are needed together.
+                .task(id: appColorSchemeRaw) {
+                    (AppColorScheme(rawValue: appColorSchemeRaw) ?? .system).syncHomeScreenIcon()
+                }
         }
     }
 }
