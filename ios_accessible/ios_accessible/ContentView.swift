@@ -86,7 +86,7 @@ struct ContentView: View {
                 // We manually swap "pages" by comparing the enum with "==". Each branch
                 // hands the $currentPage binding down so that page can change it.
                 if currentPage == .home {
-                    HomeView(currentPage: $currentPage, accountType: $accountType, contentToRead: $contentToRead)
+                    HomeView(currentPage: $currentPage, accountType: $accountType)
                 } else if currentPage == .choose {
                     // "if let" only unwraps and shows ChooseView once joinedLibraryUid
                     // is actually set, which it always is by the time a reader can
@@ -95,7 +95,7 @@ struct ContentView: View {
                         ChooseView(currentPage: $currentPage, contentToRead: $contentToRead, libraryUid: joinedLibraryUid)
                     }
                 } else if currentPage == .account {
-                    AccountView(currentPage: $currentPage, joinedLibraryUid: $joinedLibraryUid, accountType: $accountType, contentToRead: $contentToRead)
+                    AccountView(currentPage: $currentPage, joinedLibraryUid: $joinedLibraryUid, accountType: $accountType)
                 } else if currentPage == .read {
                     // "if let" only unwraps and shows ReadView once contentToRead is
                     // actually set, which it always is by the time we reach this page.
@@ -143,11 +143,6 @@ struct HomeView: View {
     // on the final onboarding step, so AccountView finds it already
     // answered by the time currentPage switches to .account.
     @Binding var accountType: AccountType?
-
-    // Threaded through to accountChoiceStep below purely so its
-    // DEBUG-only dev shortcut (see AccountChoiceScreen) can set it —
-    // nothing else here reads or writes it.
-    @Binding var contentToRead: ReadableContent?
 
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding: Bool = false
     @AppStorage("readerName") private var readerName: String = ""
@@ -450,7 +445,7 @@ struct HomeView: View {
             currentPage = .account
         }, onBack: {
             withAnimation { onboardingStep = .theme }
-        }, currentPage: $currentPage, contentToRead: $contentToRead)
+        })
     }
 }
 
@@ -620,11 +615,6 @@ struct AccountView: View {
     // changes their mind.
     @Binding var accountType: AccountType?
 
-    // Threaded through to AccountChoiceScreen below purely so its
-    // DEBUG-only dev shortcut can set it — nothing else here reads or
-    // writes it.
-    @Binding var contentToRead: ReadableContent?
-
     var body: some View {
         if accountType == .library {
             LibraryAccountView(accountType: $accountType, currentPage: $currentPage)
@@ -643,7 +633,7 @@ struct AccountView: View {
             // actually lives once signed in.
             AccountChoiceScreen(onContinue: { chosen in
                 accountType = chosen
-            }, currentPage: $currentPage, contentToRead: $contentToRead)
+            })
         }
     }
 }
@@ -682,21 +672,6 @@ private struct AccountChoiceScreen: View {
     // silently remember their last pick.
     @State private var selection: AccountType? = nil
 
-    // Both only used by the DEBUG-only dev shortcut below (see
-    // devJumpToReaderButton) — nil defaults mean the two real call sites
-    // (HomeView's onboarding step, AccountView's picker) don't need to
-    // pass anything through in a Release build, where that button
-    // doesn't exist to need them.
-    var currentPage: Binding<Page>? = nil
-    var contentToRead: Binding<ReadableContent?>? = nil
-
-    @Environment(AuthService.self) private var authService
-
-    // Set only if the dev shortcut's own catalog fetch fails, so that's
-    // visible somewhere rather than just silently doing nothing when
-    // tapped.
-    @State private var devJumpError: String? = nil
-
     var body: some View {
         VStack(spacing: Spacing.medium) {
             if showProgress {
@@ -716,46 +691,6 @@ private struct AccountChoiceScreen: View {
                 subtitle: "Pick whichever one sounds like you.",
                 subtitleSize: 15
             )
-
-            // DEV-ONLY: skips straight past both the library/reader
-            // forms AND ChooseView's own catalog picker, landing
-            // directly in ReadView with an arbitrary catalog item — for
-            // exercising ReadView itself (the piece under active
-            // development/testing right now) without re-walking the
-            // whole account flow every time. Right under the subtitle,
-            // above the actual Library/Reader cards, so it reads as a
-            // dev aside rather than a third real choice. #if DEBUG keeps
-            // this out of Release/App Store builds entirely, not just
-            // visually hidden.
-            #if DEBUG
-            if let currentPage, let contentToRead {
-                Button(action: {
-                    Task {
-                        do {
-                            let catalog = try await authService.fetchCatalog()
-                            guard let item = catalog.randomElement() else {
-                                devJumpError = "Catalog is empty."
-                                return
-                            }
-                            contentToRead.wrappedValue = item
-                            currentPage.wrappedValue = .read
-                        } catch {
-                            devJumpError = error.localizedDescription
-                        }
-                    }
-                }, label: {
-                    Text("DEV: Jump to Reader")
-                })
-                .font(.system(size: 13, weight: .semibold, design: .rounded))
-                .foregroundStyle(Color.onboardingTextSecondary)
-
-                if let devJumpError {
-                    Text(devJumpError)
-                        .font(.system(size: 11, design: .rounded))
-                        .foregroundStyle(.red)
-                }
-            }
-            #endif
 
             OnboardingSelectableCard(
                 leading: OnboardingIconTile(systemImage: "books.vertical.fill"),
