@@ -2222,14 +2222,31 @@ struct ReadView: View {
     // the scale.
     @ScaledMetric(relativeTo: .largeTitle) private var focalWordSize: CGFloat = 100
 
-    // A computed property, not a stored one: a stored property's initial
-    // value runs before "self" exists, so it can't reference "content" (another
-    // stored property) the way the old code tried to. Computing it fresh each
-    // time also means there's nothing to manually keep in sync.
-    // "whereSeparator: { $0.isWhitespace }" splits on any run of spaces,
-    // tabs, or newlines, not just a single literal " ".
-    var words: [String] {
-        content.text.split(whereSeparator: { $0.isWhitespace }).map(String.init)
+    // @State, split ONCE in the custom init below rather than a computed
+    // property re-splitting content.text on every access. It was a
+    // computed property originally, which reads fine for a short passage
+    // but turned out to be the actual cause behind "RSVP skips words on
+    // long passages" — words is read from several places per single word
+    // tick (scheduleNextAdvance's pauseBeats(after: words[indexNum]),
+    // wordParts, the progress bar's words.count, the caption labels), and
+    // at 600 wpm that's every ~100ms. Re-splitting and re-allocating a
+    // ~400-word array (the "Deep Sea" passage) that many times a second
+    // is real, avoidable CPU work that a short ~50-word passage (like
+    // "Welcome to Fast Lit," which never showed the bug) never comes
+    // close to — matching exactly which passages the reader-facing report
+    // separated into "always fine" vs "always broken." content is fixed
+    // for this view's whole lifetime (see its own comment above), so
+    // splitting once here is correct, not just faster.
+    private let words: [String]
+
+    // Custom init only because "words" above needs "content" to compute
+    // itself once, up front — every other property here still just takes
+    // its own declared default the way the compiler-synthesized
+    // memberwise init would have handed it.
+    init(content: ReadableContent, currentPage: Binding<Page>) {
+        self.content = content
+        self._currentPage = currentPage
+        self.words = content.text.split(whereSeparator: { $0.isWhitespace }).map(String.init)
     }
 
     // Splits the current word into the letters before its middle letter (the
