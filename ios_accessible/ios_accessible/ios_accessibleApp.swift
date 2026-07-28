@@ -124,14 +124,6 @@ struct ios_accessibleApp: App {
                 // default, forces Light too — see that enum's own
                 // comment for why).
                 .preferredColorScheme((AppColorScheme(rawValue: appColorSchemeRaw) ?? .system).colorScheme)
-                // Keeps the Home Screen icon in sync with the same
-                // pick. .task (not .onAppear) so this also re-runs if
-                // ContentView's identity ever changes; .onChange alone
-                // wouldn't fire for the value already in place at cold
-                // launch, so both are needed together.
-                .task(id: appColorSchemeRaw) {
-                    (AppColorScheme(rawValue: appColorSchemeRaw) ?? .system).syncHomeScreenIcon()
-                }
         }
     }
 }

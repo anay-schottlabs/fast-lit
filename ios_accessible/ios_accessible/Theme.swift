@@ -1,5 +1,4 @@
 import SwiftUI
-import UIKit
 
 // This file is the app's whole "design system" in one place: the colors,
 // fonts, spacing, and button chrome every screen in ContentView.swift
@@ -80,35 +79,15 @@ enum AppColorScheme: String {
         }
     }
 
-    // The Home Screen icon Assets.xcassets registers for this
-    // appearance — AppIconLight.appiconset / AppIconDark.appiconset,
-    // wired up as alternates via ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES
-    // (NOT the same thing as AppIcon.appiconset's own light/dark
-    // "appearance" slots, which only ever follow the system's Dark
-    // Mode setting — this is what lets the reader's in-app Light/Dark
-    // pick override the Home Screen icon regardless of that system
-    // setting). .system maps to the light icon, matching colorScheme
-    // above forcing Light for that same untouched state.
-    private var alternateIconName: String {
-        switch self {
-        case .system, .light: return "AppIconLight"
-        case .dark: return "AppIconDark"
-        }
-    }
-
-    // Switches the Home Screen icon to match this appearance choice.
-    // UIApplication.setAlternateIconName(_:) always shows a system
-    // confirmation alert ("Fast Lit Wants to Change the App Icon") —
-    // no public API suppresses that — so this only calls it when the
-    // icon doesn't already match the target, rather than firing on
-    // every launch or every redundant write to the same choice.
-    func syncHomeScreenIcon() {
-        let application = UIApplication.shared
-        guard application.supportsAlternateIcons else { return }
-        let target = alternateIconName
-        guard application.alternateIconName != target else { return }
-        application.setAlternateIconName(target)
-    }
+    // The Home Screen icon no longer changes with this pick — Fast Lit
+    // now ships one single AppIcon.appiconset entry regardless of
+    // appearance (see Assets.xcassets/AppIcon.appiconset). This used to
+    // switch between AppIconLight.appiconset/AppIconDark.appiconset via
+    // UIApplication.setAlternateIconName(_:), but that API always shows
+    // a system confirmation alert ("Fast Lit Wants to Change the App
+    // Icon") with no way to suppress it — jarring on every reader
+    // Light/Dark pick for a benefit (matching Home Screen icon to in-app
+    // theme) that wasn't worth that interruption.
 }
 
 // MARK: - Fonts
