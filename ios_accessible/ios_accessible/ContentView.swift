@@ -46,7 +46,12 @@ struct ContentView: View {
     // rather than there since ChooseView — which needs it to know whose
     // catalog selections to filter against — is a sibling of that whole
     // account flow, not a descendant of it.
-    @State private var joinedLibraryUid: String? = nil
+    // @AppStorage (not plain @State) so a reader who joined a library once
+    // doesn't have to type their join code in again on every app launch —
+    // ReaderAccountView already treats a non-nil value here as "already
+    // joined" and skips straight to its own home content; persisting it is
+    // the only piece that was missing for that to also survive a relaunch.
+    @AppStorage("joinedLibraryUid") private var joinedLibraryUid: String?
 
     // Which kind of account the reader picked — either on HomeView's own
     // final onboarding step (see AccountChoiceScreen in this file), or on
@@ -691,10 +696,22 @@ struct AccountView: View {
     // changes their mind.
     @Binding var accountType: AccountType?
 
+    @Environment(AuthService.self) private var authService
+
     var body: some View {
-        if accountType == .library {
+        // The "|| authService.isSignedIn" / "|| joinedLibraryUid != nil"
+        // parts are what make a returning library account or a reader who
+        // already joined skip this whole picker on relaunch: accountType
+        // itself is never persisted (it always starts nil), but Firebase's
+        // own session persistence and joinedLibraryUid's @AppStorage
+        // (both in ContentView) already are — reading them here routes
+        // straight to the matching branch below without asking "library
+        // or reader" again. Each branch's own view (LibraryAccountView's
+        // isSignedIn check, ReaderAccountView's joinedLibraryUid check)
+        // is what then skips ITS OWN sign-in/join-code form too.
+        if accountType == .library || authService.isSignedIn {
             LibraryAccountView(accountType: $accountType, currentPage: $currentPage)
-        } else if accountType == .reader {
+        } else if accountType == .reader || joinedLibraryUid != nil {
             ReaderAccountView(accountType: $accountType, currentPage: $currentPage, joinedLibraryUid: $joinedLibraryUid)
         } else {
             // The same "Who's Joining Us?" screen HomeView's onboarding
@@ -830,8 +847,18 @@ struct LibraryAccountView: View {
     // form replaces this picker.
     @State private var authMode: AuthMode? = nil
 
+    @Environment(AuthService.self) private var authService
+
     var body: some View {
-        if authMode == .login {
+        // A returning library account whose Firebase session is still
+        // valid (persisted on-device by Firebase Auth itself — see
+        // AuthService's own init) skips straight to their home screen,
+        // the same "you're already signed in, don't ask again" treatment
+        // LibraryHomeView's own greeting: .loggedIn otherwise only gets
+        // right after a fresh LibraryLoginView submit.
+        if authService.isSignedIn {
+            LibraryHomeView(greeting: .loggedIn, currentPage: $currentPage, accountType: $accountType)
+        } else if authMode == .login {
             LibraryLoginView(authMode: $authMode, currentPage: $currentPage, accountType: $accountType)
         } else if authMode == .signUp {
             LibrarySignUpView(authMode: $authMode, currentPage: $currentPage, accountType: $accountType)
