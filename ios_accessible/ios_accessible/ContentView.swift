@@ -3156,15 +3156,15 @@ struct ReadView: View {
         .kerning(-2)
         // Scales around the default center anchor, so a long word visibly
         // shrinks back in toward the middle of the screen on both sides
-        // at once — exactly where it needed room. ".animation(_:value:)"
-        // (not a bare, unconditional animation) only actually eases
-        // between two DIFFERENT scale values, so back-to-back ordinary
-        // words — the overwhelming majority, both under the threshold —
-        // trigger no animation at all and stay an instant, un-eased word
-        // change, same as before this existed; only a short/long-word
-        // transition (or a long/longer one) visibly eases, and briefly.
+        // at once — exactly where it needed room. Deliberately no
+        // .animation(_:value:) here: at RSVP's own reading speeds (up to
+        // 600 wpm — a new word every 100ms) an eased scale change on top
+        // of an already-changing word just blurs, since there's no time
+        // for it to actually resolve before the next word replaces it.
+        // The scale itself still needs to be instant and correct every
+        // tick — only the easing is gone, not the clamping this exists
+        // for in the first place.
         .scaleEffect(focalWordScale)
-        .animation(.easeInOut(duration: 0.15), value: focalWordScale)
     }
 }
 
