@@ -2034,6 +2034,17 @@ struct ChooseView: View {
                                 // Generous vertical padding makes each row a
                                 // bigger, easier target to tap.
                                 .padding(.vertical, Spacing.medium)
+                                // Full-width frame + an explicit rectangular
+                                // hit-testing shape: without these, SwiftUI
+                                // only counts a tap as landing on this
+                                // Button if it's directly over the title
+                                // Text or the chevron Image — the Spacer
+                                // between them (and the padding around
+                                // both) draws nothing, so it's invisible to
+                                // hit-testing by default even though it's
+                                // visually part of the same row.
+                                .frame(maxWidth: .infinity)
+                                .contentShape(Rectangle())
                             })
                             .buttonStyle(HapticButtonStyle())
                             .listRowBackground(Color.onboardingCard)
