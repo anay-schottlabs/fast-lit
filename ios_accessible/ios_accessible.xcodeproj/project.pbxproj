@@ -47,8 +47,16 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
+				ShareExtension.entitlements,
 			);
 			target = 0B53AA0E30184752001FFDCB /* ShareExtension */;
+		};
+		AB12CD34EF56AB12CD34EF03 /* Exceptions for "ios_accessible" folder in "ios_accessible" target */ = {
+			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
+			membershipExceptions = (
+				ios_accessible.entitlements,
+			);
+			target = 0B9A6E6830105B6000C0B264 /* ios_accessible */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -63,6 +71,9 @@
 		};
 		0B9A6E6B30105B6000C0B264 /* ios_accessible */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
+			exceptions = (
+				AB12CD34EF56AB12CD34EF03 /* Exceptions for "ios_accessible" folder in "ios_accessible" target */,
+			);
 			path = ios_accessible;
 			sourceTree = "<group>";
 		};
@@ -246,6 +257,7 @@
 		0B53AA1C30184752001FFDCB /* Debug */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5J8RWQYAZR;
@@ -274,6 +286,7 @@
 		0B53AA1D30184752001FFDCB /* Release */ = {
 			isa = XCBuildConfiguration;
 			buildSettings = {
+				CODE_SIGN_ENTITLEMENTS = ShareExtension/ShareExtension.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5J8RWQYAZR;
@@ -424,6 +437,7 @@
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconLight AppIconDark";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ios_accessible/ios_accessible.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5J8RWQYAZR;
@@ -458,6 +472,7 @@
 				ASSETCATALOG_COMPILER_ALTERNATE_APPICON_NAMES = "AppIconLight AppIconDark";
 				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
 				ASSETCATALOG_COMPILER_GLOBAL_ACCENT_COLOR_NAME = AccentColor;
+				CODE_SIGN_ENTITLEMENTS = ios_accessible/ios_accessible.entitlements;
 				CODE_SIGN_STYLE = Automatic;
 				CURRENT_PROJECT_VERSION = 1;
 				DEVELOPMENT_TEAM = 5J8RWQYAZR;

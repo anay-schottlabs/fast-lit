@@ -1,6 +1,19 @@
 import SwiftUI // brings in Apple's UI framework
 import FirebaseCore
 
+// App Group container this app shares with ShareExtension — must match
+// ShareViewController.swift's copy of these two constants exactly.
+// extensionContext.open(_:)'s completion handler was confirmed (via direct
+// instrumentation) to report success: false in under a millisecond, before
+// ever reaching the system — a local failure with no diagnosable cause, not
+// something this app can fix by reacting to it differently. So the Share
+// Extension writes the shared URL here regardless of what open() does, and
+// ContentView checks for it below on launch and on returning to the
+// foreground — the article is never lost even when the instant hand-off
+// via .onOpenURL doesn't happen.
+private let appGroupID = "group.com.anaydandekar.ios-accessible"
+private let pendingSharedURLKey = "pendingSharedArticleURL"
+
 // enum = a fixed set of named cases; used here as a simple "which page" switch.
 // No ".library" case — a library account's own home screen
 // (LibraryHomeView) is reached directly from within LibrarySignUpView/
@@ -81,6 +94,12 @@ struct ContentView: View {
     // (dead link, paywall, timeout) that deserve their own message rather
     // than a single generic "something went wrong."
     @State private var sharedArticleExtractionError: String? = nil
+
+    // Drives the App Group pending-share check below — checked on launch
+    // (initial .active) and every time the reader switches back into the
+    // app (e.g. after Fast Lit's Share Extension saved a URL but couldn't
+    // hand off live via .onOpenURL).
+    @Environment(\.scenePhase) private var scenePhase
 
     // Computed property SwiftUI calls whenever it needs to redraw the screen.
     // "some View" = "returns some type conforming to View, exact type not spelled out."
@@ -182,6 +201,17 @@ struct ContentView: View {
             else { return }
             pendingSharedURL = articleURL
         }
+        // Catches the case .onOpenURL doesn't: the Share Extension's
+        // extensionContext.open() failing (see the App Group comment
+        // above), where the article is saved but this app never gets a
+        // live fastlit:// callback telling it so. .active fires both on
+        // cold launch and every return from background, so this is
+        // checked every time the reader could plausibly be arriving to
+        // read something they just shared.
+        .onChange(of: scenePhase) { _, newPhase in
+            guard newPhase == .active else { return }
+            checkForPendingSharedURL()
+        }
         // .task(id:) (not .onChange) so this automatically re-runs — with
         // its own fresh isExtractingSharedArticle/error state — if a
         // reader shares a SECOND link while still on this same
@@ -213,6 +243,21 @@ struct ContentView: View {
         } message: {
             Text(sharedArticleExtractionError ?? "")
         }
+    }
+
+    // Consumes (reads + immediately clears) whatever ShareViewController
+    // last wrote to the App Group — "immediately clears" matters so a
+    // stale URL from days ago can't resurface and reopen itself the next
+    // time the reader happens to background/foreground the app for an
+    // unrelated reason.
+    private func checkForPendingSharedURL() {
+        let defaults = UserDefaults(suiteName: appGroupID)
+        guard
+            let storedURLString = defaults?.string(forKey: pendingSharedURLKey),
+            let articleURL = URL(string: storedURLString)
+        else { return }
+        defaults?.removeObject(forKey: pendingSharedURLKey)
+        pendingSharedURL = articleURL
     }
 }
 

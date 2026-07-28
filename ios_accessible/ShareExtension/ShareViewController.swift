@@ -2,6 +2,19 @@ import UIKit
 import SwiftUI
 import UniformTypeIdentifiers
 
+// App Group container this extension shares with the main app target —
+// must match ios_accessibleApp's copy of these two constants exactly (see
+// ContentView.swift). Confirmed via direct instrumentation that
+// extensionContext.open(_:)'s completion handler can report success: false
+// within under a millisecond of being called — faster than any real
+// cross-process launch round trip, meaning it fails locally before ever
+// asking the system to open anything, with no diagnosable cause exposed to
+// us. Rather than keep depending on that one unreliable channel, the
+// shared URL is written here first — so it survives regardless of what
+// open() does — and the main app also checks for it on launch/foreground.
+private let appGroupID = "group.com.anaydandekar.ios-accessible"
+private let pendingSharedURLKey = "pendingSharedArticleURL"
+
 // Not SLComposeServiceViewController (the Xcode template default) — that's
 // built for "compose text, then post it," which isn't this extension's
 // job. This grabs the one shared URL, hands it straight to the main app,
@@ -15,12 +28,12 @@ final class ShareViewController: UIViewController {
         case working
         case failed
         // extensionContext.open(_:)'s completion handler can genuinely
-        // report success: false — confirmed happening on Simulator during
-        // this feature's own testing (loadItem succeeded, the callback
-        // URL was well-formed, and open() still came back false). Rather
-        // than complete the request as if nothing were wrong and leave
-        // the reader wondering why Fast Lit never opened, this gives
-        // them an honest, actionable message instead of a silent no-op.
+        // report success: false — confirmed via direct instrumentation
+        // (loadItem succeeded, the callback URL was well-formed, and
+        // open() still came back false in under a millisecond, before
+        // ever reaching the system). The article URL is safe either way
+        // (see the App Group write in openHostApp), so this just tells
+        // the reader the automatic hand-off didn't happen this time.
         case needsManualOpen
     }
 
@@ -68,20 +81,26 @@ final class ShareViewController: UIViewController {
         }
     }
 
-    // fastlit://share?url=<percent-encoded article URL> — the one
-    // callback ContentView's .onOpenURL (main app target) listens for.
-    // No App Group / shared UserDefaults needed: a single article URL
-    // fits comfortably as a query parameter, so the URL itself IS the
-    // whole payload — see this session's plan doc for why that's
-    // preferred over an App Group here specifically.
+    // fastlit://share?url=<percent-encoded article URL> — the callback
+    // ContentView's .onOpenURL (main app target) listens for when open()
+    // actually works, letting the article open instantly without the
+    // reader having to switch apps themselves.
     private func openHostApp(with url: URL) {
+        // Written before even attempting open() — the one part of this
+        // method guaranteed to matter regardless of what open() does.
+        UserDefaults(suiteName: appGroupID)?.set(url.absoluteString, forKey: pendingSharedURLKey)
+
         var components = URLComponents()
         components.scheme = "fastlit"
         components.host = "share"
         components.queryItems = [URLQueryItem(name: "url", value: url.absoluteString)]
 
         guard let callbackURL = components.url else {
-            fail()
+            // The App Group write above already succeeded (url itself,
+            // not the constructed callbackURL, is what's stored) — so
+            // even though the instant hand-off can't happen, the article
+            // isn't lost, matching the .needsManualOpen messaging below.
+            showNeedsManualOpen()
             return
         }
 
@@ -133,13 +152,8 @@ private struct ShareStatusView: View {
                 Image(systemName: "exclamationmark.triangle")
                 Text("Couldn't read this link")
             case .needsManualOpen:
-                // Genuinely honest, not "saved, open the app to finish"
-                // — there's no App Group/shared storage backing this
-                // extension (see this session's plan doc for why), so a
-                // failed open() really does lose the URL; asking the
-                // reader to share again is the only correct instruction.
-                Image(systemName: "exclamationmark.triangle")
-                Text("Couldn't open Fast Lit automatically — try sharing again")
+                Image(systemName: "checkmark.circle")
+                Text("Saved — open Fast Lit to finish")
             }
         }
         .padding(32)
