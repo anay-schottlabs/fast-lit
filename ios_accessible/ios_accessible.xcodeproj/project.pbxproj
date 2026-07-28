@@ -47,16 +47,8 @@
 			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
 			membershipExceptions = (
 				Info.plist,
-				ShareExtension.entitlements,
 			);
 			target = 0B53AA0E30184752001FFDCB /* ShareExtension */;
-		};
-		AB12CD34EF56AB12CD34EF03 /* Exceptions for "ios_accessible" folder in "ios_accessible" target */ = {
-			isa = PBXFileSystemSynchronizedBuildFileExceptionSet;
-			membershipExceptions = (
-				ios_accessible.entitlements,
-			);
-			target = 0B9A6E6830105B6000C0B264 /* ios_accessible */;
 		};
 /* End PBXFileSystemSynchronizedBuildFileExceptionSet section */
 
@@ -71,9 +63,6 @@
 		};
 		0B9A6E6B30105B6000C0B264 /* ios_accessible */ = {
 			isa = PBXFileSystemSynchronizedRootGroup;
-			exceptions = (
-				AB12CD34EF56AB12CD34EF03 /* Exceptions for "ios_accessible" folder in "ios_accessible" target */,
-			);
 			path = ios_accessible;
 			sourceTree = "<group>";
 		};
