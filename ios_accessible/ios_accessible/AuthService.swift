@@ -209,7 +209,7 @@ class AuthService {
                   let text = document.get("text") as? String else {
                 return nil
             }
-            return ReadableContent(id: document.documentID, title: title, description: description, text: text)
+            return ReadableContent(id: document.documentID, title: title, description: description, text: text, source: .library, sourceURL: nil)
         }
     }
 
@@ -263,6 +263,85 @@ class AuthService {
     // code, no username/password) could eventually be handled.
     func signInAnonymously() async throws {
         _ = try await Auth.auth().signInAnonymously()
+    }
+
+    // Readers otherwise have no Firebase Auth session at all (see this
+    // file's own top comment) — this is what actually creates their
+    // first (anonymous) one, called lazily the first time saved content
+    // needs somewhere to live rather than up front at app launch, since
+    // most of a reader's time in the app (picking library content,
+    // reading it) never touches savedContent at all. Anonymous sign-in
+    // persists across launches on the same device via Firebase's own
+    // keychain-backed session, so a reader's saved content survives
+    // relaunches without them ever seeing a login screen. A no-op if
+    // already signed in (anonymously or otherwise) — never overwrites an
+    // existing session with a fresh anonymous one.
+    func ensureReaderSignedIn() async throws {
+        guard Auth.auth().currentUser == nil else { return }
+        try await signInAnonymously()
+    }
+
+    // A reader's own saved content — shared articles that persist past
+    // the single reading session they were shared into, scoped to their
+    // own (anonymous) account via ensureReaderSignedIn above. nil when
+    // there's no signed-in reader yet, which fetchSavedContent/
+    // findSavedContent/saveContent below all treat as "nothing saved"
+    // rather than an error, since a reader who's never shared anything
+    // yet has no session at all until they do.
+    private var savedContent: CollectionReference? {
+        guard let uid = Auth.auth().currentUser?.uid else { return nil }
+        return Firestore.firestore().collection("readers").document(uid).collection("savedContent")
+    }
+
+    // Every article the signed-in reader has saved, for ChooseView's own
+    // "Saved" section.
+    func fetchSavedContent() async throws -> [ReadableContent] {
+        guard let savedContent else { return [] }
+        let snapshot = try await savedContent.getDocuments()
+        return snapshot.documents.compactMap { document in
+            guard let title = document.get("title") as? String,
+                  let description = document.get("description") as? String,
+                  let text = document.get("text") as? String,
+                  let sourceURL = document.get("sourceURL") as? String else {
+                return nil
+            }
+            return ReadableContent(id: document.documentID, title: title, description: description, text: text, source: .saved, sourceURL: sourceURL)
+        }
+    }
+
+    // Looks for a saved item matching this exact source URL, so a reader
+    // sharing the same article a second time reopens what's already
+    // there (see ContentView's own pendingSharedURL handling) instead of
+    // silently creating a duplicate entry every time.
+    func findSavedContent(bySourceURL sourceURL: String) async throws -> ReadableContent? {
+        guard let savedContent else { return nil }
+        let snapshot = try await savedContent
+            .whereField("sourceURL", isEqualTo: sourceURL)
+            .limit(to: 1)
+            .getDocuments()
+        guard let document = snapshot.documents.first,
+              let title = document.get("title") as? String,
+              let description = document.get("description") as? String,
+              let text = document.get("text") as? String else {
+            return nil
+        }
+        return ReadableContent(id: document.documentID, title: title, description: description, text: text, source: .saved, sourceURL: sourceURL)
+    }
+
+    // Persists a newly-extracted shared article to the signed-in
+    // reader's own saved content — content.id becomes the doc ID, so
+    // re-saving the same ReadableContent value (shouldn't normally
+    // happen, since findSavedContent above is checked first) overwrites
+    // rather than duplicates.
+    func saveContent(_ content: ReadableContent, sourceURL: String) async throws {
+        guard let savedContent else { return }
+        try await savedContent.document(content.id).setData([
+            "title": content.title,
+            "description": content.description,
+            "text": content.text,
+            "sourceURL": sourceURL,
+            "createdAt": FieldValue.serverTimestamp(),
+        ])
     }
 
     func signOut() throws {

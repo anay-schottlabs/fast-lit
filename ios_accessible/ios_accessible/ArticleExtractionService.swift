@@ -157,7 +157,9 @@ final class ArticleExtractionService: NSObject, WKNavigationDelegate {
             id: UUID().uuidString,
             title: parsed.title.isEmpty ? (url.host ?? "Shared Article") : parsed.title,
             description: parsed.excerpt,
-            text: parsed.textContent
+            text: parsed.textContent,
+            source: .saved,
+            sourceURL: url.absoluteString
         )
     }
 

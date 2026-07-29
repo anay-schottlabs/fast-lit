@@ -46,6 +46,12 @@ enum AuthMode {
 // This view just decides which page to show; each page's own UI lives in its
 // own struct below, for simplicity.
 struct ContentView: View {
+    // Needed here (not just deeper views like ChooseView) for the shared-
+    // article dedup/save flow below — ensureReaderSignedIn/
+    // findSavedContent/saveContent all need to run right where a shared
+    // URL first arrives, before ReadView ever shows.
+    @Environment(AuthService.self) private var authService
+
     // @State makes SwiftUI track this value and redraw when it changes.
     @State private var currentPage: Page = .home
 
@@ -223,12 +229,33 @@ struct ContentView: View {
             isExtractingSharedArticle = true
             sharedArticleExtractionError = nil
             defer { isExtractingSharedArticle = false }
-            do {
-                let content = try await ArticleExtractionService.extract(from: pendingSharedURL)
-                contentToRead = content
+
+            let sourceURLString = pendingSharedURL.absoluteString
+            // Sign-in and dedup lookup are both best-effort (try?, not
+            // try) — a reader should still be able to read what they
+            // just shared even if this device is offline or Firestore
+            // is unreachable; persistence/dedup are conveniences on top
+            // of the actual read, not a requirement for it.
+            try? await authService.ensureReaderSignedIn()
+            if let existing = try? await authService.findSavedContent(bySourceURL: sourceURLString) {
+                // Sharing the same article a second time reopens the
+                // saved copy from before instead of re-extracting and
+                // creating a duplicate "Saved" entry.
+                contentToRead = existing
                 currentPage = .read
-            } catch {
-                sharedArticleExtractionError = error.localizedDescription
+            } else {
+                do {
+                    let content = try await ArticleExtractionService.extract(from: pendingSharedURL)
+                    // Also best-effort: extraction having already
+                    // succeeded is what matters for THIS read; a failed
+                    // save just means it won't be there to dedupe
+                    // against or revisit later.
+                    try? await authService.saveContent(content, sourceURL: sourceURLString)
+                    contentToRead = content
+                    currentPage = .read
+                } catch {
+                    sharedArticleExtractionError = error.localizedDescription
+                }
             }
             self.pendingSharedURL = nil
         }
@@ -3289,20 +3316,39 @@ struct ReadableContentDetailView: View {
     }
 }
 
+// Which of the two catalog sections a piece of content belongs to (see
+// ChooseView) — .library is admin-curated, shared across every reader
+// whose library enabled it; .saved is one reader's own shared/read
+// articles, visible only to them. Nothing about ReadableContent itself
+// changes behavior based on this beyond ChooseView's own sectioning; it
+// exists so a single flat fetch-and-display path doesn't have to guess
+// which list a given item belongs in from context.
+enum ReadableContentSource {
+    case library
+    case saved
+}
+
 // Identifiable requires an "id" so List/ForEach/.sheet(item:) can tell rows
 // apart. For catalog content, id is the Firestore document ID (see
 // AuthService.fetchCatalog) — that content lives in Firestore, imported
 // once via scripts/import-catalog.js, not shipped as static data in the
-// app. A shared article (see ArticleExtractionService) has no Firestore
-// doc to key off of, so it synthesizes a UUID instead — nothing besides
-// Identifiable itself and ChooseView's "is this id in the library's
-// enabled set" filter (which a shared article never goes through) reads
-// this field, so either source is safe here.
+// app. Saved content (see AuthService.saveContent) uses a fresh UUID at
+// save time, kept stable from then on (not re-synthesized on every fetch)
+// so re-opening the same saved item twice doesn't create two SwiftUI
+// identities for what's really one row.
 struct ReadableContent: Identifiable {
     let id: String
     let title: String
     let description: String
     let text: String
+    let source: ReadableContentSource
+
+    // The original shared URL, for .saved content only (nil for
+    // .library items, which have no such thing) — AuthService.
+    // findSavedContent(bySourceURL:) matches on this so sharing the same
+    // article twice reopens the existing saved copy instead of creating
+    // a duplicate.
+    let sourceURL: String?
 }
 
 // Unlike the real app, #Preview below instantiates ContentView() directly

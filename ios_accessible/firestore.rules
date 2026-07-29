@@ -119,5 +119,27 @@ service cloud.firestore {
       // No reason for a client to need every library's selections at once.
       allow list: if false;
     }
+
+    // A reader's own saved content — shared articles that persist past the
+    // single session they were shared into (see AuthService.saveContent /
+    // fetchSavedContent / findSavedContent). Readers get a real (if
+    // anonymous) Firebase Auth account the first time this is needed
+    // (AuthService.ensureReaderSignedIn) specifically so this can be
+    // scoped to owner-only access, unlike every other reader-facing
+    // collection above (libraryJoinCodes, catalog, libraryCatalogSelections),
+    // which all stay publicly readable since readers otherwise have no
+    // account to check ownership against.
+    match /readers/{uid}/savedContent/{itemId} {
+      allow get, list: if request.auth != null && request.auth.uid == uid;
+
+      allow create, update: if request.auth != null
+                            && request.auth.uid == uid
+                            && request.resource.data.keys().hasOnly(['title', 'description', 'text', 'sourceURL', 'createdAt']);
+
+      // Unlike the registries above, this is genuinely the reader's own
+      // data rather than a permanence-guaranteeing uniqueness record, so
+      // there's no reason to forbid them removing something they saved.
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
   }
 }
