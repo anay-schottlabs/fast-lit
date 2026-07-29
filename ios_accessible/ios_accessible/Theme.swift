@@ -121,7 +121,7 @@ extension Font {
     // a big icon rather than being the whole point of the button.
     static let buttonCaption = Font.system(.caption, design: .rounded).weight(.semibold)
 
-    // A library's join code is something a reader needs to read
+    // A circle's join code is something a reader needs to read
     // correctly off the screen (often to type or say aloud elsewhere),
     // so it gets its own large, bold, monospaced style — monospaced
     // keeps every character the same width, which makes strings like

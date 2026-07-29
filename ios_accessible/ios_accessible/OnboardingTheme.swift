@@ -2,13 +2,13 @@ import SwiftUI
 
 /// A second, SEPARATE design system from Theme.swift — used only by the
 /// first-time onboarding sequence, the account-choice screen it shares
-/// with AccountView, and the library sign-up flow. Every type/color/font
+/// with AccountView, and the organizer sign-up flow. Every type/color/font
 /// in this file is prefixed "Onboarding" so it's never ambiguous which
 /// design system a given line of code is drawing from.
 // A second, SEPARATE little design system, used ONLY by the first-time
 // onboarding sequence (HomeView's welcome/name/theme/account-choice
 // steps), the "Who's Joining Us?" screen those steps share with
-// AccountView, and the library sign-up flow (LibrarySignUpView) that
+// AccountView, and the organizer sign-up flow (OrganizerSignUpView) that
 // continues on from it. Deliberately its own file, with its own colors,
 // fonts, and button/card styles — NOT built from Theme.swift's own
 // Color.surfaceBackground/.textPrimary/.accentPrimary,
@@ -114,7 +114,7 @@ struct OnboardingPrimaryButtonStyle: ButtonStyle {
 // The outlined pill next to a filled OnboardingPrimaryButtonStyle one —
 // used where this flow needs a second, less-emphasized full-width action
 // alongside its primary one (e.g. "Log In" beside "Sign Up" on the
-// library auth choice screen). Same capsule shape and sizing as the
+// organizer auth choice screen). Same capsule shape and sizing as the
 // primary style, just a 2px border in this flow's own border token
 // instead of a solid fill — matching Theme.swift's own
 // SecondaryButtonStyle shape, built from this flow's separate tokens.
@@ -223,7 +223,7 @@ struct OnboardingErrorLabel: View {
     let message: String
 
     // The single-field sign-up steps center everything (their one field
-    // is centered too), but LibraryLoginView's two stacked fields are
+    // is centered too), but OrganizerLoginView's two stacked fields are
     // left-aligned — this follows suit there rather than looking
     // oddly centered under left-aligned fields.
     var isLeading: Bool = false
@@ -449,7 +449,7 @@ struct OnboardingProgressBar: View {
 // MARK: - Selectable cards
 
 // A single generic card shape used for BOTH the Theme step's light/dark
-// swatch rows and the Account-choice step's Library/Reader icon rows —
+// swatch rows and the Account-choice step's Organizer/Reader icon rows —
 // the two only differ in what sits in the leading slot (a swatch
 // preview vs. an icon tile), everything else (title, optional
 // description, the 22pt selection ring, the border/fill treatment) is
@@ -578,12 +578,12 @@ struct OnboardingThemeSwatch: View {
     }
 }
 
-// The Account-choice step's Library/Reader icon tile — sits on the
+// The Account-choice step's Organizer/Reader icon tile — sits on the
 // onboarding background color (not a tinted accent circle, since this
 // flow uses no accent color), leaving the selection ring as the only
 // thing on the card that means "selected."
 /// A single SF Symbol on a rounded background tile, used as the leading
-/// element of the Account-choice step's Library/Reader cards.
+/// element of the Account-choice step's Organizer/Reader cards.
 struct OnboardingIconTile: View {
     let systemImage: String
 

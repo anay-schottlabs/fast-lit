@@ -7,7 +7,7 @@ rules_version = '2';
 service cloud.firestore {
   match /databases/{database}/documents {
 
-    // Registry of taken library usernames (see AuthService.isUsernameTaken
+    // Registry of taken circle usernames (see AuthService.isUsernameTaken
     // / registerUsername in the iOS app). Each doc's ID is the username
     // itself; its mere existence means that username is taken. The real,
     // authoritative uniqueness guarantee is still the Firebase Auth
@@ -15,7 +15,7 @@ service cloud.firestore {
     // sign-up in progress can check "is this taken?" before an Auth
     // account exists to check against, since Auth's own equivalent check
     // (fetchSignInMethods) is blocked by email enumeration protection.
-    match /libraryUsernames/{username} {
+    match /circleUsernames/{username} {
       // Anyone can check whether a username is taken — the stored fields
       // (uid, createdAt) aren't sensitive, and the whole point of this
       // collection is that its existence is checkable pre-sign-up, before
@@ -37,12 +37,12 @@ service cloud.firestore {
       allow list: if false;
     }
 
-    // A library account's own profile (username + join code), keyed by
+    // An organizer's own circle profile (username + join code), keyed by
     // uid rather than username — this is "my own data", read back by the
     // signed-in owner via their own uid, not looked up by name the way
-    // libraryUsernames above is. See AuthService.createLibraryProfile /
-    // fetchLibraryProfile and LibraryView, which displays the join code.
-    match /libraries/{uid} {
+    // circleUsernames above is. See AuthService.createCircleProfile /
+    // fetchCircleProfile and OrganizerHomeView, which displays the join code.
+    match /circles/{uid} {
       // Only the account owner can read their own profile/join code.
       allow get: if request.auth != null && request.auth.uid == uid;
 
@@ -56,25 +56,26 @@ service cloud.firestore {
       // join code" feature yet.
       allow update, delete: if false;
 
-      // No reason for a client to need every library's profile at once.
+      // No reason for a client to need every circle's profile at once.
       allow list: if false;
     }
 
-    // A second registry alongside libraryUsernames above, keyed by join
-    // code instead of username. Readers have no account and never sign
-    // in — this is how ReaderAccountView resolves a typed-in code straight
-    // to a library's name via a single get-by-ID, no auth or query needed.
-    match /libraryJoinCodes/{joinCode} {
-      // Anyone can look up a code — that's the entire point, since readers
-      // are never signed in when they do this.
+    // A second registry alongside circleUsernames above, keyed by join
+    // code instead of username. Readers have no account of their own
+    // that a code could be looked up under — this is how ReaderAccountView
+    // resolves a typed-in code straight to a circle's name via a single
+    // get-by-ID, no auth or query needed.
+    match /circleJoinCodes/{joinCode} {
+      // Anyone can look up a code — that's the entire point, since a
+      // reader looking one up may not have an anonymous session yet.
       allow get: if true;
 
-      // Only a signed-in library account can register its own join code,
-      // and only as itself (uid must match the caller) — stops someone
-      // else claiming or overwriting another library's code.
+      // Only a signed-in organizer can register their own circle's join
+      // code, and only as itself (uid must match the caller) — stops
+      // someone else claiming or overwriting another circle's code.
       allow create: if request.auth != null
                     && request.resource.data.uid == request.auth.uid
-                    && request.resource.data.keys().hasOnly(['uid', 'libraryName', 'createdAt']);
+                    && request.resource.data.keys().hasOnly(['uid', 'circleName', 'createdAt']);
 
       // Permanent from the client's side — no editing or freeing up a join
       // code once it's registered.
@@ -84,11 +85,11 @@ service cloud.firestore {
       allow list: if false;
     }
 
-    // The shared reading catalog every library draws from. Reading
+    // The shared reading catalog every circle draws from. Reading
     // material itself isn't sensitive or account-specific — both readers
-    // (who have no account at all) and library owners (building the
-    // "which parts are enabled" toggle list) need to list and read the
-    // whole thing.
+    // (whose own account, if any, is anonymous) and organizers (building
+    // the "which parts are enabled" toggle list) need to list and read
+    // the whole thing.
     match /catalog/{contentId} {
       allow get: if true;
       allow list: if true;
@@ -100,23 +101,23 @@ service cloud.firestore {
       allow create, update, delete: if false;
     }
 
-    // Which catalog items a library has enabled for its own readers. Kept
-    // separate from libraries/{uid} above (rather than a field on it)
-    // since this needs to be publicly readable: readers have no account
-    // and never sign in, so they need to fetch this straight after
-    // joining a library by its code, without auth.
-    match /libraryCatalogSelections/{uid} {
+    // Which catalog items a circle has enabled for its own readers. Kept
+    // separate from circles/{uid} above (rather than a field on it) since
+    // this needs to be publicly readable: a reader looking this up may
+    // not have an anonymous session yet, so they need to fetch this
+    // straight after joining a circle by its code, without auth.
+    match /circleCatalogSelections/{uid} {
       allow get: if true;
 
-      // Only the library account itself can set which items are enabled,
-      // and only for its own uid.
+      // Only the organizer account itself can set which items are
+      // enabled, and only for its own uid.
       allow create, update: if request.auth != null
                             && request.auth.uid == uid
                             && request.resource.data.keys().hasOnly(['enabledContentIds', 'updatedAt']);
 
       allow delete: if false;
 
-      // No reason for a client to need every library's selections at once.
+      // No reason for a client to need every circle's selections at once.
       allow list: if false;
     }
 
@@ -126,9 +127,9 @@ service cloud.firestore {
     // anonymous) Firebase Auth account the first time this is needed
     // (AuthService.ensureReaderSignedIn) specifically so this can be
     // scoped to owner-only access, unlike every other reader-facing
-    // collection above (libraryJoinCodes, catalog, libraryCatalogSelections),
-    // which all stay publicly readable since readers otherwise have no
-    // account to check ownership against.
+    // collection above (circleJoinCodes, catalog, circleCatalogSelections),
+    // which all stay publicly readable since a reader looking those up
+    // may not have an account yet to check ownership against.
     match /readers/{uid}/savedContent/{itemId} {
       allow get, list: if request.auth != null && request.auth.uid == uid;
 
@@ -139,6 +140,22 @@ service cloud.firestore {
       // Unlike the registries above, this is genuinely the reader's own
       // data rather than a permanence-guaranteeing uniqueness record, so
       // there's no reason to forbid them removing something they saved.
+      allow delete: if request.auth != null && request.auth.uid == uid;
+    }
+
+    // A reader's own list of joined circles (see
+    // AuthService.fetchJoinedCircles / recordJoinedCircle), shown on
+    // ReaderAccountView's home page and used by ChooseView to build one
+    // catalog section per circle. Same owner-only shape as savedContent
+    // just above, and for the same reason: this is the reader's own data,
+    // scoped to their real (if anonymous) account.
+    match /readers/{uid}/joinedCircles/{circleUid} {
+      allow get, list: if request.auth != null && request.auth.uid == uid;
+
+      allow create, update: if request.auth != null
+                            && request.auth.uid == uid
+                            && request.resource.data.keys().hasOnly(['circleName', 'joinedAt']);
+
       allow delete: if request.auth != null && request.auth.uid == uid;
     }
   }

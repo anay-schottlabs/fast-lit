@@ -18,10 +18,10 @@ private let pendingSharedURLKey = "pendingSharedArticleURL"
 
 /// Which top-level screen ContentView is currently showing.
 // enum = a fixed set of named cases; used here as a simple "which page" switch.
-// No ".library" case — a library account's own home screen
-// (LibraryHomeView) is reached directly from within LibrarySignUpView/
-// LibraryLoginView's own local state once auth succeeds, not via a
-// separate top-level page the way ChooseView is for readers.
+// No ".organizer" case — an organizer's own home screen (OrganizerHomeView)
+// is reached directly from within OrganizerSignUpView/OrganizerLoginView's
+// own local state once auth succeeds, not via a separate top-level page
+// the way ChooseView is for readers.
 enum Page {
     case home
     case choose
@@ -29,11 +29,12 @@ enum Page {
     case account
 }
 
-/// Which kind of account someone is signing into or creating.
-// Chosen on AccountView before its username/password or six-digit-code
-// form shows.
+/// Which kind of account someone is signing into or creating: a reader
+/// (just an anonymous session, joins circles by code) or an organizer
+/// (a real username/password account that curates a circle's catalog).
+// Chosen on AccountView before its own form shows.
 enum AccountType {
-    case library
+    case organizer
     case reader
 }
 
@@ -68,18 +69,6 @@ struct ContentView: View {
     // Lives here (not in ChooseView) since it needs to survive past ChooseView
     // being swapped out for ReadView.
     @State private var contentToRead: ReadableContent? = nil
-
-    // Set once a reader successfully joins a library by its code (in
-    // ReaderAccountView, several screens deep under AccountView). Lives here
-    // rather than there since ChooseView — which needs it to know whose
-    // catalog selections to filter against — is a sibling of that whole
-    // account flow, not a descendant of it.
-    // @AppStorage (not plain @State) so a reader who joined a library once
-    // doesn't have to type their join code in again on every app launch —
-    // ReaderAccountView already treats a non-nil value here as "already
-    // joined" and skips straight to its own home content; persisting it is
-    // the only piece that was missing for that to also survive a relaunch.
-    @AppStorage("joinedLibraryUid") private var joinedLibraryUid: String?
 
     // Which kind of account the reader picked — either on HomeView's own
     // final onboarding step (see AccountChoiceScreen in this file), or on
@@ -147,14 +136,15 @@ struct ContentView: View {
                 if currentPage == .home {
                     HomeView(currentPage: $currentPage, accountType: $accountType)
                 } else if currentPage == .choose {
-                    // "if let" only unwraps and shows ChooseView once joinedLibraryUid
-                    // is actually set, which it always is by the time a reader can
-                    // reach this page (see ReaderAccountView's "Start Reading" button).
-                    if let joinedLibraryUid {
-                        ChooseView(currentPage: $currentPage, contentToRead: $contentToRead, libraryUid: joinedLibraryUid)
-                    }
+                    // No gating on "has the reader joined a circle" —
+                    // ChooseView itself fetches whichever circles (zero or
+                    // more) the signed-in reader has joined and sections
+                    // the catalog accordingly, so a reader can reach this
+                    // page (and their own Saved section) without ever
+                    // joining one.
+                    ChooseView(currentPage: $currentPage, contentToRead: $contentToRead)
                 } else if currentPage == .account {
-                    AccountView(currentPage: $currentPage, joinedLibraryUid: $joinedLibraryUid, accountType: $accountType)
+                    AccountView(currentPage: $currentPage, accountType: $accountType)
                 } else if currentPage == .read {
                     // "if let" only unwraps and shows ReadView once contentToRead is
                     // actually set, which it always is by the time we reach this page.
@@ -441,7 +431,7 @@ struct HomeView: View {
 
     // Step 2: a first name (or nickname) so later screens can greet a
     // reader by it — required, like every other field in this app (see
-    // LibraryLoginView/LibrarySignUpView), not skippable.
+    // OrganizerLoginView/OrganizerSignUpView), not skippable.
     private var nameStep: some View {
         VStack(spacing: Spacing.medium) {
             OnboardingProgressBar(step: 1, total: 5)
@@ -646,14 +636,14 @@ struct HomeView: View {
 
 // MARK: - Settings
 
-/// A signed-in reader or library account's own settings screen.
+/// A signed-in reader or organizer account's own settings screen.
 // Reachable via a gear icon on each account type's own landing page
-// (ReaderAccountView's readerHomeContent, once joined, or LibraryHomeView,
-// once signed in), never from ChooseView (a reader's catalog) or
-// AccountView's own picker, since there's nothing to configure before an
-// account actually exists. A real full screen, not a sheet — same
-// reasoning, and same Binding-owned-by-the-presenting-view pattern, as
-// LibraryCatalogManagementView's own move away from a sheet. Styled with
+// (ReaderAccountView's readerHomeContent, or OrganizerHomeView, once
+// signed in), never from ChooseView (a reader's catalog) or AccountView's
+// own picker, since there's nothing to configure before an account
+// actually exists. A real full screen, not a sheet — same reasoning, and
+// same Binding-owned-by-the-presenting-view pattern, as
+// OrganizerCatalogManagementView's own move away from a sheet. Styled with
 // OnboardingTheme.swift's components rather than Theme.swift's, matching
 // the direction the rest of the app is headed.
 struct SettingsView: View {
@@ -661,22 +651,17 @@ struct SettingsView: View {
     // presents this one, not this view itself.
     @Binding var isShowingSettings: Bool
 
-    // Sent to .home by "Reset App" below, the same way LibraryHomeView/
+    // Sent to .home by "Reset App" below, the same way OrganizerHomeView/
     // ReaderAccountView's own Sign Out sends it to .account — reset goes
     // one step further, back to the very start of onboarding rather than
     // just the account picker.
     @Binding var currentPage: Page
 
     // Cleared to nil by "Reset App" below, same reasoning as Sign Out's
-    // own copy of this in LibraryHomeView/ReaderAccountView: without
+    // own copy of this in OrganizerHomeView/ReaderAccountView: without
     // this, AccountView (reached again once onboarding finishes a second
     // time) would see it already set and skip its own picker.
     @Binding var accountType: AccountType?
-
-    // Only ReaderAccountView has this concept — LibraryHomeView passes
-    // nothing here, since a library account was never "joined" to
-    // anything. nil-safe throughout "Reset App" below.
-    var joinedLibraryUid: Binding<String?>? = nil
 
     @Environment(AuthService.self) private var authService
 
@@ -685,7 +670,7 @@ struct SettingsView: View {
     @AppStorage("appColorScheme") private var appColorSchemeRaw: String = AppColorScheme.system.rawValue
 
     // The same key HomeView's onboarding name step writes to — shared
-    // between the reader and library flows, since both ask for a name
+    // between the reader and organizer flows, since both ask for a name
     // before account type is even chosen (see HomeView's nameStep).
     @AppStorage("readerName") private var readerName: String = ""
 
@@ -747,15 +732,18 @@ struct SettingsView: View {
         }
     }
 
-    // try? — same reasoning as Sign Out's own copy of this call
-    // elsewhere: failing to sign out of Firebase isn't something worth
-    // blocking the reset over, since every field this actually needs to
-    // clear (accountType, joinedLibraryUid, hasCompletedOnboarding,
-    // readerName) is local either way.
+    // Unlike ReaderAccountView's own Sign Out (a purely local reset that
+    // deliberately leaves a reader's anonymous Firebase session intact —
+    // see that view's own comment), this DOES call authService.signOut(),
+    // since "Reset App" is the one place meant to actually end a reader's
+    // session too — losing their saved content and joined circles is the
+    // whole point of a genuinely fresh start, not an accident to avoid.
+    // try? — a failure here isn't worth blocking the rest of the reset
+    // over, since every other field this clears (accountType,
+    // hasCompletedOnboarding, readerName) is local either way.
     private func resetApp() {
         try? authService.signOut()
         accountType = nil
-        joinedLibraryUid?.wrappedValue = nil
         readerName = ""
         hasCompletedOnboarding = false
         isShowingSettings = false
@@ -846,7 +834,7 @@ struct SettingsView: View {
     // Signs out and clears every piece of onboarding/account state this
     // app tracks, sending the reader all the way back to HomeView's first
     // welcome screen — for someone who wants a genuinely fresh start
-    // (new name, re-pick light/dark, join a different library) rather
+    // (new name, re-pick light/dark, join different circles) rather
     // than the ordinary Sign Out already available from their own
     // account's home screen, which only returns to the account picker.
     private var resetSection: some View {
@@ -899,18 +887,12 @@ struct SettingsView: View {
 struct AccountView: View {
     @Binding var currentPage: Page
 
-    // Reported back up to ContentView so ChooseView (a sibling of this
-    // whole account flow, not a descendant of it) knows whose
-    // libraryCatalogSelections to filter the catalog against, once a
-    // reader joins one.
-    @Binding var joinedLibraryUid: String?
-
     // Set by HomeView's own final onboarding step (see accountChoiceStep
     // there) before currentPage ever switches to .account — a @Binding,
     // not @State, specifically so that hand-off works: if it already
     // holds a value by the time this view appears, the picker below is
     // skipped entirely and the matching form shows right away. Cleared
-    // back to nil by LibraryAccountView/ReaderAccountView's own "Go
+    // back to nil by OrganizerAccountView/ReaderAccountView's own "Go
     // Back", which is what brings the picker back for a reader who
     // changes their mind.
     @Binding var accountType: AccountType?
@@ -918,20 +900,29 @@ struct AccountView: View {
     @Environment(AuthService.self) private var authService
 
     var body: some View {
-        // The "|| authService.isSignedIn" / "|| joinedLibraryUid != nil"
-        // parts are what make a returning library account or a reader who
-        // already joined skip this whole picker on relaunch: accountType
-        // itself is never persisted (it always starts nil), but Firebase's
-        // own session persistence and joinedLibraryUid's @AppStorage
-        // (both in ContentView) already are — reading them here routes
-        // straight to the matching branch below without asking "library
-        // or reader" again. Each branch's own view (LibraryAccountView's
-        // isSignedIn check, ReaderAccountView's joinedLibraryUid check)
-        // is what then skips ITS OWN sign-in/join-code form too.
-        if accountType == .library || authService.isSignedIn {
-            LibraryAccountView(accountType: $accountType, currentPage: $currentPage)
-        } else if accountType == .reader || joinedLibraryUid != nil {
-            ReaderAccountView(accountType: $accountType, currentPage: $currentPage, joinedLibraryUid: $joinedLibraryUid)
+        // The "|| authService.isOrganizerSignedIn" / "|| isReaderSignedIn"
+        // parts are what make a returning organizer or a returning reader
+        // skip this whole picker on relaunch: accountType itself is never
+        // persisted (it always starts nil), but Firebase's own session
+        // persistence (in AuthService) already is — reading it here routes
+        // straight to the matching branch below without asking "who's
+        // joining us" again.
+        //
+        // These two checks are deliberately NOT just "authService.isSignedIn"
+        // used twice: an anonymous reader session (see
+        // AuthService.ensureReaderSignedIn) also makes isSignedIn true, so
+        // a plain isSignedIn check here would misroute a returning reader
+        // who's shared or saved something before into the organizer
+        // sign-in/sign-up flow — there's no organizer profile for their
+        // uid, so that dead-ended in a broken "No join code found for
+        // this account" state. isOrganizerSignedIn/isReaderSignedIn tell
+        // the two kinds of session apart via Firebase's own
+        // currentUser.isAnonymous, so each kind of returning visitor
+        // actually lands on their own home screen.
+        if accountType == .organizer || authService.isOrganizerSignedIn {
+            OrganizerAccountView(accountType: $accountType, currentPage: $currentPage)
+        } else if accountType == .reader || authService.isReaderSignedIn {
+            ReaderAccountView(accountType: $accountType, currentPage: $currentPage)
         } else {
             // The same "Who's Joining Us?" screen HomeView's onboarding
             // shows as its own final step (see AccountChoiceScreen below)
@@ -940,7 +931,7 @@ struct AccountView: View {
             // to for a returning reader — HomeView sends them straight
             // here). No Settings access here either — this is a
             // sign-in/sign-up screen, not an account's own home, so
-            // there's nothing yet to configure; see LibraryHomeView and
+            // there's nothing yet to configure; see OrganizerHomeView and
             // ReaderAccountView's own gear icons for where Settings
             // actually lives once signed in.
             AccountChoiceScreen(onContinue: { chosen in
@@ -981,7 +972,7 @@ private struct AccountChoiceScreen: View {
     var onBack: (() -> Void)? = nil
 
     // Always starts nil, even when AccountView shows this again after a
-    // reader taps "Go Back" from inside LibraryAccountView/
+    // reader taps "Go Back" from inside OrganizerAccountView/
     // ReaderAccountView — that should ask the question fresh, not
     // silently remember their last pick.
     @State private var selection: AccountType? = nil
@@ -1008,17 +999,17 @@ private struct AccountChoiceScreen: View {
 
             OnboardingSelectableCard(
                 leading: OnboardingIconTile(systemImage: "books.vertical.fill"),
-                title: "I'm a Library",
-                description: "Set up reading material for your members.",
-                isSelected: selection == .library
+                title: "I'm an Organizer",
+                description: "Curate reading material for your circles.",
+                isSelected: selection == .organizer
             ) {
-                selection = .library
+                selection = .organizer
             }
 
             OnboardingSelectableCard(
                 leading: OnboardingIconTile(systemImage: "person.fill"),
                 title: "I'm a Reader",
-                description: "Join with a code from your library.",
+                description: "Read at your own pace — join circles anytime.",
                 isSelected: selection == .reader
             ) {
                 selection = .reader
@@ -1047,23 +1038,23 @@ private struct AccountChoiceScreen: View {
     }
 }
 
-// MARK: - Library Account
+// MARK: - Organizer Account
 
-/// Lets the user choose whether to log into an existing library account
+/// Lets the user choose whether to log into an existing organizer account
 /// or sign up for a new one, then shows that specific form.
-// Library accounts use a username and password either way. This picker
-// itself — "Set up your library" — is part of the onboarding redesign
+// Organizer accounts use a username and password either way. This picker
+// itself — "Set up your circle" — is part of the onboarding redesign
 // (it's step 5 of 5 in the overall onboarding flow's own progress count,
-// same as Library Log In and Reader Join Code, all of which share that
+// same as Organizer Log In and Reader Join Code, all of which share that
 // final step), built entirely from OnboardingTheme.swift's components
 // rather than Theme.swift's, matching HomeView's own onboarding steps.
-struct LibraryAccountView: View {
+struct OrganizerAccountView: View {
     // @Binding (not "let") so "Go Back" below can clear it, returning to
     // AccountView's picker the same way it got here.
     @Binding var accountType: AccountType?
 
     // Passed straight through to the login/sign-up forms below, so either
-    // one can jump to .library once authentication actually succeeds.
+    // one can jump to .account once authentication actually succeeds.
     @Binding var currentPage: Page
 
     // nil until the user picks log in or sign up below; once set, that
@@ -1073,18 +1064,20 @@ struct LibraryAccountView: View {
     @Environment(AuthService.self) private var authService
 
     var body: some View {
-        // A returning library account whose Firebase session is still
+        // A returning organizer account whose Firebase session is still
         // valid (persisted on-device by Firebase Auth itself — see
         // AuthService's own init) skips straight to their home screen,
         // the same "you're already signed in, don't ask again" treatment
-        // LibraryHomeView's own greeting: .loggedIn otherwise only gets
-        // right after a fresh LibraryLoginView submit.
-        if authService.isSignedIn {
-            LibraryHomeView(greeting: .loggedIn, currentPage: $currentPage, accountType: $accountType)
+        // OrganizerHomeView's own greeting: .loggedIn otherwise only gets
+        // right after a fresh OrganizerLoginView submit. isOrganizerSignedIn
+        // (not plain isSignedIn) so an anonymous reader session doesn't
+        // also satisfy this check — see AccountView's own comment on why.
+        if authService.isOrganizerSignedIn {
+            OrganizerHomeView(greeting: .loggedIn, currentPage: $currentPage, accountType: $accountType)
         } else if authMode == .login {
-            LibraryLoginView(authMode: $authMode, currentPage: $currentPage, accountType: $accountType)
+            OrganizerLoginView(authMode: $authMode, currentPage: $currentPage, accountType: $accountType)
         } else if authMode == .signUp {
-            LibrarySignUpView(authMode: $authMode, currentPage: $currentPage, accountType: $accountType)
+            OrganizerSignUpView(authMode: $authMode, currentPage: $currentPage, accountType: $accountType)
         } else {
             VStack(spacing: Spacing.medium) {
                 OnboardingProgressBar(step: 5, total: 5)
@@ -1097,9 +1090,9 @@ struct LibraryAccountView: View {
                 OnboardingMascot(size: 96, sparkleCount: 0, showsGlow: false)
 
                 OnboardingPageHeader(
-                    title: "Set up your library",
+                    title: "Set up your circle",
                     titleSize: 30,
-                    subtitle: "Sign up to create a new library, or log in if you already have one.",
+                    subtitle: "Sign up to create a new circle, or log in if you already have one.",
                     subtitleSize: 16
                 )
 
@@ -1132,10 +1125,10 @@ struct LibraryAccountView: View {
     }
 }
 
-/// Normalizes a library username as it's typed: no capitals (lowercased,
+/// Normalizes a circle username as it's typed: no capitals (lowercased,
 /// rather than rejected) and no spaces (turned into hyphens, rather than
 /// rejected).
-// Shared by LibraryLoginView and LibrarySignUpView so the same
+// Shared by OrganizerLoginView and OrganizerSignUpView so the same
 // typed input always produces the same username in both places — a
 // username signed up as "Test User" becomes "test-user", and logging in
 // with "Test User" (or "TEST USER", or "test-user") all need to normalize
@@ -1144,29 +1137,29 @@ private func sanitizedUsername(_ input: String) -> String {
     input.lowercased().replacingOccurrences(of: " ", with: "-")
 }
 
-/// Logging into an existing library account, for real via AuthService.
+/// Logging into an existing organizer account, for real via AuthService.
 // Rebuilt to match the onboarding redesign — same mascot/title/subtitle
-// pattern as LibraryAccountView's own "Set up your library" screen just
+// pattern as OrganizerAccountView's own "Set up your circle" screen just
 // above, with two stacked ghost fields (left-aligned, Quicksand — NOT
 // the single centered Baloo-2 field the sign-up steps use, since two
 // fields sharing one screen read better smaller and left-aligned than
 // centered and oversized). A successful sign-in now lands directly on
-// LibraryHomeView (see didSignIn below), same as LibrarySignUpView's own
-// terminal state.
-struct LibraryLoginView: View {
-    // @Binding so "Go Back" can clear it, returning to LibraryAccountView's
+// OrganizerHomeView (see didSignIn below), same as OrganizerSignUpView's
+// own terminal state.
+struct OrganizerLoginView: View {
+    // @Binding so "Go Back" can clear it, returning to OrganizerAccountView's
     // log in/sign up picker.
     @Binding var authMode: AuthMode?
 
-    // Passed straight through to LibraryHomeView once sign-in succeeds
+    // Passed straight through to OrganizerHomeView once sign-in succeeds
     // (see didSignIn just below) — that screen's own "Sign Out" is the
     // only thing that actually changes this, and what it changes it to.
     @Binding var currentPage: Page
 
-    // Also passed straight through to LibraryHomeView, for the same
+    // Also passed straight through to OrganizerHomeView, for the same
     // reason — "Sign Out" clears this back to nil so AccountView shows
-    // its own "library or reader" picker again, rather than skipping
-    // straight back into this same library flow.
+    // its own "organizer or reader" picker again, rather than skipping
+    // straight back into this same organizer flow.
     @Binding var accountType: AccountType?
 
     @Environment(AuthService.self) private var authService
@@ -1183,14 +1176,14 @@ struct LibraryLoginView: View {
     @State private var isSubmitting: Bool = false
 
     // Set once sign-in actually succeeds — lands directly on the
-    // library's own home screen (see LibraryHomeView) rather than the
+    // circle's own home screen (see OrganizerHomeView) rather than the
     // old version of this screen's own "skip straight to currentPage =
-    // .library the instant Firebase confirmed sign-in."
+    // .account the instant Firebase confirmed sign-in."
     @State private var didSignIn: Bool = false
 
     var body: some View {
         if didSignIn {
-            LibraryHomeView(greeting: .loggedIn, currentPage: $currentPage, accountType: $accountType)
+            OrganizerHomeView(greeting: .loggedIn, currentPage: $currentPage, accountType: $accountType)
         } else {
             loginForm
         }
@@ -1204,9 +1197,9 @@ struct LibraryLoginView: View {
             OnboardingMascot(size: 96, sparkleCount: 0, showsGlow: false)
 
             OnboardingPageHeader(
-                title: "Log in to your library",
+                title: "Log in to your circle",
                 titleSize: 30,
-                subtitle: "Enter your library credentials.",
+                subtitle: "Enter your circle credentials.",
                 subtitleSize: 16
             )
 
@@ -1282,14 +1275,14 @@ struct LibraryLoginView: View {
         .background(Color.onboardingBackground.ignoresSafeArea())
     }
 
-    // Library accounts are identified by username, but Firebase's
+    // Organizer accounts are identified by username, but Firebase's
     // email/password provider needs something shaped like an email — this
     // appends a fixed, made-up domain so a username becomes one, without
-    // "email" ever appearing anywhere in this screen. LibrarySignUpView
+    // "email" ever appearing anywhere in this screen. OrganizerSignUpView
     // builds the same shape, so a username signed up there can log back in
     // here.
-    private func libraryEmail(for username: String) -> String {
-        "\(username)@fastlit-library.app"
+    private func circleEmail(for username: String) -> String {
+        "\(username)@fastlit-circle.app"
     }
 
     private func logIn() {
@@ -1297,7 +1290,7 @@ struct LibraryLoginView: View {
         isSubmitting = true
         Task {
             do {
-                try await authService.signIn(email: libraryEmail(for: username), password: password)
+                try await authService.signIn(email: circleEmail(for: username), password: password)
                 didSignIn = true
             } catch {
                 errorMessage = error.localizedDescription
@@ -1307,19 +1300,19 @@ struct LibraryLoginView: View {
     }
 }
 
-/// Which step of LibrarySignUpView's own wizard is showing.
+/// Which step of OrganizerSignUpView's own wizard is showing.
 // A dedicated enum (rather than the old plain Int) since each step is now
 // its own full screen with its own title/copy/field, not just a
 // swapped-out field within one shared layout.
-private enum LibrarySignUpStep {
-    case libraryName
+private enum OrganizerSignUpStep {
+    case circleName
     case username
     case password
     case confirmPassword
     case success
 }
 
-/// Signing up for a new library account, as four separate full-screen
+/// Signing up for a new organizer account, as four separate full-screen
 /// steps — one field per screen — plus a final confirmation screen once
 /// the account is actually created.
 // Matching HomeView's own "What should we call you?" onboarding step
@@ -1328,29 +1321,28 @@ private enum LibrarySignUpStep {
 // from the main onboarding flow's — this sub-flow restarts its own count
 // at step 1, since reaching here already means onboarding proper is
 // finished.
-struct LibrarySignUpView: View {
+struct OrganizerSignUpView: View {
     @Binding var authMode: AuthMode?
 
-    // Passed straight through to LibraryHomeView once the account is
+    // Passed straight through to OrganizerHomeView once the account is
     // actually created (see successStep below) — that screen's own
     // "Sign Out" is the only thing that actually changes this, and what
     // it changes it to.
     @Binding var currentPage: Page
 
-    // Also passed straight through to LibraryHomeView, for the same
+    // Also passed straight through to OrganizerHomeView, for the same
     // reason — "Sign Out" clears this back to nil so AccountView shows
-    // its own "library or reader" picker again, rather than skipping
-    // straight back into this same library flow.
+    // its own "organizer or reader" picker again, rather than skipping
+    // straight back into this same organizer flow.
     @Binding var accountType: AccountType?
 
     @Environment(AuthService.self) private var authService
 
-    @State private var step: LibrarySignUpStep = .libraryName
+    @State private var step: OrganizerSignUpStep = .circleName
 
-    // "Library" is just a fun way to describe an organization account, so
-    // this step asks for the organization's name, not a person's name —
-    // unlike the reader flow, which asks "What should we call you?".
-    @State private var libraryName: String = ""
+    // A circle's own name (what its readers will see), not a person's
+    // name — unlike the reader flow, which asks "What should we call you?".
+    @State private var circleName: String = ""
     @State private var username: String = ""
     @State private var password: String = ""
     @State private var confirmPassword: String = ""
@@ -1360,7 +1352,7 @@ struct LibrarySignUpView: View {
     // sign-up); cleared again whenever its own field changes.
     @State private var errorMessage: String? = nil
 
-    // Disables "Continue"/"Create Library" for the duration of a network
+    // Disables "Continue"/"Create Circle" for the duration of a network
     // call (the username-taken check, or the actual sign-up), so a slow
     // network can't be worked around by mashing the button into firing
     // several at once.
@@ -1369,8 +1361,8 @@ struct LibrarySignUpView: View {
     var body: some View {
         Group {
             switch step {
-            case .libraryName:
-                libraryNameStep
+            case .circleName:
+                circleNameStep
             case .username:
                 usernameStep
             case .password:
@@ -1390,8 +1382,8 @@ struct LibrarySignUpView: View {
         .animation(.easeInOut(duration: 0.45), value: step)
     }
 
-    // Step 1 of 4: the organization's name.
-    private var libraryNameStep: some View {
+    // Step 1 of 4: the circle's name.
+    private var circleNameStep: some View {
         VStack(spacing: Spacing.medium) {
             OnboardingProgressBar(step: 1, total: 4)
                 .padding(.bottom, Spacing.small)
@@ -1401,7 +1393,7 @@ struct LibrarySignUpView: View {
             OnboardingMascot(size: 110, sparkleCount: 1)
 
             OnboardingPageHeader(
-                title: "What's your library called?",
+                title: "What's your circle called?",
                 titleSize: 34,
                 subtitle: "This is the name members will see.",
                 subtitleSize: 16
@@ -1410,8 +1402,8 @@ struct LibrarySignUpView: View {
             VStack(spacing: Spacing.small) {
                 TextField(
                     "",
-                    text: $libraryName,
-                    prompt: Text("Library name")
+                    text: $circleName,
+                    prompt: Text("Circle name")
                         .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
                 )
                 .textFieldStyle(.plain)
@@ -1435,7 +1427,7 @@ struct LibrarySignUpView: View {
                 Text("Continue")
             })
             .buttonStyle(OnboardingPrimaryButtonStyle())
-            .disabled(libraryName.trimmingCharacters(in: .whitespaces).isEmpty)
+            .disabled(circleName.trimmingCharacters(in: .whitespaces).isEmpty)
 
             OnboardingBackButton(action: {
                 authMode = nil
@@ -1509,7 +1501,7 @@ struct LibrarySignUpView: View {
             .disabled(isSubmitting || username.trimmingCharacters(in: .whitespaces).isEmpty)
 
             OnboardingBackButton(action: {
-                step = .libraryName
+                step = .circleName
             })
         }
         .padding(Spacing.large)
@@ -1584,7 +1576,7 @@ struct LibrarySignUpView: View {
 
     // Step 4 of 4: confirming the password — matching it is what
     // actually creates the account (see submitSignUp below), so this
-    // step's own button reads "Create Library" rather than "Continue".
+    // step's own button reads "Create Circle" rather than "Continue".
     private var confirmPasswordStep: some View {
         VStack(spacing: Spacing.medium) {
             OnboardingProgressBar(step: 4, total: 4)
@@ -1632,7 +1624,7 @@ struct LibrarySignUpView: View {
             Button(action: {
                 submitSignUp()
             }, label: {
-                Text("Create Library")
+                Text("Create Circle")
             })
             .buttonStyle(OnboardingPrimaryButtonStyle())
             .disabled(isSubmitting || confirmPassword.isEmpty)
@@ -1647,20 +1639,20 @@ struct LibrarySignUpView: View {
     }
 
     // The terminal step, once the account is actually created — lands
-    // directly on the library's own home screen (see LibraryHomeView),
+    // directly on the circle's own home screen (see OrganizerHomeView),
     // not a separate generic "you're all set" screen first.
     private var successStep: some View {
-        LibraryHomeView(greeting: .signedUp, currentPage: $currentPage, accountType: $accountType)
+        OrganizerHomeView(greeting: .signedUp, currentPage: $currentPage, accountType: $accountType)
     }
 
-    // Same fixed-domain trick LibraryLoginView uses, so a username signed
-    // up here can log back in there.
-    private func libraryEmail(for username: String) -> String {
-        "\(username)@fastlit-library.app"
+    // Same fixed-domain trick OrganizerLoginView uses, so a username
+    // signed up here can log back in there.
+    private func circleEmail(for username: String) -> String {
+        "\(username)@fastlit-circle.app"
     }
 
     // Only advances from the username step to the password step once a
-    // check against Firestore's libraryUsernames registry confirms the
+    // check against Firestore's circleUsernames registry confirms the
     // username isn't already taken — the whole point being that no one
     // should even reach the password step for a username that can't be
     // signed up with. (See AuthService.isUsernameTaken for why this goes
@@ -1703,9 +1695,9 @@ struct LibrarySignUpView: View {
         Task {
             do {
                 try await authService.signUp(
-                    email: libraryEmail(for: username),
+                    email: circleEmail(for: username),
                     password: password,
-                    displayName: libraryName
+                    displayName: circleName
                 )
                 // Best-effort: the Auth account above is what actually
                 // makes this account real, and is already created by this
@@ -1714,12 +1706,12 @@ struct LibrarySignUpView: View {
                 // registry is briefly out of date for the next person's
                 // "is this taken" check.
                 try? await authService.registerUsername(username)
-                // Also best-effort, for the same reason — LibraryHomeView
+                // Also best-effort, for the same reason — OrganizerHomeView
                 // handles a missing join code (e.g. from this failing)
                 // gracefully rather than this blocking sign-up.
-                try? await authService.createLibraryProfile(
+                try? await authService.createCircleProfile(
                     username: username,
-                    libraryName: libraryName,
+                    circleName: circleName,
                     joinCode: AuthService.generateJoinCode()
                 )
                 step = .success
@@ -1731,12 +1723,12 @@ struct LibrarySignUpView: View {
     }
 }
 
-/// Which flow just landed a library account here (Sign Up vs. Log In) —
+/// Which flow just landed an organizer account here (Sign Up vs. Log In) —
 /// both end on the exact same screen, differing only in the greeting.
 // Sign Up and Log In both end on the exact same screen (same join code,
 // same Manage Catalog/Sign Out actions), differing only in the very first
 // thing it says.
-enum LibraryHomeGreeting {
+enum OrganizerHomeGreeting {
     case signedUp
     case loggedIn
 
@@ -1748,25 +1740,25 @@ enum LibraryHomeGreeting {
     }
 }
 
-/// A library account's actual home screen — reached directly from either
-/// LibrarySignUpView or LibraryLoginView the moment auth succeeds.
-// Replacing the old separate "Welcome Back" LibraryView entirely. There's
-// no reason to route through a generic "you're all set" screen and THEN a
-// second, separate welcome screen when one screen can say hello and show
-// the join code together — and styled with OnboardingTheme.swift's
-// components, not Theme.swift's, since that's the direction the rest of
-// the app is headed too, not just onboarding proper.
-struct LibraryHomeView: View {
-    let greeting: LibraryHomeGreeting
+/// An organizer account's actual home screen — reached directly from
+/// either OrganizerSignUpView or OrganizerLoginView the moment auth succeeds.
+// There's no reason to route through a generic "you're all set" screen
+// and THEN a second, separate welcome screen when one screen can say
+// hello and show the join code together — styled with
+// OnboardingTheme.swift's components, not Theme.swift's, since that's
+// the direction the rest of the app is headed too, not just onboarding
+// proper.
+struct OrganizerHomeView: View {
+    let greeting: OrganizerHomeGreeting
 
     // Set to .account by "Sign Out" below, landing on AccountView's own
-    // "library or reader" picker directly.
+    // "organizer or reader" picker directly.
     @Binding var currentPage: Page
 
     // Cleared to nil by "Sign Out" below, alongside currentPage — without
-    // this, AccountView would see accountType still set to .library and
-    // skip its own picker, landing right back in LibraryAccountView
-    // instead of actually asking "library or reader" again.
+    // this, AccountView would see accountType still set to .organizer and
+    // skip its own picker, landing right back in OrganizerAccountView
+    // instead of actually asking "organizer or reader" again.
     @Binding var accountType: AccountType?
 
     @Environment(AuthService.self) private var authService
@@ -1778,7 +1770,7 @@ struct LibraryHomeView: View {
     @State private var loadError: String? = nil
 
     // Toggled on by "Manage Catalog" below — swaps this whole view's own
-    // body over to LibraryCatalogManagementView, a real full screen (see
+    // body over to OrganizerCatalogManagementView, a real full screen (see
     // that struct's own doc comment for why it's not a sheet anymore)
     // rather than presenting it separately.
     @State private var isManagingCatalog: Bool = false
@@ -1790,7 +1782,7 @@ struct LibraryHomeView: View {
 
     var body: some View {
         if isManagingCatalog {
-            LibraryCatalogManagementView(isManagingCatalog: $isManagingCatalog)
+            OrganizerCatalogManagementView(isManagingCatalog: $isManagingCatalog)
         } else if isShowingSettings {
             SettingsView(isShowingSettings: $isShowingSettings, currentPage: $currentPage, accountType: $accountType)
         } else {
@@ -1806,7 +1798,7 @@ struct LibraryHomeView: View {
 
             OnboardingPageHeader(title: greeting.title, titleSize: 44)
 
-            // Readers use this to find and join THIS specific library —
+            // Readers use this to find and join THIS specific circle —
             // see ReaderAccountView's own join-code field.
             Group {
                 if let joinCode {
@@ -1873,7 +1865,7 @@ struct LibraryHomeView: View {
         // that's no longer showing.
         .task {
             do {
-                if let profile = try await authService.fetchLibraryProfile() {
+                if let profile = try await authService.fetchCircleProfile() {
                     joinCode = profile.joinCode
                 } else {
                     loadError = "No join code found for this account."
@@ -1885,18 +1877,18 @@ struct LibraryHomeView: View {
     }
 }
 
-/// Lets a signed-in library account choose which catalog items its
+/// Lets a signed-in organizer choose which catalog items their circle's
 /// readers are allowed to read.
-// A real full screen now (see LibraryHomeView's own isManagingCatalog
+// A real full screen now (see OrganizerHomeView's own isManagingCatalog
 // toggle above), not a sheet, styled with OnboardingTheme.swift's
 // components like the rest of the app is moving toward. Every toggle flip
 // saves immediately (see save() below) rather than needing a separate
 // "Save" button, since there's nothing else on this screen a half-saved
 // toggle could conflict with — "Go Back" is exactly equivalent to the old
 // sheet's "Done", just styled to match.
-struct LibraryCatalogManagementView: View {
-    // Set back to false by "Go Back" below — LibraryHomeView owns this,
-    // not this view, the same way e.g. LibraryAccountView's own authMode
+struct OrganizerCatalogManagementView: View {
+    // Set back to false by "Go Back" below — OrganizerHomeView owns this,
+    // not this view, the same way e.g. OrganizerAccountView's own authMode
     // switches between its sub-screens rather than each one dismissing
     // itself.
     @Binding var isManagingCatalog: Bool
@@ -1980,7 +1972,7 @@ struct LibraryCatalogManagementView: View {
         }
         do {
             async let catalogFetch = authService.fetchCatalog()
-            async let enabledFetch = authService.fetchEnabledContentIds(forLibraryUid: uid)
+            async let enabledFetch = authService.fetchEnabledContentIds(forCircleUid: uid)
             catalog = try await catalogFetch
             enabledContentIds = try await enabledFetch
         } catch {
@@ -2003,33 +1995,21 @@ struct LibraryCatalogManagementView: View {
 
 // MARK: - Reader Account
 
-/// Lets a reader join an organization/library with just its join code —
-/// no account, no name, no log in/sign up split.
-// Once a code resolves to a real library (via AuthService.fetchLibraryName),
-// hands off to this reader's own proper landing page (see
-// readerHomeContent below) instead of the join form — the reader-path
-// equivalent of LibraryHomeView, reached the same way (directly, once
-// "signed in," rather than via a separate generic success screen first).
+/// A reader's own home: a personal greeting, the circles they've joined,
+/// a way to join another, and a way straight into ChooseView — reachable
+/// with no join code at all, unlike the old version of this screen.
+// A reader is never required to join a circle to start reading — joining
+// only narrows what shows up in ChooseView beyond their own Saved
+// section (see that view's own per-circle sectioning). This view's own
+// .task below signs the reader in anonymously (a no-op if that's already
+// happened — see AuthService.ensureReaderSignedIn) the moment they pick
+// "I'm a Reader," rather than waiting for the first share or catalog
+// visit, so their circle list is ready to show immediately.
 struct ReaderAccountView: View {
     @Binding var accountType: AccountType?
 
-    // Set to .choose once the reader taps "Start Reading" on the
-    // joined-org page below.
+    // Set to .choose once the reader taps "Start Reading" below.
     @Binding var currentPage: Page
-
-    // Reported back up to ContentView so ChooseView knows whose
-    // libraryCatalogSelections to filter the catalog against — and, since
-    // it lives up there rather than as local @State here, also what this
-    // view itself reads (see body below) to tell "joined" apart from
-    // "not joined yet" across a round trip through ChooseView and back.
-    // A plain local @State here would reset to nil every time ChooseView's
-    // own "Go Back" sends currentPage to .account, since SwiftUI tears
-    // this whole struct down and rebuilds it fresh whenever that branch of
-    // ContentView's own if/else-if is re-entered — landing a reader who'd
-    // already joined back on the join-code form instead of their own
-    // landing page. Cleared back to nil by "Sign Out" below, the same way
-    // LibraryHomeView's own Sign Out clears its own equivalent state.
-    @Binding var joinedLibraryUid: String?
 
     // The same key HomeView's onboarding name step writes to — this is
     // what readerHomeContent's greeting below reads to say "Hi, {name}".
@@ -2037,111 +2017,58 @@ struct ReaderAccountView: View {
 
     @Environment(AuthService.self) private var authService
 
-    // Holds the code AS DISPLAYED, hyphen included (e.g. "AB3-9F2") —
-    // unlike the old CodeEntryField-based "code" this replaces, which
-    // only ever held the 6 raw characters and reconstructed the hyphen
-    // separately at submit time. See formattedJoinCode(from:) below for
-    // why keeping the hyphen inline here is simpler now.
+    // Populated by loadJoinedCircles() below, for readerHomeContent's own
+    // circle list.
+    @State private var joinedCircles: [AuthService.JoinedCircleMembership] = []
+    @State private var isLoadingCircles: Bool = true
+
+    // Holds the code AS DISPLAYED, hyphen included (e.g. "AB3-9F2").
     @State private var joinCode: String = ""
 
     // nil until a submit fails (malformed code, no match, or a network
     // error); cleared again as soon as the field's own value changes.
     @State private var errorMessage: String? = nil
 
-    // Disables "Join Library" for the duration of a lookup, so a slow
+    // Disables "Join Circle" for the duration of a lookup, so a slow
     // network can't be worked around by mashing the button into firing
-    // several at once. Unlike the design's own static mock, there's a
-    // real network call here, so this is the one thing this screen adds
-    // beyond the reference.
+    // several at once.
     @State private var isSubmitting: Bool = false
 
-    // Toggled on by the gear icon below — swaps this whole view's own
-    // body over to SettingsView, same pattern LibraryHomeView uses for
-    // its own gear icon (see SettingsView's own doc comment for why it's
-    // not a sheet).
+    // Toggled on by "Join a Circle" below — swaps this whole view's own
+    // body over to joinCircleForm, the same "swap this view's own body"
+    // pattern isShowingSettings just below uses for SettingsView.
+    @State private var isJoiningCircle: Bool = false
+
+    // Toggled on by the gear icon below — same pattern as isJoiningCircle
+    // just above (see SettingsView's own doc comment for why it's not a
+    // sheet).
     @State private var isShowingSettings: Bool = false
 
     var body: some View {
-        if joinedLibraryUid != nil {
+        Group {
             if isShowingSettings {
-                SettingsView(isShowingSettings: $isShowingSettings, currentPage: $currentPage, accountType: $accountType, joinedLibraryUid: $joinedLibraryUid)
+                SettingsView(isShowingSettings: $isShowingSettings, currentPage: $currentPage, accountType: $accountType)
+            } else if isJoiningCircle {
+                joinCircleForm
             } else {
                 readerHomeContent
             }
-        } else {
-            VStack(spacing: Spacing.medium) {
-                OnboardingProgressBar(step: 5, total: 5)
-                    .padding(.bottom, Spacing.small)
-
-                OnboardingMascot(size: 96, sparkleCount: 0, showsGlow: false)
-
-                OnboardingPageHeader(
-                    title: "Enter your join code",
-                    titleSize: 30,
-                    subtitle: "Ask your library for this code.",
-                    subtitleSize: 16
-                )
-
-                VStack(spacing: Spacing.small) {
-                    TextField(
-                        "",
-                        text: $joinCode,
-                        prompt: Text("Join code")
-                            .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
-                    )
-                    .textFieldStyle(.plain)
-                    .font(OnboardingFont.display(32))
-                    .tracking(4)
-                    .foregroundStyle(Color.onboardingText)
-                    .multilineTextAlignment(.center)
-                    .textInputAutocapitalization(.characters)
-                    .tint(Color.onboardingText)
-                    .onChange(of: joinCode) { _, newValue in
-                        joinCode = formattedJoinCode(from: newValue)
-                        errorMessage = nil
-                    }
-
-                    Rectangle()
-                        .fill(Color.onboardingBorder)
-                        .frame(height: 2)
-                }
-
-                if let errorMessage {
-                    OnboardingErrorLabel(message: errorMessage)
-                }
-
-                Spacer()
-
-                Button(action: {
-                    submitJoinCode()
-                }, label: {
-                    Text("Join Library")
-                })
-                .buttonStyle(OnboardingPrimaryButtonStyle())
-                .disabled(isSubmitting)
-
-                OnboardingBackButton(action: {
-                    accountType = nil
-                })
-            }
-            .padding(Spacing.large)
-            .frame(maxWidth: .infinity, maxHeight: .infinity)
-            .background(Color.onboardingBackground.ignoresSafeArea())
+        }
+        // .task (not .onAppear) so it's automatically cancelled if this
+        // view disappears before either call finishes, and ties into
+        // this view's own lifecycle the same way ChooseView/
+        // OrganizerHomeView's own .task does for their first load.
+        .task {
+            try? await authService.ensureReaderSignedIn()
+            await loadJoinedCircles()
         }
     }
 
-    // A reader's own landing page once joined — the reader-path
-    // equivalent of LibraryHomeView's homeContent, right down to the
-    // gear icon and Sign Out button in the same spots. "Hi, {name}"
-    // reuses the exact same greeting HomeView's own onboarding greeting
-    // step shows, so a reader sees a familiar, personal welcome here
-    // too, not just a generic "you're in" message. Sign Out (not "Go
-    // Back") is deliberate: a reader who leaves this page has nowhere
-    // meaningful to "go back" to — clearing joinedLibraryUid and
-    // accountType and landing on AccountView's own picker is a real
-    // sign-out, exactly like LibraryHomeView's own Sign Out, even though
-    // a reader was never actually authenticated with Firebase to begin
-    // with (there's no authService.signOut() call to make here).
+    // A reader's own landing page — the reader-path equivalent of
+    // OrganizerHomeView's homeContent, right down to the gear icon in the
+    // same spot. "Hi, {name}" reuses the exact same greeting HomeView's
+    // own onboarding greeting step shows, so a reader sees a familiar,
+    // personal welcome here too, not just a generic "you're in" message.
     private var readerHomeContent: some View {
         VStack(spacing: Spacing.large) {
             Spacer()
@@ -2151,9 +2078,11 @@ struct ReaderAccountView: View {
             OnboardingPageHeader(
                 title: "Hi, \(readerName)",
                 titleSize: 44,
-                subtitle: "You're in. Time to find your next great read.",
+                subtitle: "Time to find your next great read.",
                 subtitleSize: 18
             )
+
+            circlesList
 
             Spacer()
 
@@ -2165,7 +2094,28 @@ struct ReaderAccountView: View {
             .buttonStyle(OnboardingPrimaryButtonStyle())
 
             Button(action: {
-                joinedLibraryUid = nil
+                joinCode = ""
+                errorMessage = nil
+                isJoiningCircle = true
+            }, label: {
+                Text("Join a Circle")
+            })
+            .buttonStyle(OnboardingSecondaryButtonStyle())
+
+            // Sign Out (not "Go Back") is deliberate: a reader who leaves
+            // this page has nowhere meaningful to "go back" to. This is
+            // purely a LOCAL reset — clearing accountType and landing on
+            // AccountView's own picker — and deliberately does NOT call
+            // authService.signOut(): a reader's saved content and joined
+            // circles live under their anonymous Firebase uid (see
+            // AuthService.ensureReaderSignedIn), and actually ending that
+            // session would silently orphan all of it, since the next
+            // anonymous sign-in gets a brand new uid with no history.
+            // Picking "I'm a Reader" again after this resumes the exact
+            // same session right where it left off. SettingsView's own
+            // "Reset App" is the real, deliberate version of that
+            // destructive reset, for someone who actually wants one.
+            Button(action: {
                 accountType = nil
                 currentPage = .account
             }, label: {
@@ -2190,13 +2140,116 @@ struct ReaderAccountView: View {
         }
     }
 
-    // Reformats on every keystroke, same as the design's own
-    // formatJoinCode: strip anything that isn't a letter/digit (so a
-    // pasted "AB3-9F2" — hyphen included — still works), force
-    // uppercase, cap at 6 real characters, then re-insert the hyphen
-    // after the 3rd once there's anything past it. Stripping first and
-    // re-inserting after means this handles backspacing through the
-    // hyphen correctly too, without any special-case code for it.
+    // The circles a reader belongs to, shown as a short list of plain
+    // cards (not OnboardingSelectableCard — nothing here is a choice to
+    // make, just a status readout) between the greeting and the action
+    // buttons. Hidden entirely while still loading or once loaded empty,
+    // rather than showing an empty-state placeholder here — "Join a
+    // Circle" just below already covers that case, and a first-time
+    // reader seeing this section blank before they've joined anything
+    // would read as broken rather than simply empty.
+    @ViewBuilder
+    private var circlesList: some View {
+        if !isLoadingCircles && !joinedCircles.isEmpty {
+            VStack(alignment: .leading, spacing: Spacing.small) {
+                Text("Your Circles")
+                    .font(OnboardingFont.body(14, weight: .semiBold))
+                    .foregroundStyle(Color.onboardingTextSecondary)
+
+                VStack(spacing: Spacing.small) {
+                    ForEach(joinedCircles) { circle in
+                        Text(circle.name)
+                            .font(OnboardingFont.body(17, weight: .bold))
+                            .foregroundStyle(Color.onboardingText)
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .padding(Spacing.medium)
+                            .background(Color.onboardingCard)
+                            .clipShape(RoundedRectangle(cornerRadius: 14, style: .continuous))
+                    }
+                }
+            }
+        }
+    }
+
+    // A sub-screen (not a sheet — matching every other sub-screen in
+    // this file's own "swap the body" pattern) reached from "Join a
+    // Circle" above, structurally the same one-field form the old
+    // pre-join gate used, just reachable anytime rather than blocking
+    // reading until it's filled in.
+    private var joinCircleForm: some View {
+        VStack(spacing: Spacing.medium) {
+            OnboardingMascot(size: 96, sparkleCount: 0, showsGlow: false)
+
+            OnboardingPageHeader(
+                title: "Join a circle",
+                titleSize: 30,
+                subtitle: "Ask an organizer for their circle's code.",
+                subtitleSize: 16
+            )
+
+            VStack(spacing: Spacing.small) {
+                TextField(
+                    "",
+                    text: $joinCode,
+                    prompt: Text("Join code")
+                        .foregroundStyle(Color.onboardingTextSecondary.opacity(0.7))
+                )
+                .textFieldStyle(.plain)
+                .font(OnboardingFont.display(32))
+                .tracking(4)
+                .foregroundStyle(Color.onboardingText)
+                .multilineTextAlignment(.center)
+                .textInputAutocapitalization(.characters)
+                .tint(Color.onboardingText)
+                .onChange(of: joinCode) { _, newValue in
+                    joinCode = formattedJoinCode(from: newValue)
+                    errorMessage = nil
+                }
+
+                Rectangle()
+                    .fill(Color.onboardingBorder)
+                    .frame(height: 2)
+            }
+
+            if let errorMessage {
+                OnboardingErrorLabel(message: errorMessage)
+            }
+
+            Spacer()
+
+            Button(action: {
+                submitJoinCode()
+            }, label: {
+                Text("Join Circle")
+            })
+            .buttonStyle(OnboardingPrimaryButtonStyle())
+            .disabled(isSubmitting)
+
+            OnboardingBackButton(action: {
+                isJoiningCircle = false
+            })
+        }
+        .padding(Spacing.large)
+        .frame(maxWidth: .infinity, maxHeight: .infinity)
+        .background(Color.onboardingBackground.ignoresSafeArea())
+    }
+
+    private func loadJoinedCircles() async {
+        isLoadingCircles = true
+        // Best-effort: an offline reader should still see their own home
+        // page (with an empty circle list) rather than the whole screen
+        // failing to load over something as minor as this one section.
+        joinedCircles = (try? await authService.fetchJoinedCircles()) ?? []
+        isLoadingCircles = false
+    }
+
+    // Reformats on every keystroke: strip anything that isn't a
+    // letter/digit (so a pasted "AB3-9F2" — hyphen included — still
+    // works), force uppercase, cap at 6 real characters, then re-insert
+    // the hyphen after the 3rd once there's anything past it. Stripping
+    // first and re-inserting after means this handles backspacing
+    // through the hyphen correctly too, without any special-case code
+    // for it.
     private func formattedJoinCode(from raw: String) -> String {
         let clean = String(raw.uppercased().filter { $0.isLetter || $0.isNumber }.prefix(6))
         guard clean.count > 3 else { return clean }
@@ -2213,14 +2266,12 @@ struct ReaderAccountView: View {
         isSubmitting = true
         Task {
             do {
-                if let library = try await authService.fetchJoinedLibrary(forJoinCode: joinCode) {
-                    // Setting this is what flips body above from the join
-                    // form to readerHomeContent — library.name itself
-                    // isn't kept anywhere; see readerHomeContent's own doc
-                    // comment for why nothing downstream shows it.
-                    joinedLibraryUid = library.uid
+                if let circle = try await authService.fetchJoinedCircle(forJoinCode: joinCode) {
+                    try await authService.recordJoinedCircle(circle)
+                    await loadJoinedCircles()
+                    isJoiningCircle = false
                 } else {
-                    errorMessage = "We couldn't find a library with that code."
+                    errorMessage = "We couldn't find a circle with that code."
                 }
             } catch {
                 errorMessage = error.localizedDescription
@@ -2232,9 +2283,11 @@ struct ReaderAccountView: View {
 
 // MARK: - Catalog
 
-/// The screen listing content to pick from, sectioned into "From Your
-/// Library" (whatever the reader's joined library has enabled) and
-/// "Saved by You" (whatever the reader has shared/read themselves before).
+/// The screen listing content to pick from, sectioned into one section per
+/// circle the reader has joined (whatever that circle enabled) plus a
+/// "Saved by You" section (whatever the reader has shared/read themselves
+/// before) — reachable with zero circles joined, in which case only
+/// Saved (if anything's there) shows.
 struct ChooseView: View {
     @Binding var currentPage: Page
 
@@ -2242,27 +2295,34 @@ struct ChooseView: View {
     // hand it to ReadView once we get there.
     @Binding var contentToRead: ReadableContent?
 
-    // Whose enabled selections to filter the catalog against — set once,
-    // from ReaderAccountView's successful join, and passed straight through
-    // ContentView/AccountView to get here.
-    let libraryUid: String
-
     @Environment(AuthService.self) private var authService
 
     // Holds whichever row was tapped, so the .sheet below knows what to show.
     @State private var selectedContent: ReadableContent? = nil
 
-    // Empty until loadContent() finishes — see isLoading/loadError below for
-    // telling "still loading" and "nothing enabled yet" apart from an
-    // in-progress fetch. Two separate arrays (rather than one flat list
-    // filtered by .source at render time) since they come from two
-    // genuinely different fetches — library content is filtered against
-    // libraryUid's enabled set, saved content is the signed-in reader's
-    // own, unrelated to any library.
-    @State private var libraryContent: [ReadableContent] = []
+    /// One joined circle's own section — its name (for the section
+    /// header) plus whichever catalog items it's enabled.
+    private struct CircleSection: Identifiable {
+        let id: String
+        let name: String
+        let items: [ReadableContent]
+    }
+
+    // Empty until loadContent() finishes — see isLoading/loadError below
+    // for telling "still loading" and "nothing enabled yet" apart from an
+    // in-progress fetch. One CircleSection per joined circle (rather than
+    // a single flat list) since each circle's enabled set is its own
+    // independent fetch, filtered against the same shared catalog —
+    // Saved stays its own separate array since it comes from a
+    // genuinely different fetch, unrelated to any circle.
+    @State private var circleSections: [CircleSection] = []
     @State private var savedContent: [ReadableContent] = []
     @State private var isLoading: Bool = true
     @State private var loadError: String? = nil
+
+    private var hasAnythingToShow: Bool {
+        !savedContent.isEmpty || circleSections.contains { !$0.items.isEmpty }
+    }
 
     var body: some View {
         VStack(spacing: Spacing.medium) {
@@ -2279,9 +2339,9 @@ struct ChooseView: View {
                     Spacer()
                     OnboardingErrorLabel(message: loadError)
                     Spacer()
-                } else if libraryContent.isEmpty && savedContent.isEmpty {
+                } else if !hasAnythingToShow {
                     Spacer()
-                    Text("Nothing to read yet — your library hasn't added anything, and you haven't saved anything by sharing a link into Fast Lit.")
+                    Text("Nothing to read yet — join a circle from your home page, or save something by sharing a link into Fast Lit.")
                         .font(OnboardingFont.body(16, weight: .semiBold))
                         .foregroundStyle(Color.onboardingTextSecondary)
                         .multilineTextAlignment(.center)
@@ -2291,14 +2351,16 @@ struct ChooseView: View {
                     List {
                         // Only rendered when non-empty — an empty Section
                         // still draws its header with nothing underneath,
-                        // which reads as "your library has zero content"
-                        // even when the real reason is just that the
-                        // OTHER section (Saved) is the one with items.
-                        if !libraryContent.isEmpty {
-                            Section("From Your Library") {
-                                ForEach(libraryContent) { item in
-                                    CatalogRow(content: item) {
-                                        selectedContent = item // triggers the .sheet below
+                        // which reads as "this circle has zero content"
+                        // even when the real reason is just that some
+                        // OTHER section is the one with items.
+                        ForEach(circleSections) { section in
+                            if !section.items.isEmpty {
+                                Section(section.name) {
+                                    ForEach(section.items) { item in
+                                        CatalogRow(content: item) {
+                                            selectedContent = item // triggers the .sheet below
+                                        }
                                     }
                                 }
                             }
@@ -2322,9 +2384,8 @@ struct ChooseView: View {
             // redirect to .account anyway (see HomeView's own body); going
             // there directly skips that redirect hop. Lands back on
             // ReaderAccountView's own readerHomeContent ("Hi, {name}" +
-            // Settings), not the join-code form, since joinedLibraryUid is
-            // still set — see that view's own doc comment on why it reads
-            // that Binding rather than its own local state for this.
+            // Settings), since a reader is always considered "home" there
+            // now — there's no separate join-gate screen to fall back to.
             OnboardingBackButton(action: {
                 currentPage = .account
             })
@@ -2366,25 +2427,38 @@ struct ChooseView: View {
     private func loadContent() async {
         do {
             // ensureReaderSignedIn first (not raced alongside the other
-            // two fetches below) — fetchSavedContent needs a signed-in
-            // uid to know whose saved content to read, and this is the
-            // one place besides ContentView's own share-arrival path
-            // where a reader might be the very first time they've ever
-            // needed a session at all (e.g. they joined a library but
-            // have never shared anything).
+            // fetches below) — fetchJoinedCircles/fetchSavedContent both
+            // need a signed-in uid to know whose data to read, and a
+            // reader could in principle reach this page (via "Start
+            // Reading") before ReaderAccountView's own .task has finished
+            // signing them in.
             try? await authService.ensureReaderSignedIn()
             async let catalogFetch = authService.fetchCatalog()
-            async let enabledFetch = authService.fetchEnabledContentIds(forLibraryUid: libraryUid)
+            async let joinedCirclesFetch = authService.fetchJoinedCircles()
             async let savedFetch = authService.fetchSavedContent()
             let catalog = try await catalogFetch
-            let enabledIds = try await enabledFetch
-            libraryContent = catalog.filter { enabledIds.contains($0.id) }
+            let joinedCircles = try await joinedCirclesFetch
+
+            // One enabled-content fetch per joined circle, done in a
+            // simple sequential loop rather than a TaskGroup — a reader
+            // realistically joins a handful of circles at most, so the
+            // extra concurrency machinery isn't worth it here. Each
+            // fetch is best-effort (try?, not try): one circle's
+            // selections failing to load shouldn't blank out every other
+            // section on this screen.
+            var sections: [CircleSection] = []
+            for circle in joinedCircles {
+                let enabledIds = (try? await authService.fetchEnabledContentIds(forCircleUid: circle.id)) ?? []
+                let items = catalog.filter { enabledIds.contains($0.id) }
+                sections.append(CircleSection(id: circle.id, name: circle.name, items: items))
+            }
+            circleSections = sections
+
             // Best-effort (try?, not try): a signed-in-but-offline reader
-            // should still see their library content even if the saved-
+            // should still see their circles' content even if the saved-
             // content fetch itself fails — an empty Saved section is a
             // much better failure mode here than losing the whole screen
-            // to loadError over something that isn't even this reader's
-            // library's fault.
+            // to loadError over something unrelated to any circle.
             savedContent = (try? await savedFetch) ?? []
         } catch {
             loadError = error.localizedDescription
@@ -2393,7 +2467,7 @@ struct ChooseView: View {
     }
 }
 
-/// One row in ChooseView's Library/Saved sections — shows a title plus
+/// One row in ChooseView's per-circle/Saved sections — shows a title plus
 /// word count and estimated reading time.
 // Bigger and more spacious than the old title-only row specifically so
 // there's room for the word count and estimated reading time beneath the
@@ -3438,21 +3512,22 @@ struct ReadableContentDetailView: View {
     }
 }
 
-/// Which of the two catalog sections a piece of content belongs to (see
-/// ChooseView): .library is admin-curated and shared across every reader
-/// whose library enabled it; .saved is one reader's own shared/read
-/// articles, visible only to them.
+/// Which of ChooseView's two kinds of catalog section a piece of content
+/// belongs to: .catalog is the admin-curated shared catalog (a given item
+/// can show up under several different circles' sections, if more than
+/// one enabled it); .saved is one reader's own shared/read articles,
+/// visible only to them.
 // Nothing about ReadableContent itself
 // changes behavior based on this beyond ChooseView's own sectioning; it
 // exists so a single flat fetch-and-display path doesn't have to guess
-// which list a given item belongs in from context.
+// which kind of section a given item belongs in from context.
 enum ReadableContentSource {
-    case library
+    case catalog
     case saved
 }
 
-/// A single piece of reading material — either from the shared library
-/// catalog or one reader's own saved content (see ReadableContentSource).
+/// A single piece of reading material — either from the shared catalog
+/// or one reader's own saved content (see ReadableContentSource).
 // Identifiable requires an "id" so List/ForEach/.sheet(item:) can tell rows
 // apart. For catalog content, id is the Firestore document ID (see
 // AuthService.fetchCatalog) — that content lives in Firestore, imported
@@ -3469,7 +3544,7 @@ struct ReadableContent: Identifiable {
     let source: ReadableContentSource
 
     // The original shared URL, for .saved content only (nil for
-    // .library items, which have no such thing) — AuthService.
+    // .catalog items, which have no such thing) — AuthService.
     // findSavedContent(bySourceURL:) matches on this so sharing the same
     // article twice reopens the existing saved copy instead of creating
     // a duplicate.
@@ -3482,7 +3557,7 @@ struct ReadableContent: Identifiable {
 // rather than going through ios_accessibleApp's WindowGroup — so neither
 // FirebaseApp.configure() nor .environment(authService) has happened yet
 // by the time it runs, and any view reading @Environment(AuthService.self)
-// (e.g. LibraryLoginView) would otherwise crash. Pulled out into its own
+// (e.g. OrganizerLoginView) would otherwise crash. Pulled out into its own
 // plain function (rather than inline in the #Preview closure) since a
 // ViewBuilder closure mixing a bare "if" with view-building expressions
 // hits a Swift compiler bug ("failed to produce diagnostic for
