@@ -9,6 +9,10 @@ import FirebaseCore
 // wants that answer to be. It defaults to .portrait, which is what every
 // screen in this app wants except ReadView — see ReadView's own
 // .onAppear/.onDisappear, which are the only places this ever changes.
+// MARK: - Orientation locking
+
+/// A mutable box holding which orientation the currently-showing screen
+/// wants; read by AppDelegate whenever UIKit asks.
 final class OrientationLock {
     static var mask: UIInterfaceOrientationMask = .portrait
 }
@@ -21,6 +25,7 @@ final class OrientationLock {
 // different: it only matters later, once the app is already running and
 // some screen asks to change orientation, so there's no equivalent
 // ordering hazard here.
+/// UIKit's orientation-lock hook, wired in via @UIApplicationDelegateAdaptor.
 class AppDelegate: NSObject, UIApplicationDelegate {
     func application(
         _ application: UIApplication,
@@ -36,6 +41,9 @@ class AppDelegate: NSObject, UIApplicationDelegate {
 // will answer next, then actively asks the current window scene to
 // re-check that answer immediately, rather than waiting for some
 // unrelated rotation event to trigger it on its own.
+/// Switches the app's allowed orientation to `mask` and forces an
+/// immediate rotation to match, rather than waiting for one to happen
+/// on its own.
 func lockOrientation(to mask: UIInterfaceOrientationMask) {
     OrientationLock.mask = mask
 
@@ -71,6 +79,10 @@ func lockOrientation(to mask: UIInterfaceOrientationMask) {
     UIViewController.attemptRotationToDeviceOrientation()
 }
 
+// MARK: - App entry point
+
+/// The app's entry point: configures Firebase, owns the single
+/// AuthService instance, and applies app-wide tint/color-scheme.
 @main
 struct ios_accessibleApp: App {
     // Wires AppDelegate above into the app's actual lifecycle — this is

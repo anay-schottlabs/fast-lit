@@ -12,7 +12,12 @@ import UniformTypeIdentifiers
 // us. Rather than keep depending on that one unreliable channel, the
 // shared URL is written here first — so it survives regardless of what
 // open() does — and the main app also checks for it on launch/foreground.
+// MARK: - App Group constants
+
+/// App Group container ID; must match ContentView.swift's copy exactly.
 private let appGroupID = "group.com.anaydandekar.ios-accessible"
+/// UserDefaults key the shared URL is persisted under, read back by the
+/// main app on launch/foreground as a fallback if open() fails.
 private let pendingSharedURLKey = "pendingSharedArticleURL"
 
 // Not SLComposeServiceViewController (the Xcode template default) — that's
@@ -20,10 +25,15 @@ private let pendingSharedURLKey = "pendingSharedArticleURL"
 // job. This grabs the one shared URL, hands it straight to the main app,
 // and gets out of the way — deliberately no user-facing choices to make
 // here at all.
+// MARK: - Share extension view controller
+
+/// The Share Extension's entire UI: grabs the shared URL, hands it to the
+/// main app (or persists it to the App Group as a fallback), and dismisses.
 final class ShareViewController: UIViewController {
     // fileprivate (not private) — ShareStatusView below, a sibling type
     // in this same file rather than a nested/extension member of
     // ShareViewController, needs to reference this too.
+    /// The status message shown in the extension's brief on-screen sheet.
     fileprivate enum ShareStatus {
         case working
         case failed
@@ -48,6 +58,9 @@ final class ShareViewController: UIViewController {
     // ever run once per share.
     private var hasStartedExtraction = false
 
+    // MARK: - Lifecycle
+
+    /// Installs the SwiftUI status view as this view controller's only content.
     override func viewDidLoad() {
         super.viewDidLoad()
 
@@ -75,6 +88,8 @@ final class ShareViewController: UIViewController {
     // could round-trip — consistent with a readiness check failing
     // locally, not a genuine system-level rejection. viewDidAppear is the
     // earliest point UIKit confirms this view is actually presented.
+    /// Starts extraction once the view is actually on screen (see the
+    /// comment above on why this waits for viewDidAppear, not viewDidLoad).
     override func viewDidAppear(_ animated: Bool) {
         super.viewDidAppear(animated)
         guard !hasStartedExtraction else { return }
@@ -82,6 +97,10 @@ final class ShareViewController: UIViewController {
         extractSharedURL()
     }
 
+    // MARK: - Extraction and hand-off
+
+    /// Pulls the shared URL out of the extension's input items, then hands
+    /// it to openHostApp — or fails if none is found.
     private func extractSharedURL() {
         guard
             let item = extensionContext?.inputItems.first as? NSExtensionItem,
@@ -106,6 +125,8 @@ final class ShareViewController: UIViewController {
     // ContentView's .onOpenURL (main app target) listens for when open()
     // actually works, letting the article open instantly without the
     // reader having to switch apps themselves.
+    /// Persists the shared URL to the App Group, then attempts to open the
+    /// main app directly via its `fastlit://` URL scheme.
     private func openHostApp(with url: URL) {
         // Written before even attempting open() — the one part of this
         // method guaranteed to matter regardless of what open() does.
@@ -136,6 +157,8 @@ final class ShareViewController: UIViewController {
     // Group-only path; completeRequest still only ever fires once, from
     // whichever branch — success, out of retries, or malformed URL —
     // actually finishes first.
+    /// Tries extensionContext.open(), retrying a couple of times on
+    /// failure before falling back to the App Group-only path.
     private func attemptOpen(_ callbackURL: URL, remainingRetries: Int) {
         // completeRequest nested inside open's completion handler (not
         // fired alongside it) — the documented-safe ordering, so the
@@ -158,10 +181,14 @@ final class ShareViewController: UIViewController {
         }
     }
 
+    // MARK: - Terminal states
+
+    /// No usable URL was found in the share sheet's input.
     private func fail() {
         finish(withStatus: .failed)
     }
 
+    /// The URL is safely persisted, but the automatic app hand-off didn't happen.
     private func showNeedsManualOpen() {
         finish(withStatus: .needsManualOpen)
     }
@@ -169,6 +196,7 @@ final class ShareViewController: UIViewController {
     // A beat on screen before dismissing, so whichever message is
     // showing is actually visible rather than the sheet just vanishing
     // and looking like nothing happened at all.
+    /// Shows `finalStatus` briefly, then completes the extension request.
     private func finish(withStatus finalStatus: ShareStatus) {
         status = finalStatus
         DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) { [weak self] in
@@ -177,6 +205,9 @@ final class ShareViewController: UIViewController {
     }
 }
 
+// MARK: - Status view
+
+/// The extension's brief on-screen sheet, one message per ShareStatus case.
 private struct ShareStatusView: View {
     let status: ShareViewController.ShareStatus
 

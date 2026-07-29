@@ -9,8 +9,12 @@ import FirebaseFirestore
 // @Environment(AuthService.self); ios_accessibleApp owns the one instance
 // and hands it down to every view with .environment(). Reader accounts
 // don't use this yet — they're still six-digit-code placeholders.
+/// The app's single Firebase Auth + Firestore access point — one
+/// `@Observable` instance, handed down the view tree via `.environment()`.
 @Observable
 class AuthService {
+    // MARK: - Sign-in state
+
     // Mirrors Firebase's own signed-in state. nil means signed out.
     private(set) var currentUser: User?
 
@@ -46,6 +50,9 @@ class AuthService {
         }
     }
 
+    // MARK: - Email/password auth
+
+    /// Creates a brand-new email/password Firebase Auth account.
     // Creates a brand-new account. Firebase Auth's built-in strategies key
     // on email, not a plain username — callers with only a username (like
     // Library sign-up) build a fixed-domain pseudo-email from it rather
@@ -62,10 +69,12 @@ class AuthService {
         }
     }
 
-    // Signs into an existing email/password account.
+    /// Signs into an existing email/password account.
     func signIn(email: String, password: String) async throws {
         _ = try await Auth.auth().signIn(withEmail: email, password: password)
     }
+
+    // MARK: - Library username registry
 
     // Firestore doc IDs double as a uniqueness registry: each library
     // username gets one doc at libraryUsernames/{username}, and its mere
@@ -82,12 +91,14 @@ class AuthService {
         Firestore.firestore().collection("libraryUsernames")
     }
 
-    // Checks whether a library username is already registered.
+    /// Checks whether a library username is already registered.
     func isUsernameTaken(_ username: String) async throws -> Bool {
         let document = try await libraryUsernames.document(username).getDocument()
         return document.exists
     }
 
+    /// Registers a username as taken so later sign-ups see it via
+    /// `isUsernameTaken`.
     // Registers a username as taken, so later sign-ups see it via
     // isUsernameTaken. Only meaningful to call after the matching Firebase
     // Auth account was actually created — see the signUp caller's comment
@@ -109,6 +120,9 @@ class AuthService {
         ])
     }
 
+    // MARK: - Library profile
+
+    /// Generates a random `XXX-XXX` join code for a new library account.
     // Generates a join code readers use to find and sign up for a specific
     // library: 3 random letters/digits, a hyphen, then 3 more (e.g.
     // "AB3-9F2"). Uppercase-only so it isn't case-sensitive to whoever
@@ -127,6 +141,7 @@ class AuthService {
     // A library account's own profile — the data LibraryHomeView reads back
     // to display "your join code", as opposed to libraryUsernames above,
     // which exists purely for the sign-up uniqueness check.
+    /// A library account's saved username + join code.
     struct LibraryProfile {
         let username: String
         let joinCode: String
@@ -144,6 +159,7 @@ class AuthService {
     // registerUsername above for why Auth.auth().currentUser is read fresh
     // here rather than this class's own (possibly not-yet-updated)
     // currentUser property.
+    /// Saves a new library account's profile plus its join-code lookup entry.
     func createLibraryProfile(username: String, libraryName: String, joinCode: String) async throws {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         try await libraries.document(uid).setData([
@@ -170,16 +186,18 @@ class AuthService {
         Firestore.firestore().collection("libraryJoinCodes")
     }
 
+    // MARK: - Join codes
+
     // What ReaderAccountView gets back from a successful join-code lookup —
     // both the name (to show "You've Joined ___") and the uid (so ChooseView
     // knows whose libraryCatalogSelections to filter the catalog against).
+    /// A library resolved from a reader-typed join code.
     struct JoinedLibrary {
         let uid: String
         let name: String
     }
 
-    // Looks up which library a join code a reader typed in belongs to. nil
-    // means the code doesn't match any library, rather than an error.
+    /// Resolves a reader-typed join code to the library it belongs to.
     func fetchJoinedLibrary(forJoinCode joinCode: String) async throws -> JoinedLibrary? {
         let document = try await libraryJoinCodes.document(joinCode).getDocument()
         guard let uid = document.get("uid") as? String,
@@ -188,6 +206,8 @@ class AuthService {
         }
         return JoinedLibrary(uid: uid, name: libraryName)
     }
+
+    // MARK: - Catalog
 
     // The shared reading catalog every library draws from — see
     // scripts/import-catalog.js, the one-off admin script that's the only
@@ -201,6 +221,7 @@ class AuthService {
     // filters this down to whatever the reader's joined library has
     // enabled) and by LibraryCatalogManagementView (which needs every item
     // to build its toggle list).
+    /// Fetches every item in the shared catalog.
     func fetchCatalog() async throws -> [ReadableContent] {
         let snapshot = try await catalog.getDocuments()
         return snapshot.documents.compactMap { document in
@@ -213,6 +234,8 @@ class AuthService {
         }
     }
 
+    // MARK: - Library catalog selections
+
     // Keyed by library uid (not the library's own doc under libraries/{uid})
     // since this needs to be publicly readable — a reader who just joined
     // by code has no account and never signs in, but still needs to know
@@ -224,6 +247,7 @@ class AuthService {
     // Which catalog items a library has enabled for its readers. A missing
     // doc (a library that's never visited its catalog management screen
     // yet) means none are enabled yet, not an error.
+    /// Which catalog items a library has enabled for its readers.
     func fetchEnabledContentIds(forLibraryUid uid: String) async throws -> Set<String> {
         let document = try await libraryCatalogSelections.document(uid).getDocument()
         guard let ids = document.get("enabledContentIds") as? [String] else {
@@ -236,6 +260,7 @@ class AuthService {
     // access, replacing the entire enabled set each time rather than
     // patching it incrementally — simplest to reason about for a toggle
     // list this small.
+    /// Replaces the signed-in library's entire enabled-content set.
     func setEnabledContentIds(_ ids: Set<String>) async throws {
         guard let uid = Auth.auth().currentUser?.uid else { return }
         try await libraryCatalogSelections.document(uid).setData([
@@ -248,6 +273,7 @@ class AuthService {
     // no profile doc yet (e.g. createLibraryProfile failed silently during
     // sign-up) rather than an error — LibraryHomeView treats those
     // differently.
+    /// Reads the signed-in library account's own profile.
     func fetchLibraryProfile() async throws -> LibraryProfile? {
         guard let uid = Auth.auth().currentUser?.uid else { return nil }
         let document = try await libraries.document(uid).getDocument()
@@ -258,9 +284,12 @@ class AuthService {
         return LibraryProfile(username: username, joinCode: joinCode)
     }
 
+    // MARK: - Reader (anonymous) auth
+
     // Signs in with no credentials at all — Firebase still issues a real
     // (if anonymous) account. One way Reader accounts (just a six-digit
     // code, no username/password) could eventually be handled.
+    /// Signs in with no credentials, issuing a real anonymous Firebase account.
     func signInAnonymously() async throws {
         _ = try await Auth.auth().signInAnonymously()
     }
@@ -276,10 +305,13 @@ class AuthService {
     // relaunches without them ever seeing a login screen. A no-op if
     // already signed in (anonymously or otherwise) — never overwrites an
     // existing session with a fresh anonymous one.
+    /// Lazily creates a reader's first (anonymous) session, if none exists yet.
     func ensureReaderSignedIn() async throws {
         guard Auth.auth().currentUser == nil else { return }
         try await signInAnonymously()
     }
+
+    // MARK: - Saved content
 
     // A reader's own saved content — shared articles that persist past
     // the single reading session they were shared into, scoped to their
@@ -295,6 +327,7 @@ class AuthService {
 
     // Every article the signed-in reader has saved, for ChooseView's own
     // "Saved" section.
+    /// Every article the signed-in reader has saved.
     func fetchSavedContent() async throws -> [ReadableContent] {
         guard let savedContent else { return [] }
         let snapshot = try await savedContent.getDocuments()
@@ -313,6 +346,7 @@ class AuthService {
     // sharing the same article a second time reopens what's already
     // there (see ContentView's own pendingSharedURL handling) instead of
     // silently creating a duplicate entry every time.
+    /// Looks for an already-saved item matching this exact source URL, for dedup.
     func findSavedContent(bySourceURL sourceURL: String) async throws -> ReadableContent? {
         guard let savedContent else { return nil }
         let snapshot = try await savedContent
@@ -333,6 +367,7 @@ class AuthService {
     // re-saving the same ReadableContent value (shouldn't normally
     // happen, since findSavedContent above is checked first) overwrites
     // rather than duplicates.
+    /// Persists a newly-extracted shared article to the signed-in reader's saved content.
     func saveContent(_ content: ReadableContent, sourceURL: String) async throws {
         guard let savedContent else { return }
         try await savedContent.document(content.id).setData([
@@ -344,6 +379,9 @@ class AuthService {
         ])
     }
 
+    // MARK: - Sign out
+
+    /// Signs the current user out.
     func signOut() throws {
         try Auth.auth().signOut()
     }

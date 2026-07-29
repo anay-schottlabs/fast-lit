@@ -56,6 +56,8 @@ extension Color {
 // directly with @AppStorage, which needs its stored type to be one of a
 // small set of simple types UserDefaults understands — String is the
 // simplest fit here.
+/// The reader-facing Light/Dark appearance choice, persisted via
+/// @AppStorage as a raw String.
 enum AppColorScheme: String {
     case system
     case light
@@ -132,6 +134,8 @@ extension Font {
 
 // MARK: - Spacing & sizing
 
+/// Shared spacing/sizing constants — a namespace-only enum (no cases),
+/// e.g. `Spacing.medium`.
 // A plain enum used purely as a namespace here (it has no cases) — this
 // is a common Swift pattern for grouping related constants under one
 // name, e.g. "Spacing.medium", without needing an instance of anything.
@@ -177,6 +181,8 @@ extension View {
     }
 }
 
+/// The app's filled, capsule-shaped primary button style — solid
+/// accent-colored fill, for the main/emphasized action on a screen.
 // ButtonStyle is a protocol SwiftUI provides specifically for this:
 // implementing "makeBody(configuration:)" lets one type control exactly
 // how EVERY button using it looks (and how it reacts to being pressed),
@@ -233,8 +239,8 @@ struct PrimaryButtonStyle: ButtonStyle {
     }
 }
 
-// The "secondary" style — outlined rather than filled — used for
-// less-emphasized actions like "Go Back".
+/// The app's outlined, capsule-shaped secondary button style, for
+/// less-emphasized actions like "Go Back".
 struct SecondaryButtonStyle: ButtonStyle {
     // See PrimaryButtonStyle's own copy of this property just above for
     // why a custom ButtonStyle needs to read this explicitly.
@@ -266,14 +272,13 @@ struct SecondaryButtonStyle: ButtonStyle {
     }
 }
 
+/// A style for buttons whose visuals are already fully hand-built by
+/// their own call site — behaves like SwiftUI's own `.plain`, plus the
+/// same press haptic every other style in this file bakes in.
 // For buttons that don't want ANY of Primary/Secondary's own color,
 // sizing, or opacity — icon-only overlays (a Settings gear), ChooseView's
 // own list rows, OnboardingSelectableCard's tappable cards — but should
 // still feel tappable the same way every other button in this app does.
-// Behaves exactly like SwiftUI's own ".plain" (returns the label
-// untouched) plus the same haptic every other style bakes in; use this
-// in place of ".plain" wherever a button's visuals are already fully
-// hand-built by its own call site.
 struct HapticButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

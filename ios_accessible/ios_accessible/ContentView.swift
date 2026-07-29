@@ -14,6 +14,9 @@ import FirebaseCore
 private let appGroupID = "group.com.anaydandekar.ios-accessible"
 private let pendingSharedURLKey = "pendingSharedArticleURL"
 
+// MARK: - Navigation
+
+/// Which top-level screen ContentView is currently showing.
 // enum = a fixed set of named cases; used here as a simple "which page" switch.
 // No ".library" case — a library account's own home screen
 // (LibraryHomeView) is reached directly from within LibrarySignUpView/
@@ -26,25 +29,31 @@ enum Page {
     case account
 }
 
-// Which kind of account the user is logging into or signing up for, chosen
-// on AccountView before its username/password or six-digit-code form shows.
+/// Which kind of account someone is signing into or creating.
+// Chosen on AccountView before its username/password or six-digit-code
+// form shows.
 enum AccountType {
     case library
     case reader
 }
 
-// Whether the user wants to log into an existing account or create a new
-// one — chosen on each account type's screen before its actual form shows.
-// Kept separate from AccountType since sign up asks for a name that log in
+/// Whether an account screen is showing its log-in form or its sign-up form.
+// Chosen on each account type's screen before its actual form shows. Kept
+// separate from AccountType since sign up asks for a name that log in
 // doesn't need, so the two need different fields, not just different titles.
 enum AuthMode {
     case login
     case signUp
 }
 
-// "struct" = value type. ": View" means it must provide a "body" describing its UI.
-// This view just decides which page to show; each page's own UI lives in its
-// own struct below, for simplicity.
+// MARK: - Root View
+
+/// The app's single root view — decides which top-level Page to show and
+/// owns the state (current page, signed-in account type, content to read)
+/// that needs to survive as the reader moves between pages. Each page's
+/// own UI lives in its own struct further down this file.
+// "struct" = value type. ": View" means it must provide a "body"
+// describing its UI.
 struct ContentView: View {
     // Needed here (not just deeper views like ChooseView) for the shared-
     // article dedup/save flow below — ensureReaderSignedIn/
@@ -288,9 +297,12 @@ struct ContentView: View {
     }
 }
 
-// Which step of the very-first-launch welcome sequence is showing (see
-// HomeView below). Not used again once hasCompletedOnboarding is true,
-// when HomeView instead hands off straight to AccountView's picker.
+// MARK: - Onboarding & Home
+
+/// Which step of the very-first-launch welcome sequence is showing (see
+/// HomeView below).
+// Not used again once hasCompletedOnboarding is true, when HomeView
+// instead hands off straight to AccountView's picker.
 enum OnboardingStep {
     case welcome
     case name
@@ -299,7 +311,10 @@ enum OnboardingStep {
     case accountChoice
 }
 
-// The first screen shown when the app launches. The very first time
+/// The first screen shown when the app launches — walks a first-time
+/// reader through onboarding, or (on every later visit) hands off
+/// straight to AccountView's picker.
+// The very first time
 // (while hasCompletedOnboarding is still false) this walks a reader
 // through a short welcome sequence — an explicit "Get Started" tap, what
 // to call them, a live preview of Light vs Dark, then "Who's Joining
@@ -629,13 +644,15 @@ struct HomeView: View {
     }
 }
 
-// A signed-in reader or library account's own settings — reachable via a
-// gear icon on each account type's own landing page (ReaderAccountView's
-// readerHomeContent, once joined, or LibraryHomeView, once signed in),
-// never from ChooseView (a reader's catalog) or AccountView's own picker,
-// since there's nothing to configure before an account actually exists.
-// A real full screen, not a sheet — same reasoning, and same
-// Binding-owned-by-the-presenting-view pattern, as
+// MARK: - Settings
+
+/// A signed-in reader or library account's own settings screen.
+// Reachable via a gear icon on each account type's own landing page
+// (ReaderAccountView's readerHomeContent, once joined, or LibraryHomeView,
+// once signed in), never from ChooseView (a reader's catalog) or
+// AccountView's own picker, since there's nothing to configure before an
+// account actually exists. A real full screen, not a sheet — same
+// reasoning, and same Binding-owned-by-the-presenting-view pattern, as
 // LibraryCatalogManagementView's own move away from a sheet. Styled with
 // OnboardingTheme.swift's components rather than Theme.swift's, matching
 // the direction the rest of the app is headed.
@@ -875,8 +892,10 @@ struct SettingsView: View {
     }
 }
 
-// Lets the user choose which kind of account to log into or sign up for,
-// then shows that account type's form.
+// MARK: - Account Type Selection
+
+/// Lets the user choose which kind of account to log into or sign up for,
+/// then shows that account type's form.
 struct AccountView: View {
     @Binding var currentPage: Page
 
@@ -931,10 +950,12 @@ struct AccountView: View {
     }
 }
 
-// The "Who's Joining Us?" choice, shared between two different places it
-// can appear: as the final step of HomeView's first-time onboarding
-// sequence (showProgress: true, "Go Back" returns to the theme step) and
-// as AccountView's own picker for every later visit (showProgress:
+/// The "Who's Joining Us?" choice screen, shared between HomeView's
+/// onboarding sequence and AccountView's own picker on later visits.
+// Shared between two different places it can appear: as the final step of
+// HomeView's first-time onboarding sequence (showProgress: true, "Go
+// Back" returns to the theme step) and as AccountView's own picker for
+// every later visit (showProgress:
 // false, no "Go Back" at all — see onBack's own doc comment for why).
 // Built entirely from OnboardingTheme.swift's own components — same
 // reasoning as HomeView's steps: this screen is part of the onboarding
@@ -1026,14 +1047,16 @@ private struct AccountChoiceScreen: View {
     }
 }
 
-// Lets the user choose whether to log into an existing library account or
-// sign up for a new one, then shows that specific form. Library accounts
-// use a username and password either way. This picker itself — "Set up
-// your library" — is part of the onboarding redesign (it's step 5 of 5
-// in the overall onboarding flow's own progress count, same as Library
-// Log In and Reader Join Code, all of which share that final step),
-// built entirely from OnboardingTheme.swift's components rather than
-// Theme.swift's, matching HomeView's own onboarding steps.
+// MARK: - Library Account
+
+/// Lets the user choose whether to log into an existing library account
+/// or sign up for a new one, then shows that specific form.
+// Library accounts use a username and password either way. This picker
+// itself — "Set up your library" — is part of the onboarding redesign
+// (it's step 5 of 5 in the overall onboarding flow's own progress count,
+// same as Library Log In and Reader Join Code, all of which share that
+// final step), built entirely from OnboardingTheme.swift's components
+// rather than Theme.swift's, matching HomeView's own onboarding steps.
 struct LibraryAccountView: View {
     // @Binding (not "let") so "Go Back" below can clear it, returning to
     // AccountView's picker the same way it got here.
@@ -1109,9 +1132,10 @@ struct LibraryAccountView: View {
     }
 }
 
-// Normalizes a library username as it's typed: no capitals (lowercased,
-// rather than rejected) and no spaces (turned into hyphens, rather than
-// rejected). Shared by LibraryLoginView and LibrarySignUpView so the same
+/// Normalizes a library username as it's typed: no capitals (lowercased,
+/// rather than rejected) and no spaces (turned into hyphens, rather than
+/// rejected).
+// Shared by LibraryLoginView and LibrarySignUpView so the same
 // typed input always produces the same username in both places — a
 // username signed up as "Test User" becomes "test-user", and logging in
 // with "Test User" (or "TEST USER", or "test-user") all need to normalize
@@ -1120,7 +1144,7 @@ private func sanitizedUsername(_ input: String) -> String {
     input.lowercased().replacingOccurrences(of: " ", with: "-")
 }
 
-// Logging into an existing library account, for real now via AuthService.
+/// Logging into an existing library account, for real via AuthService.
 // Rebuilt to match the onboarding redesign — same mascot/title/subtitle
 // pattern as LibraryAccountView's own "Set up your library" screen just
 // above, with two stacked ghost fields (left-aligned, Quicksand — NOT
@@ -1283,10 +1307,10 @@ struct LibraryLoginView: View {
     }
 }
 
-// Which step of LibrarySignUpView's own wizard is showing — a dedicated
-// enum (rather than the old plain Int) since each step is now its own
-// full screen with its own title/copy/field, not just a swapped-out
-// field within one shared layout.
+/// Which step of LibrarySignUpView's own wizard is showing.
+// A dedicated enum (rather than the old plain Int) since each step is now
+// its own full screen with its own title/copy/field, not just a
+// swapped-out field within one shared layout.
 private enum LibrarySignUpStep {
     case libraryName
     case username
@@ -1295,14 +1319,15 @@ private enum LibrarySignUpStep {
     case success
 }
 
-// Signing up for a new library account, rebuilt as four separate
-// full-screen steps — one field per screen — matching HomeView's own
-// "What should we call you?" onboarding step exactly (mascot, centered
-// Baloo 2 title, single underlined field, Continue/Go Back), plus a
-// final confirmation screen once the account is actually created. Each
-// step's own step-N-of-4 progress bar is separate from the main
-// onboarding flow's — this sub-flow restarts its own count at step 1,
-// since reaching here already means onboarding proper is finished.
+/// Signing up for a new library account, as four separate full-screen
+/// steps — one field per screen — plus a final confirmation screen once
+/// the account is actually created.
+// Matching HomeView's own "What should we call you?" onboarding step
+// exactly (mascot, centered Baloo 2 title, single underlined field,
+// Continue/Go Back). Each step's own step-N-of-4 progress bar is separate
+// from the main onboarding flow's — this sub-flow restarts its own count
+// at step 1, since reaching here already means onboarding proper is
+// finished.
 struct LibrarySignUpView: View {
     @Binding var authMode: AuthMode?
 
@@ -1706,10 +1731,11 @@ struct LibrarySignUpView: View {
     }
 }
 
-// Which flow just landed a library account here — Sign Up and Log In
-// both end on the exact same screen (same join code, same Manage
-// Catalog/Sign Out actions), differing only in the very first thing it
-// says.
+/// Which flow just landed a library account here (Sign Up vs. Log In) —
+/// both end on the exact same screen, differing only in the greeting.
+// Sign Up and Log In both end on the exact same screen (same join code,
+// same Manage Catalog/Sign Out actions), differing only in the very first
+// thing it says.
 enum LibraryHomeGreeting {
     case signedUp
     case loggedIn
@@ -1722,15 +1748,14 @@ enum LibraryHomeGreeting {
     }
 }
 
-// A library account's actual home screen — reached directly from either
-// LibrarySignUpView or LibraryLoginView the moment auth succeeds (see
-// each of their own terminal states), replacing the old separate
-// "Welcome Back" LibraryView entirely. There's no reason to route
-// through a generic "you're all set" screen and THEN a second, separate
-// welcome screen when one screen can say hello and show the join code
-// together — and styled with OnboardingTheme.swift's components, not
-// Theme.swift's, since that's the direction the rest of the app is
-// headed too, not just onboarding proper.
+/// A library account's actual home screen — reached directly from either
+/// LibrarySignUpView or LibraryLoginView the moment auth succeeds.
+// Replacing the old separate "Welcome Back" LibraryView entirely. There's
+// no reason to route through a generic "you're all set" screen and THEN a
+// second, separate welcome screen when one screen can say hello and show
+// the join code together — and styled with OnboardingTheme.swift's
+// components, not Theme.swift's, since that's the direction the rest of
+// the app is headed too, not just onboarding proper.
 struct LibraryHomeView: View {
     let greeting: LibraryHomeGreeting
 
@@ -1860,14 +1885,15 @@ struct LibraryHomeView: View {
     }
 }
 
-// Lets a signed-in library account choose which catalog items its readers
-// are allowed to read — a real full screen now (see LibraryHomeView's own
-// isManagingCatalog toggle above), not a sheet, styled with
-// OnboardingTheme.swift's components like the rest of the app is moving
-// toward. Every toggle flip saves immediately (see save() below) rather
-// than needing a separate "Save" button, since there's nothing else on
-// this screen a half-saved toggle could conflict with — "Go Back" is
-// exactly equivalent to the old sheet's "Done", just styled to match.
+/// Lets a signed-in library account choose which catalog items its
+/// readers are allowed to read.
+// A real full screen now (see LibraryHomeView's own isManagingCatalog
+// toggle above), not a sheet, styled with OnboardingTheme.swift's
+// components like the rest of the app is moving toward. Every toggle flip
+// saves immediately (see save() below) rather than needing a separate
+// "Save" button, since there's nothing else on this screen a half-saved
+// toggle could conflict with — "Go Back" is exactly equivalent to the old
+// sheet's "Done", just styled to match.
 struct LibraryCatalogManagementView: View {
     // Set back to false by "Go Back" below — LibraryHomeView owns this,
     // not this view, the same way e.g. LibraryAccountView's own authMode
@@ -1975,13 +2001,15 @@ struct LibraryCatalogManagementView: View {
     }
 }
 
-// Lets a reader join an organization/library with just its join code — no
-// account, no name, no log in/sign up split. Once a code resolves to a real
-// library (via AuthService.fetchLibraryName), hands off to this reader's
-// own proper landing page (see readerHomeContent below) instead of the
-// join form — the reader-path equivalent of LibraryHomeView, reached the
-// same way (directly, once "signed in," rather than via a separate
-// generic success screen first).
+// MARK: - Reader Account
+
+/// Lets a reader join an organization/library with just its join code —
+/// no account, no name, no log in/sign up split.
+// Once a code resolves to a real library (via AuthService.fetchLibraryName),
+// hands off to this reader's own proper landing page (see
+// readerHomeContent below) instead of the join form — the reader-path
+// equivalent of LibraryHomeView, reached the same way (directly, once
+// "signed in," rather than via a separate generic success screen first).
 struct ReaderAccountView: View {
     @Binding var accountType: AccountType?
 
@@ -2202,10 +2230,11 @@ struct ReaderAccountView: View {
     }
 }
 
-// The screen listing content to pick from — sectioned into whichever
-// catalog items the reader's joined library has enabled ("Library"), and
-// whatever the reader has shared/read themselves before ("Saved"), rather
-// than one flat undifferentiated list.
+// MARK: - Catalog
+
+/// The screen listing content to pick from, sectioned into "From Your
+/// Library" (whatever the reader's joined library has enabled) and
+/// "Saved by You" (whatever the reader has shared/read themselves before).
 struct ChooseView: View {
     @Binding var currentPage: Page
 
@@ -2364,11 +2393,12 @@ struct ChooseView: View {
     }
 }
 
-// One row in ChooseView's Library/Saved sections — bigger and more
-// spacious than the old title-only row specifically so there's room for
-// the word count and estimated reading time beneath the title, both
-// computed from ReadingPace so the estimate always matches ReadView's own
-// pacing (see that file's top comment).
+/// One row in ChooseView's Library/Saved sections — shows a title plus
+/// word count and estimated reading time.
+// Bigger and more spacious than the old title-only row specifically so
+// there's room for the word count and estimated reading time beneath the
+// title, both computed from ReadingPace so the estimate always matches
+// ReadView's own pacing (see that file's top comment).
 private struct CatalogRow: View {
     let content: ReadableContent
     let action: () -> Void
@@ -2432,10 +2462,12 @@ private struct CatalogRow: View {
     }
 }
 
-// ReadView's own color palette, pulled literally from the design doc
+// MARK: - RSVP Reading
+
+/// ReadView's own color palette, pulled literally from the design doc
+/// rather than reused from OnboardingTheme.swift's Color.onboarding* tokens.
 // (claude.ai/design project bc14e680, "Read Page Redesign -
-// Landscape.dc.html", options 2a light / 2b dark) rather than reused
-// from OnboardingTheme.swift's Color.onboarding* tokens. Checked every
+// Landscape.dc.html", options 2a light / 2b dark). Checked every
 // role against the actual asset-catalog hex values first: the DARK side
 // of every single one matches OnboardingTheme's dark tokens exactly
 // (background/rail/primary/secondary/divider all equal
@@ -2492,7 +2524,9 @@ private extension UIColor {
     }
 }
 
-// The actual reading screen.
+/// The actual reading screen — shows one word at a time (RSVP: Rapid
+/// Serial Visual Presentation), advancing automatically at a configurable
+/// words-per-minute pace with punctuation-aware pauses (see ReadingPace.swift).
 struct ReadView: View {
     // "let" (not "@Binding") since this view only reads the content, never
     // changes it — a plain stored property is all that's needed here.
@@ -3185,9 +3219,11 @@ struct ReadView: View {
     }
 }
 
-// A button-like control that fires `action` once immediately on press,
-// then keeps firing it repeatedly for as long as the press is held —
-// used by backButton/forwardButton and the WPM +/- steppers so a
+// MARK: - Small Reusable Controls & Shapes
+
+/// A button-like control that fires `action` once immediately on press,
+/// then keeps firing it repeatedly for as long as the press is held.
+// Used by backButton/forwardButton and the WPM +/- steppers so a
 // reader can hold one down instead of tapping it over and over.
 // Deliberately NOT a plain Button with an added hold gesture: a
 // Button's own tap-completion and a second, simultaneous press gesture
@@ -3263,8 +3299,9 @@ private struct RepeatableControl<Label: View>: View {
     }
 }
 
-// A "<"/">" chevron built from two straight strokes (not SF Symbol's
-// "chevron.left"/".right") so the exact stroke width, cap, and join can be
+/// A "<"/">" chevron built from two straight strokes, not SF Symbol's
+/// "chevron.left"/".right".
+// So the exact stroke width, cap, and join can be
 // controlled directly — this screen's whole icon language is rounded caps
 // + rounded joins throughout, which a system glyph doesn't guarantee.
 // Traces the design doc's own SVG path proportions exactly (in a 24×24
@@ -3288,8 +3325,9 @@ private struct ChevronShape: Shape {
     }
 }
 
-// A close "X" drawn as two independent crossing strokes (not one
-// four-point zigzag) so each one gets its own two rounded caps, the same
+/// A close "X" drawn as two independent crossing strokes, not one
+/// four-point zigzag.
+// So each one gets its own two rounded caps, the same
 // way a real "X" glyph reads — a single continuous zigzag path would only
 // round the two OUTER ends, leaving a sharp mitered corner in the middle
 // where the strokes cross. Traces the reference's own SVG path exactly:
@@ -3313,9 +3351,10 @@ private struct CloseXShape: Shape {
     }
 }
 
-// The rail's own Play glyph: a plain, symmetric triangle — points at
-// (8,6), (8,18), (18,12) in a 24×24 box, same as the design doc's own SVG
-// path exactly (M8 6L8 18L18 12Z). Deliberately NOT a hand-tuned "rounded"
+/// The rail's own Play glyph: a plain, symmetric triangle.
+// Points at (8,6), (8,18), (18,12) in a 24×24 box, same as the design
+// doc's own SVG path exactly (M8 6L8 18L18 12Z). Deliberately NOT a
+// hand-tuned "rounded"
 // bezier shape and NOT manually re-centered — this shape stays perfectly
 // sharp-cornered and symmetric; playPauseTile above rounds its corners by
 // filling AND stroking it with the same thick, round-joined line, which
@@ -3335,7 +3374,10 @@ private struct PlayTriangleShape: Shape {
     }
 }
 
-// Shown inside the modal sheet for whichever content was tapped.
+// MARK: - Content Detail & Data Model
+
+/// Shown inside the modal sheet for whichever catalog item was tapped —
+/// title, description, and an "accept" action that hands off to ReadView.
 struct ReadableContentDetailView: View {
     let content: ReadableContent // fixed for this view's lifetime
 
@@ -3396,10 +3438,11 @@ struct ReadableContentDetailView: View {
     }
 }
 
-// Which of the two catalog sections a piece of content belongs to (see
-// ChooseView) — .library is admin-curated, shared across every reader
-// whose library enabled it; .saved is one reader's own shared/read
-// articles, visible only to them. Nothing about ReadableContent itself
+/// Which of the two catalog sections a piece of content belongs to (see
+/// ChooseView): .library is admin-curated and shared across every reader
+/// whose library enabled it; .saved is one reader's own shared/read
+/// articles, visible only to them.
+// Nothing about ReadableContent itself
 // changes behavior based on this beyond ChooseView's own sectioning; it
 // exists so a single flat fetch-and-display path doesn't have to guess
 // which list a given item belongs in from context.
@@ -3408,6 +3451,8 @@ enum ReadableContentSource {
     case saved
 }
 
+/// A single piece of reading material — either from the shared library
+/// catalog or one reader's own saved content (see ReadableContentSource).
 // Identifiable requires an "id" so List/ForEach/.sheet(item:) can tell rows
 // apart. For catalog content, id is the Firestore document ID (see
 // AuthService.fetchCatalog) — that content lives in Firestore, imported
@@ -3430,6 +3475,8 @@ struct ReadableContent: Identifiable {
     // a duplicate.
     let sourceURL: String?
 }
+
+// MARK: - Preview Support
 
 // Unlike the real app, #Preview below instantiates ContentView() directly
 // rather than going through ios_accessibleApp's WindowGroup — so neither

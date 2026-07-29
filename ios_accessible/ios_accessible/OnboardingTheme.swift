@@ -1,5 +1,10 @@
 import SwiftUI
 
+/// A second, SEPARATE design system from Theme.swift — used only by the
+/// first-time onboarding sequence, the account-choice screen it shares
+/// with AccountView, and the library sign-up flow. Every type/color/font
+/// in this file is prefixed "Onboarding" so it's never ambiguous which
+/// design system a given line of code is drawing from.
 // A second, SEPARATE little design system, used ONLY by the first-time
 // onboarding sequence (HomeView's welcome/name/theme/account-choice
 // steps), the "Who's Joining Us?" screen those steps share with
@@ -39,6 +44,8 @@ import SwiftUI
 // SemiBold, Bold, ...), each with its own real PostScript name
 // (e.g. "Baloo2-Bold") that Font.custom(_:size:) can address directly,
 // exactly as if it were its own separate font file.
+/// Onboarding's two type faces: `.display` (Baloo 2, titles) and `.body`
+/// (Quicksand, everything else).
 enum OnboardingFont {
     // Every title in this flow ("Welcome", "What should we call you?",
     // ...) uses the same Baloo 2 weight (Bold/700) — just at a different
@@ -76,6 +83,8 @@ enum OnboardingFont {
 // capsule, 60pt tall) but filled with the onboarding flow's own
 // monochrome "text" color rather than the app's terracotta accent, since
 // this flow deliberately uses no accent color anywhere.
+/// The pill "Get Started"/"Continue" button every onboarding screen ends
+/// with — onboarding's equivalent of Theme.swift's PrimaryButtonStyle.
 struct OnboardingPrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
@@ -109,6 +118,8 @@ struct OnboardingPrimaryButtonStyle: ButtonStyle {
 // primary style, just a 2px border in this flow's own border token
 // instead of a solid fill — matching Theme.swift's own
 // SecondaryButtonStyle shape, built from this flow's separate tokens.
+/// The outlined pill that pairs with OnboardingPrimaryButtonStyle for a
+/// secondary, less-emphasized action.
 struct OnboardingSecondaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
@@ -142,6 +153,8 @@ struct OnboardingSecondaryButtonStyle: ButtonStyle {
 // which doesn't fit this flow's flat, opaque, no-accent-color look.
 // Drawing the two shapes ourselves sidesteps that entirely rather than
 // fighting the system style to turn it off.
+/// A hand-drawn capsule-track switch, standing in for the system Toggle
+/// so this flow's flat, no-glass look stays consistent.
 struct OnboardingToggleStyle: ToggleStyle {
     func makeBody(configuration: Configuration) -> some View {
         HStack {
@@ -172,6 +185,7 @@ struct OnboardingToggleStyle: ToggleStyle {
 
 // "Go Back" on every non-welcome onboarding screen — plain text, no
 // border or fill, in the flow's secondary (not primary) text color.
+/// The "Go Back" link shown near the top of most onboarding screens.
 struct OnboardingBackButton: View {
     let action: () -> Void
 
@@ -183,6 +197,7 @@ struct OnboardingBackButton: View {
     }
 }
 
+/// Plain-text button chrome (no capsule/border) used by OnboardingBackButton.
 private struct OnboardingTextButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 
@@ -203,6 +218,7 @@ private struct OnboardingTextButtonStyle: ButtonStyle {
 // design system departs from strict grayscale/beige, since an error
 // genuinely needs to read as different from everything else on screen,
 // not just another line of secondary text.
+/// The red-toned inline validation message shown under a form field.
 struct OnboardingErrorLabel: View {
     let message: String
 
@@ -227,6 +243,8 @@ struct OnboardingErrorLabel: View {
 // every onboarding screen shows below its mascot — a title SIZE is
 // passed in rather than fixed, since the design spec gives each screen
 // its own distinct size (58/34/32/25) rather than one shared scale.
+/// The title + optional subtitle block every onboarding screen shows
+/// below its mascot.
 struct OnboardingPageHeader: View {
     let title: String
     var titleSize: CGFloat = 32
@@ -259,12 +277,16 @@ struct OnboardingPageHeader: View {
 // styles; "orbit" is the one actually used throughout this flow, but all
 // three are implemented here since the design explicitly calls this out
 // as a swappable style rather than a one-off choice.
+/// The three interchangeable shapes OnboardingMascot can render.
 enum OnboardingMascotStyle {
     case dot
     case orbit
     case crescent
 }
 
+/// The onboarding flow's animated mascot: a breathing, optionally
+/// sparkle-and-glow-decorated shape drawn in one of three
+/// OnboardingMascotStyle variants.
 struct OnboardingMascot: View {
     // Every other measurement is a fraction of this one number —
     // HomeView's onboarding passes a smaller size at each successive
@@ -402,6 +424,8 @@ struct OnboardingMascot: View {
 // show progress THROUGH yet. "step" is 1-based (Name passes 1, Theme
 // passes 2, Account Choice passes 3), matching how a reader would count
 // "step 1 of 3" out loud.
+/// The thin top-of-screen progress bar shown on every onboarding step
+/// after the first.
 struct OnboardingProgressBar: View {
     let step: Int
     let total: Int
@@ -431,6 +455,9 @@ struct OnboardingProgressBar: View {
 // description, the 22pt selection ring, the border/fill treatment) is
 // identical between them, so it's one generic view rather than two
 // near-duplicate ones.
+/// A generic tappable row (leading icon/swatch + title + optional
+/// description + selection ring) shared by every onboarding "pick one
+/// of these options" step.
 struct OnboardingSelectableCard<Leading: View>: View {
     // A plain stored value, not an @ViewBuilder closure — every call
     // site passes one already-built view (OnboardingThemeSwatch or
@@ -500,6 +527,7 @@ struct OnboardingSelectableCard<Leading: View>: View {
 // CURRENTLY active, but both the light and dark swatch need to show
 // their true colors at the same time, regardless of the device's actual
 // current appearance.
+/// Literal (not dynamic) light/dark color sets for OnboardingThemeSwatch.
 enum OnboardingSwatchPalette {
     case light
     case dark
@@ -526,6 +554,8 @@ enum OnboardingSwatchPalette {
     }
 }
 
+/// A small "Aa" preview card for one OnboardingSwatchPalette, used in the
+/// Theme step's light/dark picker.
 struct OnboardingThemeSwatch: View {
     let palette: OnboardingSwatchPalette
 
@@ -552,6 +582,8 @@ struct OnboardingThemeSwatch: View {
 // onboarding background color (not a tinted accent circle, since this
 // flow uses no accent color), leaving the selection ring as the only
 // thing on the card that means "selected."
+/// A single SF Symbol on a rounded background tile, used as the leading
+/// element of the Account-choice step's Library/Reader cards.
 struct OnboardingIconTile: View {
     let systemImage: String
 

@@ -7,6 +7,8 @@ import Foundation
 // "worth." Two separate copies of this logic would silently drift the
 // moment either one's beat values got retuned, and the catalog's estimate
 // would quietly stop matching what ReadView actually does.
+/// Shared word-tokenizing and punctuation-based pause-beat logic, used by
+/// both live RSVP playback and catalog reading-time estimates.
 enum ReadingPace {
     // MARK: - Tokenizing
 
@@ -18,6 +20,8 @@ enum ReadingPace {
     // distinction away entirely, which is what used to let sentence-
     // ending punctuation from one paragraph sit right next to the first
     // word of the next with no beat between them.
+    /// A passage split into words, paired with whether each word was
+    /// followed by a line break (vs. a plain space) in the source text.
     struct Tokenized {
         let words: [String]
         let hadLineBreakAfter: [Bool]
@@ -29,6 +33,8 @@ enum ReadingPace {
     // character still splits words exactly the same way
     // .split(whereSeparator: { $0.isWhitespace }) did — this only adds
     // bookkeeping on top of that, not different splitting behavior.
+    /// Splits `text` into words, preserving which words were followed by a
+    /// line break rather than a plain space.
     static func tokenize(_ text: String) -> Tokenized {
         var words: [String] = []
         var hadLineBreakAfter: [Bool] = []
@@ -107,6 +113,8 @@ enum ReadingPace {
     // first so punctuation like `."` (a period immediately before a
     // closing quote) is still recognized as sentence-ending, not masked
     // by the quote sitting on top of it.
+    /// How many word-to-word "beats" to hold on the word at `index` before
+    /// advancing, based on its trailing punctuation (or a following line break).
     static func beats(forWordAt index: Int, in tokenized: Tokenized) -> Double {
         if tokenized.hadLineBreakAfter[index] {
             return lineBreakBeats
@@ -132,6 +140,7 @@ enum ReadingPace {
     // ReadView's own totalDurationLabel) — the two pieces a catalog row
     // needs to show "1,240 words · 6 min" without duplicating this
     // file's punctuation tables itself.
+    /// Word count plus the summed pause beats across the whole passage.
     static func wordCountAndTotalBeats(for text: String) -> (wordCount: Int, beats: Double) {
         let tokenized = tokenize(text)
         guard tokenized.words.count > 1 else { return (tokenized.words.count, 0) }
@@ -145,6 +154,7 @@ enum ReadingPace {
     // given wpm — same math as ReadView's totalDurationLabel, just
     // exposed here so a catalog row can show it before ReadView (or its
     // own tokenizing) ever runs.
+    /// Estimated seconds to read the whole passage start to finish at `wpm`.
     static func estimatedSeconds(for text: String, wpm: Int) -> Int {
         let (_, totalBeats) = wordCountAndTotalBeats(for: text)
         return Int((totalBeats * 60.0 / Double(wpm)).rounded())

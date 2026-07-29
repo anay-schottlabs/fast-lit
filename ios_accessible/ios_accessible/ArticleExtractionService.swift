@@ -2,10 +2,14 @@ import Foundation
 import WebKit
 import UIKit
 
+// MARK: - Errors
+
 // Thrown by ArticleExtractionService.extract(from:) — each case has its own
 // user-facing message, since "share a link" can fail in several genuinely
 // different ways a reader would want to distinguish (a dead link reads
 // differently than "this isn't an article").
+/// The ways loading and extracting a shared article can fail, each with
+/// its own user-facing message.
 enum ArticleExtractionError: LocalizedError {
     case invalidURL
     case loadFailed(Error)
@@ -35,10 +39,16 @@ enum ArticleExtractionError: LocalizedError {
 // WKWebView load + JS run is exactly the kind of unpredictable-duration
 // work that risks the extension's own OS-imposed timeout — the extension's
 // only job is a fast local handoff (see ShareExtension/ShareViewController.swift).
+// MARK: - Extraction
+
+/// Loads a shared URL in a hidden WKWebView and runs Readability.js
+/// against it to produce a plain-text ReadableContent.
 @MainActor
 final class ArticleExtractionService: NSObject, WKNavigationDelegate {
     private var loadContinuation: CheckedContinuation<Void, Error>?
 
+    /// Extracts a ReadableContent from a shared URL. Throws
+    /// ArticleExtractionError on any failure along the way.
     static func extract(from url: URL) async throws -> ReadableContent {
         try await ArticleExtractionService().run(url: url)
     }
@@ -163,6 +173,9 @@ final class ArticleExtractionService: NSObject, WKNavigationDelegate {
         )
     }
 
+    // MARK: - WKNavigationDelegate
+
+    /// Resolves loadContinuation once the page finishes loading.
     nonisolated func webView(_ webView: WKWebView, didFinish navigation: WKNavigation!) {
         Task { @MainActor in
             loadContinuation?.resume(returning: ())
@@ -170,6 +183,7 @@ final class ArticleExtractionService: NSObject, WKNavigationDelegate {
         }
     }
 
+    /// Fails loadContinuation if the page errors after navigation commits.
     nonisolated func webView(_ webView: WKWebView, didFail navigation: WKNavigation!, withError error: Error) {
         Task { @MainActor in
             loadContinuation?.resume(throwing: ArticleExtractionError.loadFailed(error))
@@ -177,6 +191,7 @@ final class ArticleExtractionService: NSObject, WKNavigationDelegate {
         }
     }
 
+    /// Fails loadContinuation if the page errors before navigation commits.
     nonisolated func webView(_ webView: WKWebView, didFailProvisionalNavigation navigation: WKNavigation!, withError error: Error) {
         Task { @MainActor in
             loadContinuation?.resume(throwing: ArticleExtractionError.loadFailed(error))
@@ -185,6 +200,7 @@ final class ArticleExtractionService: NSObject, WKNavigationDelegate {
     }
 }
 
+/// Decodes the JSON string produced by the extraction JS's JSON.stringify.
 private struct ReadabilityResult: Decodable {
     let title: String
     let textContent: String
@@ -196,6 +212,10 @@ private struct ReadabilityResult: Decodable {
 // without ever erroring — this bounds every extraction attempt so the
 // caller's spinner (see ContentView's isExtractingSharedArticle) always
 // resolves one way or another instead of spinning forever.
+// MARK: - Timeout helper
+
+/// Races `operation` against a `seconds`-long timer, throwing
+/// ArticleExtractionError.timedOut if the timer wins.
 private func withTimeout<T>(seconds: TimeInterval, operation: @escaping () async throws -> T) async throws -> T {
     try await withThrowingTaskGroup(of: T.self) { group in
         group.addTask { try await operation() }
