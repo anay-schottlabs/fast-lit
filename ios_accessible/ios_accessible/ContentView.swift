@@ -2202,8 +2202,10 @@ struct ReaderAccountView: View {
     }
 }
 
-// The screen listing content to pick from — just whichever catalog items
-// the reader's joined library has enabled, not the whole shared catalog.
+// The screen listing content to pick from — sectioned into whichever
+// catalog items the reader's joined library has enabled ("Library"), and
+// whatever the reader has shared/read themselves before ("Saved"), rather
+// than one flat undifferentiated list.
 struct ChooseView: View {
     @Binding var currentPage: Page
 
@@ -2223,8 +2225,13 @@ struct ChooseView: View {
 
     // Empty until loadContent() finishes — see isLoading/loadError below for
     // telling "still loading" and "nothing enabled yet" apart from an
-    // in-progress fetch.
-    @State private var availableContent: [ReadableContent] = []
+    // in-progress fetch. Two separate arrays (rather than one flat list
+    // filtered by .source at render time) since they come from two
+    // genuinely different fetches — library content is filtered against
+    // libraryUid's enabled set, saved content is the signed-in reader's
+    // own, unrelated to any library.
+    @State private var libraryContent: [ReadableContent] = []
+    @State private var savedContent: [ReadableContent] = []
     @State private var isLoading: Bool = true
     @State private var loadError: String? = nil
 
@@ -2243,9 +2250,9 @@ struct ChooseView: View {
                     Spacer()
                     OnboardingErrorLabel(message: loadError)
                     Spacer()
-                } else if availableContent.isEmpty {
+                } else if libraryContent.isEmpty && savedContent.isEmpty {
                     Spacer()
-                    Text("Your library hasn't added any reading material yet. Please check back soon.")
+                    Text("Nothing to read yet — your library hasn't added anything, and you haven't saved anything by sharing a link into Fast Lit.")
                         .font(OnboardingFont.body(16, weight: .semiBold))
                         .foregroundStyle(Color.onboardingTextSecondary)
                         .multilineTextAlignment(.center)
@@ -2253,39 +2260,28 @@ struct ChooseView: View {
                     Spacer()
                 } else {
                     List {
-                        // "item" avoids clashing with the Text view type.
-                        ForEach(availableContent) { item in
-                            Button(action: {
-                                selectedContent = item // triggers the .sheet below
-                            }, label: {
-                                HStack {
-                                    Text(item.title)
-                                        .font(OnboardingFont.body(18, weight: .semiBold))
-                                        .foregroundStyle(Color.onboardingText)
-                                    Spacer()
-                                    // A visible ">" hints the row is tappable,
-                                    // beyond just the row itself looking like
-                                    // a button — a small extra clarity cue.
-                                    Image(systemName: "chevron.right")
-                                        .foregroundStyle(Color.onboardingTextSecondary)
+                        // Only rendered when non-empty — an empty Section
+                        // still draws its header with nothing underneath,
+                        // which reads as "your library has zero content"
+                        // even when the real reason is just that the
+                        // OTHER section (Saved) is the one with items.
+                        if !libraryContent.isEmpty {
+                            Section("From Your Library") {
+                                ForEach(libraryContent) { item in
+                                    CatalogRow(content: item) {
+                                        selectedContent = item // triggers the .sheet below
+                                    }
                                 }
-                                // Generous vertical padding makes each row a
-                                // bigger, easier target to tap.
-                                .padding(.vertical, Spacing.medium)
-                                // Full-width frame + an explicit rectangular
-                                // hit-testing shape: without these, SwiftUI
-                                // only counts a tap as landing on this
-                                // Button if it's directly over the title
-                                // Text or the chevron Image — the Spacer
-                                // between them (and the padding around
-                                // both) draws nothing, so it's invisible to
-                                // hit-testing by default even though it's
-                                // visually part of the same row.
-                                .frame(maxWidth: .infinity)
-                                .contentShape(Rectangle())
-                            })
-                            .buttonStyle(HapticButtonStyle())
-                            .listRowBackground(Color.onboardingCard)
+                            }
+                        }
+                        if !savedContent.isEmpty {
+                            Section("Saved by You") {
+                                ForEach(savedContent) { item in
+                                    CatalogRow(content: item) {
+                                        selectedContent = item
+                                    }
+                                }
+                            }
                         }
                     }
                     .scrollContentBackground(.hidden)
@@ -2340,15 +2336,99 @@ struct ChooseView: View {
 
     private func loadContent() async {
         do {
+            // ensureReaderSignedIn first (not raced alongside the other
+            // two fetches below) — fetchSavedContent needs a signed-in
+            // uid to know whose saved content to read, and this is the
+            // one place besides ContentView's own share-arrival path
+            // where a reader might be the very first time they've ever
+            // needed a session at all (e.g. they joined a library but
+            // have never shared anything).
+            try? await authService.ensureReaderSignedIn()
             async let catalogFetch = authService.fetchCatalog()
             async let enabledFetch = authService.fetchEnabledContentIds(forLibraryUid: libraryUid)
+            async let savedFetch = authService.fetchSavedContent()
             let catalog = try await catalogFetch
             let enabledIds = try await enabledFetch
-            availableContent = catalog.filter { enabledIds.contains($0.id) }
+            libraryContent = catalog.filter { enabledIds.contains($0.id) }
+            // Best-effort (try?, not try): a signed-in-but-offline reader
+            // should still see their library content even if the saved-
+            // content fetch itself fails — an empty Saved section is a
+            // much better failure mode here than losing the whole screen
+            // to loadError over something that isn't even this reader's
+            // library's fault.
+            savedContent = (try? await savedFetch) ?? []
         } catch {
             loadError = error.localizedDescription
         }
         isLoading = false
+    }
+}
+
+// One row in ChooseView's Library/Saved sections — bigger and more
+// spacious than the old title-only row specifically so there's room for
+// the word count and estimated reading time beneath the title, both
+// computed from ReadingPace so the estimate always matches ReadView's own
+// pacing (see that file's top comment).
+private struct CatalogRow: View {
+    let content: ReadableContent
+    let action: () -> Void
+
+    // 300 wpm — the same value ReadView's own @State wpm starts every
+    // fresh read at (see ReadView's `wpm` property) — so this estimate
+    // matches what a reader who hasn't touched the speed slider yet will
+    // actually experience, rather than some other arbitrary reference
+    // speed.
+    private static let referenceWPM = 300
+
+    private var wordCountAndDuration: (words: Int, minutes: Int) {
+        let (wordCount, beats) = ReadingPace.wordCountAndTotalBeats(for: content.text)
+        let seconds = Int((beats * 60.0 / Double(Self.referenceWPM)).rounded())
+        // Rounds UP to the nearest minute (not down, and not "0 min" for
+        // anything under 60s) — a reader deciding whether they have time
+        // for something should never be told "0 min" for a piece that
+        // will visibly take them some real time to read.
+        let minutes = max(1, Int((Double(seconds) / 60.0).rounded(.up)))
+        return (wordCount, minutes)
+    }
+
+    var body: some View {
+        Button(action: action) {
+            HStack(alignment: .center, spacing: Spacing.medium) {
+                VStack(alignment: .leading, spacing: 6) {
+                    Text(content.title)
+                        .font(OnboardingFont.body(19, weight: .semiBold))
+                        .foregroundStyle(Color.onboardingText)
+                        .multilineTextAlignment(.leading)
+                        .lineLimit(2)
+                    let (words, minutes) = wordCountAndDuration
+                    Text("\(words.formatted()) words · \(minutes) min read")
+                        .font(OnboardingFont.body(14, weight: .medium))
+                        .foregroundStyle(Color.onboardingTextSecondary)
+                }
+                Spacer(minLength: Spacing.small)
+                // A visible ">" hints the row is tappable, beyond just
+                // the row itself looking like a button — a small extra
+                // clarity cue.
+                Image(systemName: "chevron.right")
+                    .foregroundStyle(Color.onboardingTextSecondary)
+            }
+            // More generous than the old row's Spacing.medium alone —
+            // this row now carries two lines of text instead of one, so
+            // it needs more vertical room to still read as spacious
+            // rather than cramped.
+            .padding(.vertical, Spacing.medium + 4)
+            // Full-width frame + an explicit rectangular hit-testing
+            // shape: without these, SwiftUI only counts a tap as landing
+            // on this Button if it's directly over the title/subtitle
+            // Text or the chevron Image — the Spacer between them (and
+            // the padding around both) draws nothing, so it's invisible
+            // to hit-testing by default even though it's visually part
+            // of the same row.
+            .frame(maxWidth: .infinity)
+            .contentShape(Rectangle())
+        }
+        .buttonStyle(HapticButtonStyle())
+        .listRowBackground(Color.onboardingCard)
     }
 }
 
