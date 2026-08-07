@@ -22,34 +22,18 @@ service cloud.firestore {
       allow create, delete: if false;
     }
 
-    // One doc per /lab pilot-study session (see LabPage.vue's
-    // startSession). Write-once from the client — a session's trial order
-    // is fixed the moment it's created, so no updates or deletes.
-    match /labSessions/{sessionId} {
-      allow get: if true;
-      allow create: if request.resource.data.keys().hasOnly([
-        'sessionId', 'participantId', 'trialOrder', 'createdAt'
-      ]);
-      allow update, delete: if false;
-
-      // Nothing in the app lists sessions today, but it's the same open
-      // posture as labTrials below (no auth exists to gate it on anyway),
-      // and useful for future admin tooling (e.g. spotting sessions that
-      // started but never completed a trial).
-      allow list: if true;
-    }
-
-    // One doc per completed /lab trial (see LabPage.vue's submitQuiz).
+    // One doc per completed /lab run (see LabPage.vue's finalizeRun) — all
+    // three trials of a run, plus run-level totals. No participant/session
+    // identity is collected at all, so there's nothing to key separate
+    // writes on; the whole run is written once, atomically, at the end.
     // Readable/listable so /lab/results can pull every record; immutable
     // once written, since these are research data and shouldn't be
     // editable from the client after the fact.
-    match /labTrials/{trialId} {
+    match /labRuns/{runId} {
       allow get, list: if true;
       allow create: if request.resource.data.keys().hasOnly([
-        'sessionId', 'participantId', 'passageId', 'wpm', 'trialOrderIndex',
-        'actualStartTime', 'actualEndTime', 'actualDurationMs', 'expectedDurationMs',
-        'durationMismatchFlag', 'quizAnswers', 'correctCount', 'totalQuestions',
-        'quizDurationMs', 'timestamp'
+        'trials', 'runStartedAt', 'runEndedAt', 'totalElapsedMs',
+        'totalReadingMs', 'totalQuizMs', 'overallAccuracyPct', 'userAgent', 'createdAt'
       ]);
       allow update, delete: if false;
     }

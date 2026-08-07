@@ -698,7 +698,8 @@ export class ChangelogScripts {
                     "later. The Lab Results page now shows one row per trial across every run, still sortable and",
                     "with the same average-accuracy-by-speed summary, and its CSV export includes the full",
                     "per-question detail packed into each row."
-                ])
+                ]),
+                "Deployed updated Firestore security rules replacing labSessions/labTrials with a single labRuns collection (create-only, immutable), matching the Lab page's reworked data model."
             ]
         )
     ]
