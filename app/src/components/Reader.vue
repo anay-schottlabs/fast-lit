@@ -476,11 +476,19 @@ window.addEventListener('keydown', (event) => {
         </p>
     </div>
 
-    <!-- progress bar for visual representation of reading progress — hidden
-         under lockControls so a research trial can't be scrubbed forward or
-         back, which would invalidate the recorded elapsed time. -->
+    <!-- progress bar for visual representation of reading progress. Under
+         lockControls (research trials), this is a plain read-only bar
+         instead of the interactive range below — a participant can still
+         see how far they are, but can't scrub forward or back and
+         invalidate the recorded elapsed time. -->
+    <div v-if="lockControls" class="mb-10 h-2 w-full overflow-hidden rounded-full bg-ink/10">
+        <div
+            class="h-full rounded-full bg-ink transition-[width] duration-150"
+            :style="{ width: (wordList.length > 1 ? (wordIndex / (wordList.length - 1)) * 100 : 0) + '%' }"
+        ></div>
+    </div>
     <input
-        v-if="!lockControls"
+        v-else
         type="range"
         min="0"
         :max="wordList.length - 1"
