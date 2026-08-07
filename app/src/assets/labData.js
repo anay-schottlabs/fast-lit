@@ -24,39 +24,41 @@ class Passage {
 // kept in each passage's id for traceability back to the source dataset. A
 // large pool (40 passages) is kept here on purpose: each run draws 6 at random
 // without repeats, so a big pool keeps different participants' sessions from
-// overlapping much, if at all.
+// overlapping much, if at all. Punctuation/spacing artifacts from the source
+// corpus (missing spaces after punctuation, stray spaces before it, doubled
+// spaces) were cleaned up on import — content and wording are untouched.
 const passages = [
     new Passage({
         id: "race-high20171",
-        text: "Worn by the rich and famous around the world and now a $799.04 million-a-year enterprise , Ugg boots have come a long way since their 1973 creation--designed to keep surfers' feet warm in cold Australian conditions.\nTwenty-eight years after selling the rights to his woollen-lined creation, Aussie Ugg boot inventor Shane Stedman says he has no regrets though missing out on a great footwear fortune .\nA lifelong surfer, Mr. Stedman, now 69, who lives at beachside Mona Vale in Sydney, said his invention grew from need. \"The sea is bloody cold in the Aussie winter...I used to wear football jerseys  to keep them (feet) warm\", Mr. Stedman said.\nBut his sheepskin invention soon solved the problem and Mr. Stedman went on to spend a decade selling the sturdy  boots, until 1983 when he sold the rights to US company Deckers, for PS10,000 plus three pairs of Ugg boots each year for the rest of his life.\n\"If I had wanted to make my Uggs the number one band, I'd have to move to the US and that's just not me,\" Mr. Stedman said. \"I'll never give up Sydney and surfing. It's my life. So I was happy to let go.\"",
+        text: "Worn by the rich and famous around the world and now a $799.04 million-a-year enterprise, Ugg boots have come a long way since their 1973 creation--designed to keep surfers' feet warm in cold Australian conditions.\nTwenty-eight years after selling the rights to his woollen-lined creation, Aussie Ugg boot inventor Shane Stedman says he has no regrets though missing out on a great footwear fortune.\nA lifelong surfer, Mr. Stedman, now 69, who lives at beachside Mona Vale in Sydney, said his invention grew from need. \"The sea is bloody cold in the Aussie winter... I used to wear football jerseys to keep them (feet) warm\", Mr. Stedman said.\nBut his sheepskin invention soon solved the problem and Mr. Stedman went on to spend a decade selling the sturdy boots, until 1983 when he sold the rights to US company Deckers, for PS10,000 plus three pairs of Ugg boots each year for the rest of his life.\n\"If I had wanted to make my Uggs the number one band, I'd have to move to the US and that's just not me,\" Mr. Stedman said. \"I'll never give up Sydney and surfing. It's my life. So I was happy to let go.\"",
         questions: [
             {
                 number: 1,
-                question: "The text mainly tells us that   _  .",
+                question: "The text mainly tells us that _.",
                 options: { A: "Ugg inventor is unwilling to sell his rights", B: "Ugg inventor is happy to trade dollars for surfing", C: "Ugg boots were made of special materials", D: "Ugg boots were invented specially to surfers" },
                 correctIndex: 1
             },
             {
                 number: 2,
-                question: "Ugg boots were invented by   _  .",
+                question: "Ugg boots were invented by _.",
                 options: { A: "Mona Vale.", B: "Stedman.", C: "Deckers.", D: "An American surfer." },
                 correctIndex: 1
             },
             {
                 number: 3,
-                question: "The Ugg inventor sold the rights to the Ugg boots to   _  .",
+                question: "The Ugg inventor sold the rights to the Ugg boots to _.",
                 options: { A: "make more money", B: "pay off his debts", C: "keep his hobby of surfing", D: "help improve the US company" },
                 correctIndex: 2
             },
             {
                 number: 4,
-                question: "From the text we know that Ugg boots are mostly made of the skin of   _  .",
+                question: "From the text we know that Ugg boots are mostly made of the skin of _.",
                 options: { A: "wolves", B: "sheep", C: "pigs", D: "cows" },
                 correctIndex: 1
             },
             {
                 number: 5,
-                question: "When Mr. Stedman said, \"...I was happy to let go. \", he meant he was happy to   _  .",
+                question: "When Mr. Stedman said, \"... I was happy to let go. \", he meant he was happy to _.",
                 options: { A: "go to the USA", B: "give up his boots company", C: "go surfing in Sydney", D: "buy an American company" },
                 correctIndex: 1
             },
@@ -64,7 +66,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high2765",
-        text: "Water is very important to living things. Without water there can be no life on the earth. All animals and plants need water. Man also needs water. We need water to drink, to cook our food and to clean ourselves. Water is needed in offices, factories and schools. Water is needed everywhere.\nThere is water in seas, rivers and lakes. Water is found almost everywhere. Even in the desert part of the world, there is some water in the air. You can not see or feel it when it is a part of the air. The water in the seas, rivers and lakes is a liquid, the water in the air is a gas, and we call it water vapour  .\nClouds are made of water. They may be made of very small drops of water. They may also be made of snow crystals . Snow crystals are very very small crystals of ice. Ice is frozen water. It is a solid. There can be snow and ice everywhere in winter.\nWater may be a solid or a liquid or a gas. When it is a solid, it may be as hard as a stone. When it is a liquid, you can drink it. When it is a gas, you can not see or feel it.",
+        text: "Water is very important to living things. Without water there can be no life on the earth. All animals and plants need water. Man also needs water. We need water to drink, to cook our food and to clean ourselves. Water is needed in offices, factories and schools. Water is needed everywhere.\nThere is water in seas, rivers and lakes. Water is found almost everywhere. Even in the desert part of the world, there is some water in the air. You can not see or feel it when it is a part of the air. The water in the seas, rivers and lakes is a liquid, the water in the air is a gas, and we call it water vapour.\nClouds are made of water. They may be made of very small drops of water. They may also be made of snow crystals. Snow crystals are very very small crystals of ice. Ice is frozen water. It is a solid. There can be snow and ice everywhere in winter.\nWater may be a solid or a liquid or a gas. When it is a solid, it may be as hard as a stone. When it is a liquid, you can drink it. When it is a gas, you can not see or feel it.",
         questions: [
             {
                 number: 1,
@@ -74,19 +76,19 @@ const passages = [
             },
             {
                 number: 2,
-                question: "We can drink water when it is  _",
+                question: "We can drink water when it is _",
                 options: { A: "a solid", B: "aliquid", C: "in the air", D: "turned into ice" },
                 correctIndex: 1
             },
             {
                 number: 3,
-                question: "Clouds are made of  _",
+                question: "Clouds are made of _",
                 options: { A: "seas, rivers and lakes", B: "blocks of ice", C: "very small drops of water or snow crystals", D: "solid, liquid and gas" },
                 correctIndex: 2
             },
             {
                 number: 4,
-                question: "Water has three states . They are  _",
+                question: "Water has three states. They are _",
                 options: { A: "solid, liquid and gas", B: "solid, vapour, snow", C: "drops of water, blocks of ice and crystals of water", D: "ice, snow and air" },
                 correctIndex: 0
             },
@@ -94,7 +96,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high9216",
-        text: "Do you love holidays but hate gaining weight? You are not alone. Holidays are times for celebrating. Many people are worried about their weight. With proper planning, though, it is possible to keep normal weight during the holidays. The idea is to enjoy the holidays but not to eat too much. You don't have to turn away from the foods that you enjoy.\nHere are some tips for preventing weight gain and maintaining physical fitness:\nDon't skip meals. Before you leave home, have a small, low-fat meal or snack . This may help to avoid getting too excited before delicious foods.\nControl the amount of food. Use a small plate that may encourage you to \"load up  \". You should be most comfortable eating an amount of food about the size of your fist  .\nBegin with soup and fruit or vegetables. Fill up beforehand on water-based soup and raw fruit or vegetables, or drink a large glass of water before you eat to help you to feel full.\nAvoid high-fat foods. Dishes that look oily or creamy may have large amount of fat. Choose lean meat . Fill your plate with salad and green vegetables. Use lemon juice instead of creamy food.\nStick to physical activity. Don't let exercise take a break during the holidays. A 20-minute walk helps to burn off extra calories.(238 words)",
+        text: "Do you love holidays but hate gaining weight? You are not alone. Holidays are times for celebrating. Many people are worried about their weight. With proper planning, though, it is possible to keep normal weight during the holidays. The idea is to enjoy the holidays but not to eat too much. You don't have to turn away from the foods that you enjoy.\nHere are some tips for preventing weight gain and maintaining physical fitness:\nDon't skip meals. Before you leave home, have a small, low-fat meal or snack. This may help to avoid getting too excited before delicious foods.\nControl the amount of food. Use a small plate that may encourage you to \"load up \". You should be most comfortable eating an amount of food about the size of your fist.\nBegin with soup and fruit or vegetables. Fill up beforehand on water-based soup and raw fruit or vegetables, or drink a large glass of water before you eat to help you to feel full.\nAvoid high-fat foods. Dishes that look oily or creamy may have large amount of fat. Choose lean meat. Fill your plate with salad and green vegetables. Use lemon juice instead of creamy food.\nStick to physical activity. Don't let exercise take a break during the holidays. A 20-minute walk helps to burn off extra calories.(238 words)",
         questions: [
             {
                 number: 1,
@@ -110,7 +112,7 @@ const passages = [
             },
             {
                 number: 3,
-                question: "Many people can't control their weight during the holidays mainly because they   _  .",
+                question: "Many people can't control their weight during the holidays mainly because they _.",
                 options: { A: "can't help eating too much", B: "take part in too many parties", C: "enjoy delicious foods sometimes", D: "can't help turning away from foods." },
                 correctIndex: 0
             },
@@ -130,29 +132,29 @@ const passages = [
     }),
     new Passage({
         id: "race-high2230",
-        text: "The skin which covers the tips of the fingers and thumbs is crossed by numerous ridges   arranged in different patterns. These patterns are permanent from birth and remain exactly the same throughout a person's life, even when the skin becomes wrinkled and cracked as a result of old age. Such patterns are never passed on from parents to children, and no one in the world has the same patterns as anyone else. Even identical twins have different sets of fingerprints. As a result, fingerprints offer a most useful and _ way of identifying people. Any ridged part of the hand and the foot may be used as a means of identification, but finger impressions are usually preferred since they can be taken easily and quickly.\nFingerprints are classified in the ways: by general shapes and contours , by the finger positions of the pattern-types, and by size (often measured by counting the ridges in the loops). Every set of fingerprints has different \"ridge characteristics\" (i. e. the print of each separate finger is different from that of all the other fingers), which belong to one of four basic groups: arches, loops, whorls and composites. All fingerprints can then be divided into 1, 024 groups. By using details in the patterns above, these 1, 024 groups can be further divided into thousands of smaller groups, thus making it possible to find a particular set of fingerprints in a few minutes.",
+        text: "The skin which covers the tips of the fingers and thumbs is crossed by numerous ridges arranged in different patterns. These patterns are permanent from birth and remain exactly the same throughout a person's life, even when the skin becomes wrinkled and cracked as a result of old age. Such patterns are never passed on from parents to children, and no one in the world has the same patterns as anyone else. Even identical twins have different sets of fingerprints. As a result, fingerprints offer a most useful and _ way of identifying people. Any ridged part of the hand and the foot may be used as a means of identification, but finger impressions are usually preferred since they can be taken easily and quickly.\nFingerprints are classified in the ways: by general shapes and contours, by the finger positions of the pattern-types, and by size (often measured by counting the ridges in the loops). Every set of fingerprints has different \"ridge characteristics\" (i. e. the print of each separate finger is different from that of all the other fingers), which belong to one of four basic groups: arches, loops, whorls and composites. All fingerprints can then be divided into 1, 024 groups. By using details in the patterns above, these 1, 024 groups can be further divided into thousands of smaller groups, thus making it possible to find a particular set of fingerprints in a few minutes.",
         questions: [
             {
                 number: 1,
-                question: "According to this passage, the true statement about human fingerprints is that   _  .",
+                question: "According to this passage, the true statement about human fingerprints is that _.",
                 options: { A: "people's fingerprints sometimes can be passed on from parents to children", B: "people's fingerprints are unique but identical twins may have the same fingerprints", C: "using fingerprints is the only way to identify people", D: "people's fingerprints will not change in all their lives" },
                 correctIndex: 3
             },
             {
                 number: 2,
-                question: "We prefer to use fingerprints to identify people because   _  .",
+                question: "We prefer to use fingerprints to identify people because _.",
                 options: { A: "we can never find the same set of fingerprints among human beings", B: "finger impressions can be taken easily and quickly", C: "fingerprints offer a most useful and foolproof way of identifying people", D: "all of the above" },
                 correctIndex: 3
             },
             {
                 number: 3,
-                question: "The word \"foolproof\" (Line 7, Para. 1) most probably means   _  .",
+                question: "The word \"foolproof\" (Line 7, Para. 1) most probably means _.",
                 options: { A: "that is permanent", B: "that is acceptable", C: "that can not go wrong", D: "that is not foolish" },
                 correctIndex: 2
             },
             {
                 number: 4,
-                question: "About the classification of fingerprints, which is TRUE?   _  .",
+                question: "About the classification of fingerprints, which is TRUE? _.",
                 options: { A: "Fingerprints can be classified in three ways", B: "All fingerprints can be divided into 1, 024 groups and can not be divided further", C: "It is not easy to find a particular set of fingerprints in a short time", D: "People can not classify the fingerprints in an effective way" },
                 correctIndex: 0
             },
@@ -160,7 +162,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high5080",
-        text: "A woman was waiting at an airport one night, with several long hours before her flight. She bought a book and a bag of cookies in the airport shop, and found a place to drop.\nShe was interested in her book, but the man sitting beside her grabbed a cookie or two from the bag in between, which she tried to ignore to avoid an argument.\nSo she ate the cookies noisily and watched the clock, as the cookie thief diminished (......) her stock. She was getting angrier as the minutes passed, thinking,\"Oh, brother, if I wasn't so nice, I would blacken your eyes.\"\nWith each cookie she took, he took one, too. When only one was left, she wondered what he would do. With a smile on his face, he took the last cookie and broke it in half. He offered her half, and he ate the other. She got it from him and thought, \" This guy has some nerve   and he's also rude. Why didn't he even show any gratitude?\"\nShe had never known when she had been so angry. She gathered her bag and headed for the gate, refusing to look back at the thieving ingrate  .\nShe boarded the plane and then she sought her book, which was almost complete. As she reached in her bag, she was shocked-- there was her bag of cookies. \"If mine are here,\" she thought, \"the others were his. It's too late to apologize.\"",
+        text: "A woman was waiting at an airport one night, with several long hours before her flight. She bought a book and a bag of cookies in the airport shop, and found a place to drop.\nShe was interested in her book, but the man sitting beside her grabbed a cookie or two from the bag in between, which she tried to ignore to avoid an argument.\nSo she ate the cookies noisily and watched the clock, as the cookie thief diminished (......) her stock. She was getting angrier as the minutes passed, thinking,\"Oh, brother, if I wasn't so nice, I would blacken your eyes.\"\nWith each cookie she took, he took one, too. When only one was left, she wondered what he would do. With a smile on his face, he took the last cookie and broke it in half. He offered her half, and he ate the other. She got it from him and thought, \" This guy has some nerve and he's also rude. Why didn't he even show any gratitude?\"\nShe had never known when she had been so angry. She gathered her bag and headed for the gate, refusing to look back at the thieving ingrate.\nShe boarded the plane and then she sought her book, which was almost complete. As she reached in her bag, she was shocked-- there was her bag of cookies. \"If mine are here,\" she thought, \"the others were his. It's too late to apologize.\"",
         questions: [
             {
                 number: 1,
@@ -170,13 +172,13 @@ const passages = [
             },
             {
                 number: 2,
-                question: "When offered her half of the last cookie, the woman  _  .",
+                question: "When offered her half of the last cookie, the woman _.",
                 options: { A: "felt a bit disappointed.", B: "felt deeply thankful.", C: "considered the man unthankful.", D: "saw the man as his brave brother." },
                 correctIndex: 2
             },
             {
                 number: 3,
-                question: "We can infer that the man  _  .",
+                question: "We can infer that the man _.",
                 options: { A: "might have returned the bag of cookies secretly.", B: "tried to share his cookies with the woman.", C: "was thankful for the woman's kindness.", D: "was really a thief." },
                 correctIndex: 1
             },
@@ -184,17 +186,17 @@ const passages = [
     }),
     new Passage({
         id: "race-high19192",
-        text: "A rare butterfly has been discovered in Britain for the first time in 60 years,having moved from Eastern Europe.The only previous record of a wild yellow-legged Tortoiseshell in Britain was in 1953,when it was seen just once in Sevenoaks,Kent.Several weeks ago,there were already four confirmed sightings,along the East coast in Norfolk,Suffolk and Kent,and six further reports of the butterfly in coastal areas. Conservationists are very excited about the    sightings,which are rare in the butterfly world.\nThe butterflies are thought to have flown on easterly winds across Europe in the last few weeks.The large and colourful insect mainly lives in Eastern Europe.In recent years,it has spread into Scandinavia and its number increases rapidly during warm weather.Also known as the Scarce Tortoiseshell,it has an orange and blue colour and is about one third bigger than our own Small Tortoiseshell.\nButterfly Conservation was starting its annual Big Butterfly Count,a yearly survey of the butterflies across the nation.Sir David Attenborough,President of the charity,said,\"The UK is a nation of amateur naturalists and we have a proud tradition of celebrating and studying our wildlife.By taking part in the Big Butterfly Count this summer,you can contribute to discovering the fantastic butterflies and other wildlife that share your garden,parks and    countryside.\"He added,\"Butterflies fought back last year after a terrible 2012 but despite this,butterfly numbers were still below average.Three quarters of the UK's butterflies are in decline and one third are in danger of dying out.This is bad news for the UK's birds,bees,bats and other wildlife.",
+        text: "A rare butterfly has been discovered in Britain for the first time in 60 years, having moved from Eastern Europe. The only previous record of a wild yellow-legged Tortoiseshell in Britain was in 1953, when it was seen just once in Sevenoaks, Kent. Several weeks ago, there were already four confirmed sightings, along the East coast in Norfolk, Suffolk and Kent, and six further reports of the butterfly in coastal areas. Conservationists are very excited about the sightings, which are rare in the butterfly world.\nThe butterflies are thought to have flown on easterly winds across Europe in the last few weeks. The large and colourful insect mainly lives in Eastern Europe. In recent years, it has spread into Scandinavia and its number increases rapidly during warm weather. Also known as the Scarce Tortoiseshell, it has an orange and blue colour and is about one third bigger than our own Small Tortoiseshell.\nButterfly Conservation was starting its annual Big Butterfly Count, a yearly survey of the butterflies across the nation. Sir David Attenborough, President of the charity, said,\"The UK is a nation of amateur naturalists and we have a proud tradition of celebrating and studying our wildlife. By taking part in the Big Butterfly Count this summer, you can contribute to discovering the fantastic butterflies and other wildlife that share your garden, parks and countryside.\"He added,\"Butterflies fought back last year after a terrible 2012 but despite this, butterfly numbers were still below average. Three quarters of the UK's butterflies are in decline and one third are in danger of dying out. This is bad news for the UK's birds, bees, bats and other wildlife.",
         questions: [
             {
                 number: 1,
-                question: "These rare butterflies usually live in  _  .",
-                options: { A: "Eastern Europe", B: "Norfolk,Suffolk and Kent", C: "coastal areas", D: "Sevenoaks,Kent" },
+                question: "These rare butterflies usually live in _.",
+                options: { A: "Eastern Europe", B: "Norfolk, Suffolk and Kent", C: "coastal areas", D: "Sevenoaks, Kent" },
                 correctIndex: 0
             },
             {
                 number: 2,
-                question: "The annual Big Butterfly Count is Intended to  _  .",
+                question: "The annual Big Butterfly Count is Intended to _.",
                 options: { A: "inspire amateurs'studying interest", B: "teach people to do good gardening", C: "study butterflies across Britain", D: "celebrate naturalists'contributions" },
                 correctIndex: 2
             },
@@ -208,29 +210,29 @@ const passages = [
     }),
     new Passage({
         id: "race-high9427",
-        text: "No matter where he lives, 16-year-old Danny Lopez feels like an outsider: he is half-Mexican and half-white.\nAt his private high school in wealthy northern San Diego, California, US, Lopez is too brown to fit in, whereas for the Mexican side of his family in National City, just a dozen miles from the border, he is too white to belong.\nDifferent from both sides, Lopez is silent in school. He focuses on his passion for baseball and working hard to improve the pitches   that have kept him off the school team.\nMexican Whiteboy, by Matt de la Pena, is about a teenager's search for identity. It was named as one of the Top Ten Best Books for Young Adults in 2009 by the US Young Adult Library Services Association.\nWhen Lopez's mother decides to go to live with her wealthy white boyfriend in San Francisco, he chooses to spend the summer with his father's family in San Diego. It's a trip to explore roots and self-identity, filled with unexpected friendship.\nThere he meets Uno, of mixed heritage   like himself, also with a divorced mom. Uno understands Danny's split background and helps him improve his baseball skills. Both boys have big league dreams, but they both have to learn to come to terms with their mixed heritages before they can achieve their goals.\nAside from discussions of racism, Mexican Whiteboy takes on other issues, such as the importance of family and the negative influence of hiding the truth. It also shows how sports can draw cultures together.",
+        text: "No matter where he lives, 16-year-old Danny Lopez feels like an outsider: he is half-Mexican and half-white.\nAt his private high school in wealthy northern San Diego, California, US, Lopez is too brown to fit in, whereas for the Mexican side of his family in National City, just a dozen miles from the border, he is too white to belong.\nDifferent from both sides, Lopez is silent in school. He focuses on his passion for baseball and working hard to improve the pitches that have kept him off the school team.\nMexican Whiteboy, by Matt de la Pena, is about a teenager's search for identity. It was named as one of the Top Ten Best Books for Young Adults in 2009 by the US Young Adult Library Services Association.\nWhen Lopez's mother decides to go to live with her wealthy white boyfriend in San Francisco, he chooses to spend the summer with his father's family in San Diego. It's a trip to explore roots and self-identity, filled with unexpected friendship.\nThere he meets Uno, of mixed heritage like himself, also with a divorced mom. Uno understands Danny's split background and helps him improve his baseball skills. Both boys have big league dreams, but they both have to learn to come to terms with their mixed heritages before they can achieve their goals.\nAside from discussions of racism, Mexican Whiteboy takes on other issues, such as the importance of family and the negative influence of hiding the truth. It also shows how sports can draw cultures together.",
         questions: [
             {
                 number: 1,
-                question: "The reason why Lopez feels like an outsider lies in the fact that   _  .",
+                question: "The reason why Lopez feels like an outsider lies in the fact that _.",
                 options: { A: "he is a Mexican", B: "he lives in San Diego", C: "he is half-white and half-Mexican", D: "he studies in a private school" },
                 correctIndex: 2
             },
             {
                 number: 2,
-                question: "Most probably \"Mexican Whiteboy\" is a   _  .",
+                question: "Most probably \"Mexican Whiteboy\" is a _.",
                 options: { A: "book", B: "club", C: "newspaper", D: "organization" },
                 correctIndex: 0
             },
             {
                 number: 3,
-                question: "When Lopez found it is hard for him to fit in, he   _  .",
+                question: "When Lopez found it is hard for him to fit in, he _.",
                 options: { A: "starts writing a book about himself", B: "begins to look for identity with the help of Mexican Whiteboy", C: "loses his interest in baseball", D: "works in the fields in which he was kept off the school team" },
                 correctIndex: 3
             },
             {
                 number: 4,
-                question: "Lopez and Uno have a lot in common except that   _  .",
+                question: "Lopez and Uno have a lot in common except that _.",
                 options: { A: "they both have a divorced mom", B: "they both have mixed heritage", C: "they were both in the school baseball team", D: "both of them have big league dreams" },
                 correctIndex: 2
             },
@@ -238,23 +240,23 @@ const passages = [
     }),
     new Passage({
         id: "race-high15154",
-        text: "Growing up in Philadelphia, Lieberman started cooking with his stay-at-home dad when he was seven. His food-loving family had two kitchens, and he quickly learned what was the best way to bake his cakes. Lieberman improved his kitchen skills during a year abroad beforo college, learning from a cook in Italy and study local specialties in Gerrnany, Spain and France. At Yale,he was known for throwing dinner parties, single-handedly frying and baking while mixing drinks for dozens offriends. Just for fun, he and some friends decided to tape a show named Campus Cuisine about his cooking. Lieberman  was a real  college student showing his classmate how to do things like making drinks out of dining-hall fruit. That helped the show become very popular among the students. They would stop Lieberman after classes to ask for his advice on cooking. Tapes of the show were passed around,with which his name went beyond the school and finally to the Food Network.\nFood Network producer Flay hopes the young cook will find a place on the\nnetwork television. He says Lieberman's charisma is key.\"Food T-V isn't about\nfood anymore.\" says Flay, \" It's about your personality and finding a way to keep\npeople's eyeballs on your show.\"\nBut Lieberman isn't putting all his eggs in one basket. After taping the first season of the new show, Lieberman was back in his own small kitchen preparing\nsandwiches. An airline company was looking for someone to come up with a tasteful,\ninexpensive and easy-to-make menu to serve on its flight. Lieberman got the job.",
+        text: "Growing up in Philadelphia, Lieberman started cooking with his stay-at-home dad when he was seven. His food-loving family had two kitchens, and he quickly learned what was the best way to bake his cakes. Lieberman improved his kitchen skills during a year abroad beforo college, learning from a cook in Italy and study local specialties in Gerrnany, Spain and France. At Yale, he was known for throwing dinner parties, single-handedly frying and baking while mixing drinks for dozens offriends. Just for fun, he and some friends decided to tape a show named Campus Cuisine about his cooking. Lieberman was a real college student showing his classmate how to do things like making drinks out of dining-hall fruit. That helped the show become very popular among the students. They would stop Lieberman after classes to ask for his advice on cooking. Tapes of the show were passed around, with which his name went beyond the school and finally to the Food Network.\nFood Network producer Flay hopes the young cook will find a place on the\nnetwork television. He says Lieberman's charisma is key.\"Food T-V isn't about\nfood anymore.\" says Flay, \" It's about your personality and finding a way to keep\npeople's eyeballs on your show.\"\nBut Lieberman isn't putting all his eggs in one basket. After taping the first season of the new show, Lieberman was back in his own small kitchen preparing\nsandwiches. An airline company was looking for someone to come up with a tasteful,\ninexpensive and easy-to-make menu to serve on its flight. Lieberman got the job.",
         questions: [
             {
                 number: 1,
-                question: "We can learn from the text that Lieberman's family  _  .",
+                question: "We can learn from the text that Lieberman's family _.",
                 options: { A: "have relatives in Europe", B: "love cooking at home", C: "often hold parties", D: "own a restaurant" },
                 correctIndex: 1
             },
             {
                 number: 2,
-                question: "The Food Network got to know Lieberman  _  .",
+                question: "The Food Network got to know Lieberman _.",
                 options: { A: "at one of his parties", B: "from his teacher", C: "through his taped show", D: "on a television program" },
                 correctIndex: 2
             },
             {
                 number: 3,
-                question: "What does the word\"charisma\" underline in the text refer to ?",
+                question: "What does the word\"charisma\" underline in the text refer to?",
                 options: { A: "A natural ability to attract others.", B: "A way to show one's achievement.", C: "Lieberman's after-class interest", D: "Lieberman's fine cooking skill" },
                 correctIndex: 0
             },
@@ -274,11 +276,11 @@ const passages = [
     }),
     new Passage({
         id: "race-high2317",
-        text: "BEIJING--Seven prestigious universities in China announced Sunday that they would begin using the same independent exam --besides the national one --to test students hoping to gain entrance to them in 2011.\nThe seven are Peking University, Beihang University, Beijing Normal University, Nankai University, Fudan University, Xiamen University and Hong Kong University.\nStudents who want to gain entrance to any of the seven universities will only have to sit one independent exam, according to the joint announcement.\n\"This will help lighten the students' load, otherwise they must take several exams for different universities ,\"said the announcement.\nPassing the exam could result in more than one interview chance, giving the students more opportunities to choose their favorite universities.\nChina' s college entrance exam system is undergoing reform as universities aim to select students based on independent criteria rather than just using the results of the national exam.\nIn 2003, Peking University and another 21 universities were allowed to pilot   the reform by using their own criteria to independently select five percent of their students.\nNow nearly 80 universities across the country have the right to select talented students based on their own exams.\nEducation experts regard universities selecting students according to independent examinations as conducive   to better understanding where the students' talents lie.\nAlthough this may be the case, it has also created problems as students may sit many different exams as they often apply for a number of universities.\nTo relieve students from such pressures, the national education outline (2010--2020) released in July this year encourages high-level universities to group together to use the same exams.",
+        text: "BEIJING--Seven prestigious universities in China announced Sunday that they would begin using the same independent exam --besides the national one --to test students hoping to gain entrance to them in 2011.\nThe seven are Peking University, Beihang University, Beijing Normal University, Nankai University, Fudan University, Xiamen University and Hong Kong University.\nStudents who want to gain entrance to any of the seven universities will only have to sit one independent exam, according to the joint announcement.\n\"This will help lighten the students' load, otherwise they must take several exams for different universities,\"said the announcement.\nPassing the exam could result in more than one interview chance, giving the students more opportunities to choose their favorite universities.\nChina' s college entrance exam system is undergoing reform as universities aim to select students based on independent criteria rather than just using the results of the national exam.\nIn 2003, Peking University and another 21 universities were allowed to pilot the reform by using their own criteria to independently select five percent of their students.\nNow nearly 80 universities across the country have the right to select talented students based on their own exams.\nEducation experts regard universities selecting students according to independent examinations as conducive to better understanding where the students' talents lie.\nAlthough this may be the case, it has also created problems as students may sit many different exams as they often apply for a number of universities.\nTo relieve students from such pressures, the national education outline (2010--2020) released in July this year encourages high-level universities to group together to use the same exams.",
         questions: [
             {
                 number: 1,
-                question: "If students want to be admitted to the seven prestigious universities, they can  _  .",
+                question: "If students want to be admitted to the seven prestigious universities, they can _.",
                 options: { A: "only pass the interview.", B: "only take the national exam.", C: "only take the independent exam.", D: "either take the national exam or take the independent exam." },
                 correctIndex: 3
             },
@@ -290,7 +292,7 @@ const passages = [
             },
             {
                 number: 3,
-                question: "If students pass the independent exam, they will   _  .",
+                question: "If students pass the independent exam, they will _.",
                 options: { A: "take the national exam.", B: "have one or more interview chances.", C: "be admitted to one of the universities.", D: "he trained to be adapted to universities life and studies." },
                 correctIndex: 1
             },
@@ -304,17 +306,17 @@ const passages = [
     }),
     new Passage({
         id: "race-high18360",
-        text: "NEW DELHI, India (AP)--India is fast becoming a top destination for tourists thanks to a forceful campaign to push the country's Himalayan spas  and beaches, officials say. \nTourism officials have been crisscrossing the globe as part of the government's \"Incredible India\" campaign launched in 2003. And the results are beginning to show. Tourists traveling to prefix = st1 /Indiahave jumped by nearly 26 percent from last year and the number is expected to cross 3 million this year, said Amitabh Kant, chairman of the India Tourism Development Corp. \n\"Foreign exchange earnings, too, have shown a nearly 40 percent rise this year,\" Kant told The Associated Press. \nIndia's earnings from tourism were $4.3 billion between January and November 2004, compared to $3.1 billion for the same period of 2003. \n\"Tourist figures are looking up, especially after the way the travel magazines are praising India,\" Renuka Choudhury, India's tourism minister, told reporters just before leaving for Spain and Italy to push the \"Incredible India\" campaign. \nConde Nast Traveler ranked Indiasixth among the world's top 10 destinations in its annual readers' traveler awards.Indiawon top points for its cultural diversity, hospitality and good value for money. \nLonely Planet Online, the Website of the guidebook series, described Indiaas among the top five international holiday destinations along withThailand,Italy,AustraliaandNew Zealand. \nThe \"Incredible India\" campaign focuses on the country's scores of small, largely unexplored tourist spots, as well as India's traditional healing arts. However, Choudhury noted at least 22 airports are being upgraded, with better signs, modern toilets, lounges and duty free shops. A tourist police force has been set up at airports, railway and bus terminals.",
+        text: "NEW DELHI, India (AP)--India is fast becoming a top destination for tourists thanks to a forceful campaign to push the country's Himalayan spas and beaches, officials say. \nTourism officials have been crisscrossing the globe as part of the government's \"Incredible India\" campaign launched in 2003. And the results are beginning to show. Tourists traveling to prefix = st1 /Indiahave jumped by nearly 26 percent from last year and the number is expected to cross 3 million this year, said Amitabh Kant, chairman of the India Tourism Development Corp. \n\"Foreign exchange earnings, too, have shown a nearly 40 percent rise this year,\" Kant told The Associated Press. \nIndia's earnings from tourism were $4.3 billion between January and November 2004, compared to $3.1 billion for the same period of 2003. \n\"Tourist figures are looking up, especially after the way the travel magazines are praising India,\" Renuka Choudhury, India's tourism minister, told reporters just before leaving for Spain and Italy to push the \"Incredible India\" campaign. \nConde Nast Traveler ranked Indiasixth among the world's top 10 destinations in its annual readers' traveler awards. Indiawon top points for its cultural diversity, hospitality and good value for money. \nLonely Planet Online, the Website of the guidebook series, described Indiaas among the top five international holiday destinations along withThailand, Italy, AustraliaandNew Zealand. \nThe \"Incredible India\" campaign focuses on the country's scores of small, largely unexplored tourist spots, as well as India's traditional healing arts. However, Choudhury noted at least 22 airports are being upgraded, with better signs, modern toilets, lounges and duty free shops. A tourist police force has been set up at airports, railway and bus terminals.",
         questions: [
             {
                 number: 1,
-                question: "Tourism officials have been crisscrossing the globe to   _  .",
+                question: "Tourism officials have been crisscrossing the globe to _.",
                 options: { A: "learn from resorts", B: "strengthen communication", C: "draw tourists to India", D: "enjoy the scenery" },
                 correctIndex: 2
             },
             {
                 number: 2,
-                question: "It can be learned that   _  .",
+                question: "It can be learned that _.",
                 options: { A: "Kant is satisfied with the trend of tourism", B: "Kant worries about the future of India's tourism", C: "Choudhury doesn't think the situations of tourism will improve", D: "Choudhury thinks Indiashould make full preparations for the crisis of tourists" },
                 correctIndex: 0
             },
@@ -326,7 +328,7 @@ const passages = [
             },
             {
                 number: 4,
-                question: "The passage is mainly about   _  .",
+                question: "The passage is mainly about _.",
                 options: { A: "tourism in India", B: "India's technique", C: "the future of India", D: "India's position in people's mind" },
                 correctIndex: 0
             },
@@ -334,29 +336,29 @@ const passages = [
     }),
     new Passage({
         id: "race-high23246",
-        text: "Children will find it more difficult to buy cigarettes as vending machines selling tobacco will be officially banned in England today.According to the British Heart Foundation(BHF),around 200,000 young people start smoking regularly in England each year and 11 per cent of l1-to15-year-old regular smokers in England and Wales get their cigarettes from vending machines.\n    Betty McBride, Director of Policy and Communications at the British Heart Foundation,said,\"Thousands of children who are at risk of addiction regularly get tobacco from these machines,which of course,don't ask them to prove their age.With the tobacco industry increasingly depending on young smokers to keep their profits,they're fighting tooth and nail to stop any changes that might hit their bottom line.\"\n    The ban, which makes it illegal to sell tobacco from vending machines and requires shopkeepers to ensure all tobacco advertising on the machines is removed,comes into force in England today.It is the first ban in Europe to prohibit selling cigarettes from vending machines.which shows the determination of England to fight against smoking.\n   Other measures to protect young people from the dangers of smoking are also on the way.In April 2013 large retailers in England and Scotland will have to get rid of all tobacco displays and small shops will be expected to do that from April 2015.Wales and Northern Ireland also plan to make similar regulations.\n   The UK Government is due to begin a public consultation before the end of the year on whether to introduce plain packaging for cigarettes which would reduce their marketing appeal to young people,help to make health warnings more effective and,alongside other measures,help to reduce the number of smokers in the long term.",
+        text: "Children will find it more difficult to buy cigarettes as vending machines selling tobacco will be officially banned in England today. According to the British Heart Foundation(BHF), around 200,000 young people start smoking regularly in England each year and 11 per cent of l1-to15-year-old regular smokers in England and Wales get their cigarettes from vending machines.\n Betty McBride, Director of Policy and Communications at the British Heart Foundation, said,\"Thousands of children who are at risk of addiction regularly get tobacco from these machines, which of course, don't ask them to prove their age. With the tobacco industry increasingly depending on young smokers to keep their profits, they're fighting tooth and nail to stop any changes that might hit their bottom line.\"\n The ban, which makes it illegal to sell tobacco from vending machines and requires shopkeepers to ensure all tobacco advertising on the machines is removed, comes into force in England today. It is the first ban in Europe to prohibit selling cigarettes from vending machines. which shows the determination of England to fight against smoking.\n Other measures to protect young people from the dangers of smoking are also on the way. In April 2013 large retailers in England and Scotland will have to get rid of all tobacco displays and small shops will be expected to do that from April 2015. Wales and Northern Ireland also plan to make similar regulations.\n The UK Government is due to begin a public consultation before the end of the year on whether to introduce plain packaging for cigarettes which would reduce their marketing appeal to young people, help to make health warnings more effective and, alongside other measures, help to reduce the number of smokers in the long term.",
         questions: [
             {
                 number: 1,
-                question: "According to the text,vending machines selling cigarettes  _  .",
+                question: "According to the text, vending machines selling cigarettes _.",
                 options: { A: "offer cheaper products", B: "have more varieties of products", C: "don't check buyers' personal information", D: "keep a record of every purchase" },
                 correctIndex: 2
             },
             {
                 number: 2,
-                question: "The tobacco industry may be against the new regulation because   _",
+                question: "The tobacco industry may be against the new regulation because _",
                 options: { A: "more children will be at risk of tobacco addiction", B: "it will bring inconvenience to its consumers", C: "young smokers will be discouraged", D: "many vending machines will be left unused" },
                 correctIndex: 2
             },
             {
                 number: 3,
-                question: "Small stores in Scotland   _",
+                question: "Small stores in Scotland _",
                 options: { A: "will be banned from selling tobacco next year", B: "can still present cigarettes for around 2 years", C: "must get rid of all tobacco advertisements", D: "must show warnings about cigarettes in 2013" },
                 correctIndex: 1
             },
             {
                 number: 4,
-                question: "It can be inferred from the text that  _",
+                question: "It can be inferred from the text that _",
                 options: { A: "plain packaging is a must for cigarettes", B: "the number of tobacco companies will be limited", C: "tobacco's harm to health will be put down on packages", D: "opinions will be asked for on plans of tobacco controlling" },
                 correctIndex: 3
             },
@@ -370,7 +372,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high396",
-        text: "Harvard researchers have created a tough, low-cost, biodegradable   material inspired by insects' hard outer shells. The material's inventors say it has a number of possible uses and someday could provide a more environmentally friendly alternative to plastic. The material, made from shrimp (') shells and proteins produced from silk, is called \"shrilk.\" It is thin, clear, flexible and strong.\nA major benefit of the material is its biodegradability. Plastic's toughness and flexibility represented a revolution in materials science during the 1950s and '60s. Decades later, however, plastic's very durability   is raising questions about how appropriate it is for one-time products such as plastic bags, or short-lived consumer goods, used in the home for a few years and then cast into a landfill where they will degrade for centuries. What is the point of making something that lasts 1,000 years?\nShrilk not only will degrade in a landfill, but its basic components are used as fertilizer , and so will enrich the soil.\nShrilk has great potential, the inventors said. Materials from which it is made are plentiful in nature, found in everything ranging from shrimp shells, insect bodies to living plants. That makes shrilk low cost, and its mass production possible should it be used for products demanding a lot of material.\nWork on shrilk is continuing in the lab. The inventors said the material becomes flexible when wet, so they're exploring ways to use it in wet environments. They're also developing simpler production processes, which could be used for non-medical products, like for computer cases and other products inside the home. They're even exploring combining it with other materials, like carbon fibers, to give it new properties.",
+        text: "Harvard researchers have created a tough, low-cost, biodegradable material inspired by insects' hard outer shells. The material's inventors say it has a number of possible uses and someday could provide a more environmentally friendly alternative to plastic. The material, made from shrimp (') shells and proteins produced from silk, is called \"shrilk.\" It is thin, clear, flexible and strong.\nA major benefit of the material is its biodegradability. Plastic's toughness and flexibility represented a revolution in materials science during the 1950s and '60s. Decades later, however, plastic's very durability is raising questions about how appropriate it is for one-time products such as plastic bags, or short-lived consumer goods, used in the home for a few years and then cast into a landfill where they will degrade for centuries. What is the point of making something that lasts 1,000 years?\nShrilk not only will degrade in a landfill, but its basic components are used as fertilizer, and so will enrich the soil.\nShrilk has great potential, the inventors said. Materials from which it is made are plentiful in nature, found in everything ranging from shrimp shells, insect bodies to living plants. That makes shrilk low cost, and its mass production possible should it be used for products demanding a lot of material.\nWork on shrilk is continuing in the lab. The inventors said the material becomes flexible when wet, so they're exploring ways to use it in wet environments. They're also developing simpler production processes, which could be used for non-medical products, like for computer cases and other products inside the home. They're even exploring combining it with other materials, like carbon fibers, to give it new properties.",
         questions: [
             {
                 number: 1,
@@ -380,7 +382,7 @@ const passages = [
             },
             {
                 number: 2,
-                question: "According to the inventors, shrilk has great potential partly because  _  .",
+                question: "According to the inventors, shrilk has great potential partly because _.",
                 options: { A: "it can help plastic degrade", B: "it can be found in living things", C: "its mass production has been realized", D: "its raw materials are abundant in mature" },
                 correctIndex: 3
             },
@@ -400,11 +402,11 @@ const passages = [
     }),
     new Passage({
         id: "race-high6795",
-        text: "Do you scream on a roller coaster ride? You slowly climb up a steep slope until an almost vertical  drop, and then... Ahhhhhhhh! Thrill-seekers like me are in luck because theme parks are pushing the boundaries of technology to create the fastest, tallest, scariest roller coasters the world has ever known.\nAlton Towers in Britain opened the world's first 14-1oop roller coaster a few months ago, called The Smiler. Over in Abu Dhabi, Ferrari World claims to have the world's fastest one. Ferrari World's Formula Rossa ride sends out passengers from 0-240km/h in just 4. 9 seconds. During this rapid acceleration they experience G-forces only fighter pilots usually  feel: Up to 4. 8G. The designer of several rides at Alton Towers, said: \"While we can stand 6-8Gs for very short periods of  time, ff we experience 5G for more than five seconds we're likely to \"black out.\"\nOn modern roller coasters passengers experience about 3G in tight turns and loops. But while we may have reached the limit in terms of G-forces, there is no technological limit to how fast or how high roller coasters can go---it's all down to money. Alton Towers' The Smiler cost ~18m to build.\nSome companies are finding other ways to keep us amused. There's a move towards indoor rides where the experience is improved by audio-visual technologies. For example, a company called Dynamic Structures is currently developing a \"coal-mine-themed\" ride for a client in Dubai that will combine speed and G-forces with 3D projection effects and robotics, which will trick your brain into thinking you're really falling.\nI can't wait to enjoy this one. What about you: Do you like being upside down?",
+        text: "Do you scream on a roller coaster ride? You slowly climb up a steep slope until an almost vertical drop, and then... Ahhhhhhhh! Thrill-seekers like me are in luck because theme parks are pushing the boundaries of technology to create the fastest, tallest, scariest roller coasters the world has ever known.\nAlton Towers in Britain opened the world's first 14-1oop roller coaster a few months ago, called The Smiler. Over in Abu Dhabi, Ferrari World claims to have the world's fastest one. Ferrari World's Formula Rossa ride sends out passengers from 0-240km/h in just 4. 9 seconds. During this rapid acceleration they experience G-forces only fighter pilots usually feel: Up to 4. 8G. The designer of several rides at Alton Towers, said: \"While we can stand 6-8Gs for very short periods of time, ff we experience 5G for more than five seconds we're likely to \"black out.\"\nOn modern roller coasters passengers experience about 3G in tight turns and loops. But while we may have reached the limit in terms of G-forces, there is no technological limit to how fast or how high roller coasters can go---it's all down to money. Alton Towers' The Smiler cost ~18m to build.\nSome companies are finding other ways to keep us amused. There's a move towards indoor rides where the experience is improved by audio-visual technologies. For example, a company called Dynamic Structures is currently developing a \"coal-mine-themed\" ride for a client in Dubai that will combine speed and G-forces with 3D projection effects and robotics, which will trick your brain into thinking you're really falling.\nI can't wait to enjoy this one. What about you: Do you like being upside down?",
         questions: [
             {
                 number: 1,
-                question: "We can learn from the passage that   _",
+                question: "We can learn from the passage that _",
                 options: { A: "all the theme parks are creating the fast roller coasters", B: "the Smiler sends out passengers from 0-240km/h in just 4.9 seconds", C: "it is unusual for fighter pilots to feel up to 4.8G", D: "the more the money is spent, the faster the roller coaster can go" },
                 correctIndex: 3
             },
@@ -424,23 +426,23 @@ const passages = [
     }),
     new Passage({
         id: "race-high20063",
-        text: "VINCOUVER (Reuters)----South Korea' s Kirn Yuna can finally relax and does fiot need to think about the future after she won the gold medal in the women' s figure skating  on Thursday.\n    The 19-year-old was the overwhelming  favorite to finish top of the podium   but said the pressure going into the event was large.\n    \"I feel now as if a huge burden has been lifted, \" the Games' highest-earning female athlete-she makes an estimated $8 million a year --said after her near-perfect program where she nailed all of her 11 jumps.\n    \"I will enjoy this moment and think about things later.I was just thrilled on the podium and I feel so relieved.I had been running toward this dream of the Olympics and was so happy to be here, \" she said.\n    \"Since I have achieved the most important goal in my life.I am going to enjoy this moment for a while and then think about what I am going to do,\" a smiling Yuna said.\n    Japanese  _ Mao Asada took silver while Joannic Rochette of Canada grabbed the bronze medal four days after her mother died.\n    \"I still cannot believe I did what I wanted to do at the Olympics.I have been dreaming about this moment and I cannot believe it is not a dream any more.\" said Yuna.\n    South Korea was counting on her to grab their first gold medal in figure skating and the first Winter Olympics gold medal outside short track and speed skating.\n    \"I was just happy to have skated a clean program.It was the first time I skated two clean programs.During the program when I finished all elements I thought 'this is going to be yeah...this is it'.\"",
+        text: "VINCOUVER (Reuters)----South Korea' s Kirn Yuna can finally relax and does fiot need to think about the future after she won the gold medal in the women' s figure skating on Thursday.\n The 19-year-old was the overwhelming favorite to finish top of the podium but said the pressure going into the event was large.\n \"I feel now as if a huge burden has been lifted, \" the Games' highest-earning female athlete-she makes an estimated $8 million a year --said after her near-perfect program where she nailed all of her 11 jumps.\n \"I will enjoy this moment and think about things later. I was just thrilled on the podium and I feel so relieved. I had been running toward this dream of the Olympics and was so happy to be here, \" she said.\n \"Since I have achieved the most important goal in my life. I am going to enjoy this moment for a while and then think about what I am going to do,\" a smiling Yuna said.\n Japanese _ Mao Asada took silver while Joannic Rochette of Canada grabbed the bronze medal four days after her mother died.\n \"I still cannot believe I did what I wanted to do at the Olympics. I have been dreaming about this moment and I cannot believe it is not a dream any more.\" said Yuna.\n South Korea was counting on her to grab their first gold medal in figure skating and the first Winter Olympics gold medal outside short track and speed skating.\n \"I was just happy to have skated a clean program. It was the first time I skated two clean programs. During the program when I finished all elements I thought 'this is going to be yeah... this is it'.\"",
         questions: [
             {
                 number: 1,
-                question: "Kim Yuna felt relaxed because  _  .",
+                question: "Kim Yuna felt relaxed because _.",
                 options: { A: "the competition was over", B: "her dream finally came true", C: "she won a large amount of money", D: "she became well-known overnight" },
                 correctIndex: 1
             },
             {
                 number: 2,
-                question: "According to the passage, Kim Yuna  _  .",
+                question: "According to the passage, Kim Yuna _.",
                 options: { A: "had a strong sense of team spirit in the Games", B: "won the first gold medal for South Korea in the Winter Olympics", C: "had expected she would surely win the gold medal", D: "joined in the competition with great pressure from her country" },
                 correctIndex: 3
             },
             {
                 number: 3,
-                question: "It is known from the passage that  _  .",
+                question: "It is known from the passage that _.",
                 options: { A: "Kim Yuna is a person of great confidence", B: "Joannie Rochette joined in the games with great sorrow", C: "Kim Yuna is the richest athlete in South Korea", D: "Mao Asada took silver medal by accident" },
                 correctIndex: 1
             },
@@ -476,25 +478,25 @@ const passages = [
         questions: [
             {
                 number: 1,
-                question: "Judging from the writing style, the text is    _   .",
+                question: "Judging from the writing style, the text is _.",
                 options: { A: "a diary", B: "an interview", C: "a news story", D: "an announcement" },
                 correctIndex: 1
             },
             {
                 number: 2,
-                question: "As a child, ABC-TV's Sam Champion wanted to be a   _   .",
+                question: "As a child, ABC-TV's Sam Champion wanted to be a _.",
                 options: { A: "space scientist", B: "weatherman", C: "news reporter", D: "meteorologist" },
                 correctIndex: 2
             },
             {
                 number: 3,
-                question: "Present weather forecasting technology   _   .",
+                question: "Present weather forecasting technology _.",
                 options: { A: "has made weather report more exact than ever", B: "is still not perfect", C: "hasn't changed much in the last 50 years", D: "both A and B" },
                 correctIndex: 3
             },
             {
                 number: 4,
-                question: "The study of weather science is called   _   .",
+                question: "The study of weather science is called _.",
                 options: { A: "meteorology", B: "forecasting", C: "geography", D: "Earth science" },
                 correctIndex: 0
             },
@@ -502,7 +504,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high13945",
-        text: "Read the following reviews for movies that are showing at the moment. And then answer questions.\nHappiness(Romance) \nHappinesstells the story of two people (Lisa Turbot and Danny Roy) who work for different advertising companies. They talk on the phone all the time and don't like each other. But then they _ by e-mail and fall in love. This movie will be very popular with teenagers and people who like romances. It also has beautiful music.\nI Scream(Thriller) \nInI Scream, Paul (Colin Jacks) is a young man who joins a thriller club. Each of the members tries to frighten the others. Paul is told to stay in an old house for the night. Everyone who has tried to stay in the house before has died. This movie is very frightening but also quite silly. It doesn't make sense for Paul to stay in the house when things start to go wrong. Only for people who like thrillers.\nPaul's Heroes(Comedy) \nThis is a very funny war movie set in World War Two. Six soldiers (including Sammy Turblow) have to get to Italy to take secret messages to the American army there. During the movie, they dressup as women and fight with Italian workers. You can guess the ending, but it's great fun getting there.\n _  (Drama) \nThis is a very good drama with Jack Ross, who plays a hard-working truck driver. His wife becomes ill and he has to find a doctor who can help her. In his travels he meets Dr. Lloyd (Phil Driver) who has found the cure for the illness, but Jack Ross has only twelve hours to get the medicine back to his wife on the other side of America. This is an excellent movie, which is very exciting.",
+        text: "Read the following reviews for movies that are showing at the moment. And then answer questions.\nHappiness(Romance) \nHappinesstells the story of two people (Lisa Turbot and Danny Roy) who work for different advertising companies. They talk on the phone all the time and don't like each other. But then they _ by e-mail and fall in love. This movie will be very popular with teenagers and people who like romances. It also has beautiful music.\nI Scream(Thriller) \nInI Scream, Paul (Colin Jacks) is a young man who joins a thriller club. Each of the members tries to frighten the others. Paul is told to stay in an old house for the night. Everyone who has tried to stay in the house before has died. This movie is very frightening but also quite silly. It doesn't make sense for Paul to stay in the house when things start to go wrong. Only for people who like thrillers.\nPaul's Heroes(Comedy) \nThis is a very funny war movie set in World War Two. Six soldiers (including Sammy Turblow) have to get to Italy to take secret messages to the American army there. During the movie, they dressup as women and fight with Italian workers. You can guess the ending, but it's great fun getting there.\n _ (Drama) \nThis is a very good drama with Jack Ross, who plays a hard-working truck driver. His wife becomes ill and he has to find a doctor who can help her. In his travels he meets Dr. Lloyd (Phil Driver) who has found the cure for the illness, but Jack Ross has only twelve hours to get the medicine back to his wife on the other side of America. This is an excellent movie, which is very exciting.",
         questions: [
             {
                 number: 1,
@@ -512,7 +514,7 @@ const passages = [
             },
             {
                 number: 2,
-                question: "A thriller is most probably a film which tells something   _  .",
+                question: "A thriller is most probably a film which tells something _.",
                 options: { A: "instructive", B: "frightening", C: "humorous", D: "interesting" },
                 correctIndex: 1
             },
@@ -526,7 +528,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high20468",
-        text: "\"Family\" is of course an _ word. But when British people say that their society is based on family life, they are thinking of \"family\" in its narrow, peculiarly European sense of mother ,father and children living together alone in their own house as an economic and social unit. Thus, every British marriage indicates the beginning of a new and independent family--hence the tremendous importance of marriage in British life. For both the man and the woman, marriage means leaving one's parents and starting one's own life. The man's first duty will then be to his wife, and the wife's to her husband. He will be entirely responsible for her financial support, and she for the running of the new home. Their children will be their common responsibility and theirs alone. Neither the wife's parents nor the husband's, nor their brothers or sisters, aunts or uncles, have any right to interfere with them--they are their own masters.\nReaders of novels like Jane Austen's Pride and Prejudice will know that in former times marriage among wealthy families were arranged by the girl's parents, that is, it was the parents' duty to find a suitable husband for their daughter, preferably a rich one, and by skillful encouragement to lead him eventually to ask their permission to marry her. Until that time, the girl was protected and maintained in the parents' home, and the financial relief of getting rid of her could be seen in their giving the newly married pair a sum of money called a dowry. It is very different today. Most girls of today get a job when they leave school and become financially independent before their marriage. This has had two results. A girl chooses her own husband, and she gets no dowry.",
+        text: "\"Family\" is of course an _ word. But when British people say that their society is based on family life, they are thinking of \"family\" in its narrow, peculiarly European sense of mother, father and children living together alone in their own house as an economic and social unit. Thus, every British marriage indicates the beginning of a new and independent family--hence the tremendous importance of marriage in British life. For both the man and the woman, marriage means leaving one's parents and starting one's own life. The man's first duty will then be to his wife, and the wife's to her husband. He will be entirely responsible for her financial support, and she for the running of the new home. Their children will be their common responsibility and theirs alone. Neither the wife's parents nor the husband's, nor their brothers or sisters, aunts or uncles, have any right to interfere with them--they are their own masters.\nReaders of novels like Jane Austen's Pride and Prejudice will know that in former times marriage among wealthy families were arranged by the girl's parents, that is, it was the parents' duty to find a suitable husband for their daughter, preferably a rich one, and by skillful encouragement to lead him eventually to ask their permission to marry her. Until that time, the girl was protected and maintained in the parents' home, and the financial relief of getting rid of her could be seen in their giving the newly married pair a sum of money called a dowry. It is very different today. Most girls of today get a job when they leave school and become financially independent before their marriage. This has had two results. A girl chooses her own husband, and she gets no dowry.",
         questions: [
             {
                 number: 1,
@@ -536,13 +538,13 @@ const passages = [
             },
             {
                 number: 2,
-                question: "For an English family, the husband's duty is   _  .",
+                question: "For an English family, the husband's duty is _.",
                 options: { A: "supporting the family while the wife is financial", B: "defending the family while the wife is running the home", C: "financial while the wife is running the home", D: "independent while the wife is dependent" },
                 correctIndex: 2
             },
             {
                 number: 3,
-                question: "Everything is decided in a family   _  .",
+                question: "Everything is decided in a family _.",
                 options: { A: "by the couple", B: "with the help of their parents", C: "by brothers and sisters", D: "with the help of aunts and uncles" },
                 correctIndex: 0
             },
@@ -554,7 +556,7 @@ const passages = [
             },
             {
                 number: 5,
-                question: "With regard to marriage in Britain, present day girls differ from former time girls in   _  .",
+                question: "With regard to marriage in Britain, present day girls differ from former time girls in _.",
                 options: { A: "the right marry", B: "more parental support", C: "choosing husbands", D: "social position" },
                 correctIndex: 2
             },
@@ -562,7 +564,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high24142",
-        text: "Wood Buffalo National Park \nWood Buffalo National Park is Canada's largest national park and one of the largest in the world. Established in 1922 to protect the last remaining herds of bison in northern Canada, it now protects an outstanding example of Canada's Northern Boreal Plains. The park was designated a World Heritage Site in 1983.\nPhone: (780) 697-3662\nE-mail: wbnp.info@pc.gc.ca\nBanff National Park of Canada\nBanff's rich history dates back to 1885, when three railway workers stumbled upon hot mineral springs surfacing from deep within the mountains. This discovery led to the establishment of Banff National Park, and marked the beginning of Canada's national park system. Spanning 6,641 meadows and rivers, Banff National Park is one of the world's premier destination spots. \nPhone: (403)762-1550\nE-mail: banff.vrc@pc.gc.ca\nSt. Lawrence Islands National Park of Canada  \nConceived in the 1870s, St. Lawrence Islands is one of Canada's oldest national parks. Located in the scenic 1,000 Islands tourist area, this tiny jewel has a rich and complex natural human history. Centuries ago, aboriginal peoples referred to it as the \"Garden of the Great Spirit\". Today, 24 scenic islands, along with a mainland area at Mallory town Landing, are included in the park.\nPhone: (613) 923-5261 \nE-mail: ont. sli@pc.gc.ca\nGrasslands National Park of Canada \nIt was here Sitting Bull took refuge after the Battle of Little Big Horn in 1876. Grasslands National Park is the first national park of Canada to preserve a portion of the mixed prairie grasslands. This magical land of diversity, beauty and history is divided into two blocks. The East Block contains the Killdeer Badlands and the Wood Mountain Uplands, and the West Block preserves the Frenchman River Valley and the dissected plateaus, coulees and famous 70 Mile Butte. \nPhone: (306) 298-2257\nE-mail: grasslands. info@pc.gc.ca",
+        text: "Wood Buffalo National Park \nWood Buffalo National Park is Canada's largest national park and one of the largest in the world. Established in 1922 to protect the last remaining herds of bison in northern Canada, it now protects an outstanding example of Canada's Northern Boreal Plains. The park was designated a World Heritage Site in 1983.\nPhone: (780) 697-3662\nE-mail: wbnp. info@pc. gc. ca\nBanff National Park of Canada\nBanff's rich history dates back to 1885, when three railway workers stumbled upon hot mineral springs surfacing from deep within the mountains. This discovery led to the establishment of Banff National Park, and marked the beginning of Canada's national park system. Spanning 6,641 meadows and rivers, Banff National Park is one of the world's premier destination spots. \nPhone: (403)762-1550\nE-mail: banff. vrc@pc. gc. ca\nSt. Lawrence Islands National Park of Canada \nConceived in the 1870s, St. Lawrence Islands is one of Canada's oldest national parks. Located in the scenic 1,000 Islands tourist area, this tiny jewel has a rich and complex natural human history. Centuries ago, aboriginal peoples referred to it as the \"Garden of the Great Spirit\". Today, 24 scenic islands, along with a mainland area at Mallory town Landing, are included in the park.\nPhone: (613) 923-5261 \nE-mail: ont. sli@pc. gc. ca\nGrasslands National Park of Canada \nIt was here Sitting Bull took refuge after the Battle of Little Big Horn in 1876. Grasslands National Park is the first national park of Canada to preserve a portion of the mixed prairie grasslands. This magical land of diversity, beauty and history is divided into two blocks. The East Block contains the Killdeer Badlands and the Wood Mountain Uplands, and the West Block preserves the Frenchman River Valley and the dissected plateaus, coulees and famous 70 Mile Butte. \nPhone: (306) 298-2257\nE-mail: grasslands. info@pc. gc. ca",
         questions: [
             {
                 number: 1,
@@ -572,7 +574,7 @@ const passages = [
             },
             {
                 number: 2,
-                question: "If you want to visit one of the oldest national parks in Canada, you can call   _  .",
+                question: "If you want to visit one of the oldest national parks in Canada, you can call _.",
                 options: { A: "(780)697-3662", B: "(306) 298-2257", C: "(403)762-1550", D: "(613) 923-5261" },
                 correctIndex: 3
             },
@@ -584,7 +586,7 @@ const passages = [
             },
             {
                 number: 4,
-                question: "This passage is mainly taken from   _  .",
+                question: "This passage is mainly taken from _.",
                 options: { A: "a travel guidebook", B: "a student's textbook", C: "a latest newspaper", D: "an entertaining book" },
                 correctIndex: 0
             },
@@ -592,29 +594,29 @@ const passages = [
     }),
     new Passage({
         id: "race-high1279",
-        text: "If you're in charge of  a project, the key to success is getting everyone to want to help you. As a director, I point, I suggest, I gently push the actors in the direction  I want them to go.\nIn the 1986 movie Nothing in Common, Jackie Gleason's character, Max Basner, gets fired (or unemployed) from his job as a clothing salesman. The scene, shot   on a boat, shows Max's despair  about being out of work. I was looking for some gesture that would allow Max to show his feelings.\nJackie had far more experience  at everything than I did, and at first I was frightened (very much afraid). What could I possibly tell \"The Great One\" about acting? Out of fear I decided to direct by suggestion, and I sat down with Gleason to talk about the scene. \"So Max is sad, right?\" I said.\nGleason nodded.\n\"And he's probably still carrying his pens with his name on them --- the ones he used to hand out to his customers, right?\"\nGleason nodded.\n\" So what would you want to do with the pens after you were fired?\" He was silent for a moment. \"Why don't I throw them overboard (or all over the boat)?\" I stood up and turned toward the crew. \" Hey, everybody, Jackie has a wonderful idea. Let's shoot it.\"\nAfter filming the scene, Gleason called me over and said with a smile, \"Garry, what kind of wonderful idea am I going to have tomorrow?\"\nYou and your team can discover the answers to problems together. When there are no prizes or gold stars for who gets the solution (or the way to work out a problem) first, you'll all benefit (or get something of use or value) when everything turns out right.",
+        text: "If you're in charge of a project, the key to success is getting everyone to want to help you. As a director, I point, I suggest, I gently push the actors in the direction I want them to go.\nIn the 1986 movie Nothing in Common, Jackie Gleason's character, Max Basner, gets fired (or unemployed) from his job as a clothing salesman. The scene, shot on a boat, shows Max's despair about being out of work. I was looking for some gesture that would allow Max to show his feelings.\nJackie had far more experience at everything than I did, and at first I was frightened (very much afraid). What could I possibly tell \"The Great One\" about acting? Out of fear I decided to direct by suggestion, and I sat down with Gleason to talk about the scene. \"So Max is sad, right?\" I said.\nGleason nodded.\n\"And he's probably still carrying his pens with his name on them --- the ones he used to hand out to his customers, right?\"\nGleason nodded.\n\" So what would you want to do with the pens after you were fired?\" He was silent for a moment. \"Why don't I throw them overboard (or all over the boat)?\" I stood up and turned toward the crew. \" Hey, everybody, Jackie has a wonderful idea. Let's shoot it.\"\nAfter filming the scene, Gleason called me over and said with a smile, \"Garry, what kind of wonderful idea am I going to have tomorrow?\"\nYou and your team can discover the answers to problems together. When there are no prizes or gold stars for who gets the solution (or the way to work out a problem) first, you'll all benefit (or get something of use or value) when everything turns out right.",
         questions: [
             {
                 number: 1,
-                question: "The author tells us that to succeed in a project you are in charge of, you should   _  .",
+                question: "The author tells us that to succeed in a project you are in charge of, you should _.",
                 options: { A: "make everyone work for you", B: "get everyone willing to help you", C: "let people know you have the final say", D: "keep sending out orders to them" },
                 correctIndex: 1
             },
             {
                 number: 2,
-                question: "It can be inferred   that   _  .",
-                options: { A: "Jackie Gleason is the director of the film Nothing in common", B: "Jackie Gleason is very angry when he is fired from his job", C: "Max, a character in a film, is in very low spirits  when he loses his job", D: "Jackie Gleason is the writer of the film Nothing in common" },
+                question: "It can be inferred that _.",
+                options: { A: "Jackie Gleason is the director of the film Nothing in common", B: "Jackie Gleason is very angry when he is fired from his job", C: "Max, a character in a film, is in very low spirits when he loses his job", D: "Jackie Gleason is the writer of the film Nothing in common" },
                 correctIndex: 2
             },
             {
                 number: 3,
-                question: "Why did Gleason call the director over and smile at him? That's because Gleason   _  .",
-                options: { A: "thought his wonderful idea was accepted by the latter", B: "succeeded in hitting upon (or think of) a wonderful idea", C: "was confident (certain) about his work the next day", D: "appreciated  the latter's way of directing films" },
+                question: "Why did Gleason call the director over and smile at him? That's because Gleason _.",
+                options: { A: "thought his wonderful idea was accepted by the latter", B: "succeeded in hitting upon (or think of) a wonderful idea", C: "was confident (certain) about his work the next day", D: "appreciated the latter's way of directing films" },
                 correctIndex: 3
             },
             {
                 number: 4,
-                question: "The most suitable (or proper) title for the passage is   _  .",
+                question: "The most suitable (or proper) title for the passage is _.",
                 options: { A: "Directing a Film", B: "The Key to Success", C: "A Wonderful Experience", D: "Working with Film Stars" },
                 correctIndex: 1
             },
@@ -622,17 +624,17 @@ const passages = [
     }),
     new Passage({
         id: "race-high17050",
-        text: "No matter where you travel in Asia, you'll find yourself faced with a new culture. You can start your Asian exploration by visiting some of these attractive  cities first.\nBeijing, China              \n              Beijing is the second largest city in China and serves as the capital. The city is so old, in fact, that almost every building has some sort of cultural or historic features -- no matter how small. Getting around the city you'll find yourself faced with amazing temples  , the largest palaces   in the world, and many works of art that leave you breathless.\nSiem Reap, Cambodia  \n              Siem Reap is the capital city of Siem Reap Province in northwestern Cambodia. Siem Reap has a lot of French and Chinese-style architectures. In the city, there are traditional dance performances, silk farms, fishing villages and a bird sanctuary   near the Tonle Sap Lake. Siem Reap today, being a popular tourist attraction , has a large number of hotels and restaurants. \nKathmandu, Nepal  \n              Situated  in the heart of the Himalayans, Kathmandu, the largest city and capital of Nepal, is considered to be one of the most outstanding cities in the world today. The shopping districts are world famous and the hotels in Kathmandu are among the most comfortable in the world.\nKyoto, Japan\n              The city of Kyoto served as the capital of Japan from 794 to 1868. No longer the capital, it is known for being the seventh largest city in Japan. Kyoto was destroyed throughout history by fires and war. But now the city is home to more than 1.4 million people, and it presents a modern face to the rest of the world.\n              Every city throughout Asia has a story of its own. It's up to you to explore them all and find out exactly what each one has to offer. Enjoy!",
+        text: "No matter where you travel in Asia, you'll find yourself faced with a new culture. You can start your Asian exploration by visiting some of these attractive cities first.\nBeijing, China \n Beijing is the second largest city in China and serves as the capital. The city is so old, in fact, that almost every building has some sort of cultural or historic features -- no matter how small. Getting around the city you'll find yourself faced with amazing temples, the largest palaces in the world, and many works of art that leave you breathless.\nSiem Reap, Cambodia \n Siem Reap is the capital city of Siem Reap Province in northwestern Cambodia. Siem Reap has a lot of French and Chinese-style architectures. In the city, there are traditional dance performances, silk farms, fishing villages and a bird sanctuary near the Tonle Sap Lake. Siem Reap today, being a popular tourist attraction, has a large number of hotels and restaurants. \nKathmandu, Nepal \n Situated in the heart of the Himalayans, Kathmandu, the largest city and capital of Nepal, is considered to be one of the most outstanding cities in the world today. The shopping districts are world famous and the hotels in Kathmandu are among the most comfortable in the world.\nKyoto, Japan\n The city of Kyoto served as the capital of Japan from 794 to 1868. No longer the capital, it is known for being the seventh largest city in Japan. Kyoto was destroyed throughout history by fires and war. But now the city is home to more than 1.4 million people, and it presents a modern face to the rest of the world.\n Every city throughout Asia has a story of its own. It's up to you to explore them all and find out exactly what each one has to offer. Enjoy!",
         questions: [
             {
                 number: 1,
-                question: "If you want to visit the biggest place where ancient emperors lived in the world, you can go to   _  .",
+                question: "If you want to visit the biggest place where ancient emperors lived in the world, you can go to _.",
                 options: { A: "Beijing", B: "Siem Reap", C: "Kathmandu", D: "Kyoto" },
                 correctIndex: 0
             },
             {
                 number: 2,
-                question: "In Siem Reap you can see the following EXCEPT   _  .",
+                question: "In Siem Reap you can see the following EXCEPT _.",
                 options: { A: "Chinese-style buildings", B: "excellent art works", C: "traditional dances", D: "a protected bird area" },
                 correctIndex: 1
             },
@@ -644,13 +646,13 @@ const passages = [
             },
             {
                 number: 4,
-                question: "We can learn from the passage that   _  .",
+                question: "We can learn from the passage that _.",
                 options: { A: "the cities are all capital cities now", B: "Beijing is the largest city in China", C: "one can't find a good hotel in Kathmandu", D: "all the cities have their own stories" },
                 correctIndex: 3
             },
             {
                 number: 5,
-                question: "The writer's purpose in writing the passage is   _  .",
+                question: "The writer's purpose in writing the passage is _.",
                 options: { A: "to introduce several attractive cities in Asia", B: "to compare some tourist cities in Asia", C: "to tell readers not to visit European cities", D: "to write an advertisement about a travel company" },
                 correctIndex: 0
             },
@@ -658,17 +660,17 @@ const passages = [
     }),
     new Passage({
         id: "race-high20162",
-        text: "A new study has been carried to test the role of story telling in lowering blood pressure. Dr. Thomas Houston, a professor of the University of Massachusetts Medical School, led a group of scientists that investigated how pre-recorded videos of hypertension   patients' talking about their medical histories helped another group of patients with high blood pressure to control their condition over several months.\n   Houston was surprised by their studies that suggested that communication can be a powerful tool in medicine. They showed that those who had had similar experiences, when talking to someone with a similar background, could help change their behavior to become healthier. Hypertension is difficult to control, since it is dependent on diet, exercise and mental state. Medical treatments with drugs, and lifestyle therapies  have been  ly ineffective because people find it hard to follow those medical requirements.\n   In the test, his team carefully chose their story-tellers from 230 members of a patients' community with whom they could most easily relate. Next, they divided their study population into two groups. One received three interactive   DVDs containing the tellers' stories of their experiences in living with and treating their hypertension. The other were given educational discs on an unrelated health topic. The study volunteers reported that they had listened to the DVDs, and after three months, those who heard the stories of the hypertensive patients lowered their blood pressure.\n  While the study did not  _ how the story-telling influenced the patients' behavior, Houston suspects that watching patients of similar backgrounds who had a similar medical experience helped to motivate them to seek medical help to their hypertension. They found that after six months the difference in blood pressure between those who watched the story-tellers and those who observed the unrelated videos remained, suggesting that the story-telling continued to have an effect.",
+        text: "A new study has been carried to test the role of story telling in lowering blood pressure. Dr. Thomas Houston, a professor of the University of Massachusetts Medical School, led a group of scientists that investigated how pre-recorded videos of hypertension patients' talking about their medical histories helped another group of patients with high blood pressure to control their condition over several months.\n Houston was surprised by their studies that suggested that communication can be a powerful tool in medicine. They showed that those who had had similar experiences, when talking to someone with a similar background, could help change their behavior to become healthier. Hypertension is difficult to control, since it is dependent on diet, exercise and mental state. Medical treatments with drugs, and lifestyle therapies have been ly ineffective because people find it hard to follow those medical requirements.\n In the test, his team carefully chose their story-tellers from 230 members of a patients' community with whom they could most easily relate. Next, they divided their study population into two groups. One received three interactive DVDs containing the tellers' stories of their experiences in living with and treating their hypertension. The other were given educational discs on an unrelated health topic. The study volunteers reported that they had listened to the DVDs, and after three months, those who heard the stories of the hypertensive patients lowered their blood pressure.\n While the study did not _ how the story-telling influenced the patients' behavior, Houston suspects that watching patients of similar backgrounds who had a similar medical experience helped to motivate them to seek medical help to their hypertension. They found that after six months the difference in blood pressure between those who watched the story-tellers and those who observed the unrelated videos remained, suggesting that the story-telling continued to have an effect.",
         questions: [
             {
                 number: 1,
-                question: "We can learn from the text that the pre-recorded videos   _  .",
+                question: "We can learn from the text that the pre-recorded videos _.",
                 options: { A: "tell medical histories of hypertension patients", B: "introduce some medical treatments of hypertension", C: "introduce a good lifestyle for hypertensive patients", D: "tell scientific discoveries of the scientist group" },
                 correctIndex: 0
             },
             {
                 number: 2,
-                question: "Houston was surprised to find that   _  .",
+                question: "Houston was surprised to find that _.",
                 options: { A: "hypertension is really difficult to control", B: "communication has some medical effects", C: "medical treatments have no effect at all", D: "people don't follow the medical requirements" },
                 correctIndex: 1
             },
@@ -682,7 +684,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high10087",
-        text: "When we say older people shrink, we don't mean they become tiny enough to fit in your pocket! We just mean that it's common for older people to become a little shorter over time. This kind of shrinking can't be reversed, although people can slow or stop this process. But why does shrinking happen at all?\nBecause of gravity (the force that keeps your feet on the ground) , cushions between the bones in the spine  , get compressed  , which makes a person lose a little height and become shorter.\nAnother reason why some older people shrink is because of osteoporosis  . Osteoporosis occurs when bone is broken down and not enough new bone material is made. Over time, bone is said to be lost because it's not being replaced. Bones become smaller and weaker and can easily break if someone with osteoporosis is injured.\nOlder people--especially women, who generally have smaller and lighter bones to begin with--are more likely to develop osteoporosis. As years go by, a person with osteoporosis can get small breaks in bones that are called compression fractures . These breaks cause collapse of the spine and over time the person with osteoporosis can become hunched over  .\nDid you know that every day you shrink a little, too? You aren't as tall at the end of the day as you are at the beginning. That's because as the day goes on, water in the disks of the spine gets compressed due to gravity, making you just a tiny bit shorter. Don't worry, though. Once you get a good night's rest, your body recovers, and the next morning, you're standing tall again!\nSmoking and drinking alcohol can make this problem worse. Want to do something right now to build strong bones? I believe what I will say will help you.",
+        text: "When we say older people shrink, we don't mean they become tiny enough to fit in your pocket! We just mean that it's common for older people to become a little shorter over time. This kind of shrinking can't be reversed, although people can slow or stop this process. But why does shrinking happen at all?\nBecause of gravity (the force that keeps your feet on the ground), cushions between the bones in the spine, get compressed, which makes a person lose a little height and become shorter.\nAnother reason why some older people shrink is because of osteoporosis. Osteoporosis occurs when bone is broken down and not enough new bone material is made. Over time, bone is said to be lost because it's not being replaced. Bones become smaller and weaker and can easily break if someone with osteoporosis is injured.\nOlder people--especially women, who generally have smaller and lighter bones to begin with--are more likely to develop osteoporosis. As years go by, a person with osteoporosis can get small breaks in bones that are called compression fractures. These breaks cause collapse of the spine and over time the person with osteoporosis can become hunched over.\nDid you know that every day you shrink a little, too? You aren't as tall at the end of the day as you are at the beginning. That's because as the day goes on, water in the disks of the spine gets compressed due to gravity, making you just a tiny bit shorter. Don't worry, though. Once you get a good night's rest, your body recovers, and the next morning, you're standing tall again!\nSmoking and drinking alcohol can make this problem worse. Want to do something right now to build strong bones? I believe what I will say will help you.",
         questions: [
             {
                 number: 1,
@@ -704,7 +706,7 @@ const passages = [
             },
             {
                 number: 4,
-                question: "About osteoporosis, we know that   _  .",
+                question: "About osteoporosis, we know that _.",
                 options: { A: "gravity is one of the causes of osteoporosis", B: "once our bone is broken down, osteoporosis will occur", C: "women are more likely to develop osteoporosis", D: "if we develop osteoporosis, we are more likely to be shorter" },
                 correctIndex: 3
             },
@@ -716,25 +718,25 @@ const passages = [
         questions: [
             {
                 number: 1,
-                question: "Pipilu Sending You 100 Lives has been adapted into a play by   _  .",
-                options: { A: "Huang Qin .", B: "Zheng Yuanjie.", C: "Guo Yan.", D: "Star Dream Factory" },
+                question: "Pipilu Sending You 100 Lives has been adapted into a play by _.",
+                options: { A: "Huang Qin.", B: "Zheng Yuanjie.", C: "Guo Yan.", D: "Star Dream Factory" },
                 correctIndex: 3
             },
             {
                 number: 2,
-                question: "The book Pipilu Sending You 100 Lives is trying to tell the readers   _  .",
+                question: "The book Pipilu Sending You 100 Lives is trying to tell the readers _.",
                 options: { A: "how Pipilu give you 100 lives in a clear way", B: "how Pipilu can live a more interesting life in a simple way", C: "how we can live a safer life in an understandable way", D: "how we can have 100 lives in a pleasing way" },
                 correctIndex: 2
             },
             {
                 number: 3,
-                question: "According to Zheng,safety   _  .",
+                question: "According to Zheng, safety _.",
                 options: { A: "is more important to people than any other things", B: "is an essential part only to all the children", C: "is more important to the old than the young", D: "is more important to the young than the old" },
                 correctIndex: 0
             },
             {
                 number: 4,
-                question: "The purpose of the passage is to  _  ?",
+                question: "The purpose of the passage is to _?",
                 options: { A: "introduce a play to remind children of the importance of safety", B: "introduce a book and its homonymous play to the readers", C: "tell the readers how to keep safe", D: "tell the readers how important safety is" },
                 correctIndex: 1
             },
@@ -742,7 +744,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high9774",
-        text: "STRANGERS parties go wild these days. The main idea of them is to never let the people know who their matches are until the last minute. These are some popular practices that are storming the world's youth on this V-day.\nSpeed dating\nIt's exactly what the name implies. Complete with a timer, a whistle and 50 willing singles, speed dating is not the traditional dinner and a movie type of first date. Singles pay US $35 for three minutes with more than two dozen future dates. They ask questions and try to get to know each other. At the sound of a whistle, they do the same thing all over again--25 times in all.\nLock and key party\nWomen are given a lock and men are given a key, upon arriving at the party. Each key and lock has several matches. One can hunt for his/her later-to-be sweetheart in various groups, and try out the key or lock. Each time a lock and key match the pair are entered into a ballot  for top prizes!\nDinner in the dark\nWaiters wearing night vision glasses guide the guests through the pitch-black dining room. They are seated at the table and familiarized with the wine glass and plate. Food is handled with the fingers. People will not see the food they are eating or the guests at their table until the dessert course. At that moment, dining partners will appear.\nMessage party\nHave A Cocktail, Leave A Message! When you arrive, you get a tag with a number and a pad of post-it notes. If you see someone you like, write a message on the message board. But wait... You've got a message... Go and collect it! You can make new friends and win lots of gifts. The more messages you leave on the bulletin board, the more chances you have of winning prizes.",
+        text: "STRANGERS parties go wild these days. The main idea of them is to never let the people know who their matches are until the last minute. These are some popular practices that are storming the world's youth on this V-day.\nSpeed dating\nIt's exactly what the name implies. Complete with a timer, a whistle and 50 willing singles, speed dating is not the traditional dinner and a movie type of first date. Singles pay US $35 for three minutes with more than two dozen future dates. They ask questions and try to get to know each other. At the sound of a whistle, they do the same thing all over again--25 times in all.\nLock and key party\nWomen are given a lock and men are given a key, upon arriving at the party. Each key and lock has several matches. One can hunt for his/her later-to-be sweetheart in various groups, and try out the key or lock. Each time a lock and key match the pair are entered into a ballot for top prizes!\nDinner in the dark\nWaiters wearing night vision glasses guide the guests through the pitch-black dining room. They are seated at the table and familiarized with the wine glass and plate. Food is handled with the fingers. People will not see the food they are eating or the guests at their table until the dessert course. At that moment, dining partners will appear.\nMessage party\nHave A Cocktail, Leave A Message! When you arrive, you get a tag with a number and a pad of post-it notes. If you see someone you like, write a message on the message board. But wait... You've got a message... Go and collect it! You can make new friends and win lots of gifts. The more messages you leave on the bulletin board, the more chances you have of winning prizes.",
         questions: [
             {
                 number: 1,
@@ -758,7 +760,7 @@ const passages = [
             },
             {
                 number: 3,
-                question: "If you go to the Dinner in the dark,   _  .",
+                question: "If you go to the Dinner in the dark, _.",
                 options: { A: "you have to wear night vision glasses", B: "you have to eat with your hands", C: "guests eat all the courses in the darkness", D: "your dining partners will help you choose the food" },
                 correctIndex: 1
             },
@@ -772,7 +774,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high2604",
-        text: "Do dogs understand us?\nBe careful what you say around your dog. It might understand more than you think.\nA _ named Rico recognizes the names of about 200 objects, say researchers in Germany. The dog also appears to be able to learn new words as easily as a 3-year-old child. Its word-learning skills are as good as those of a parrot or _ .\nIn one experiment, the researchers took all 200 items that Rico is supposed to know and divided them into 20 groups of 10 objects. Then the owner told the dog to go and fetch one of the items and bring it back. In four tests, Rico got 37 out of 40 commands right. As the dog couldn't see anyone to get clues, the scientists believe Rico must understand the meanings of certain words.\nIn another experiment, the scientists took one toy that Rico had never seen before and put it in a room with seven toys whose names the dog already knew. The owner then told Rico to fetch the object, using a word the dog had never heard before.\nThe correct object was chosen in seven out of l0 tests, suggesting that the dog had worked out the answer by the process of _ . A month later, Rico remembered half of the new names, which is even more impressive.\nRico is thought to be smarter than the average dog. For one thing, Rico is a border collie, a _ known for its mental abilities. In addition, the 9-year-old dog has been trained to fetch toys by their names since the age of nine months.\nIt's hard to know if all dogs understand at least some of the words we say. Even if they do, they can't talk back. Still, it wouldn't hurt to sweet-talk your dog every now and then. You might just get a big, wet kiss in return!",
+        text: "Do dogs understand us?\nBe careful what you say around your dog. It might understand more than you think.\nA _ named Rico recognizes the names of about 200 objects, say researchers in Germany. The dog also appears to be able to learn new words as easily as a 3-year-old child. Its word-learning skills are as good as those of a parrot or _.\nIn one experiment, the researchers took all 200 items that Rico is supposed to know and divided them into 20 groups of 10 objects. Then the owner told the dog to go and fetch one of the items and bring it back. In four tests, Rico got 37 out of 40 commands right. As the dog couldn't see anyone to get clues, the scientists believe Rico must understand the meanings of certain words.\nIn another experiment, the scientists took one toy that Rico had never seen before and put it in a room with seven toys whose names the dog already knew. The owner then told Rico to fetch the object, using a word the dog had never heard before.\nThe correct object was chosen in seven out of l0 tests, suggesting that the dog had worked out the answer by the process of _. A month later, Rico remembered half of the new names, which is even more impressive.\nRico is thought to be smarter than the average dog. For one thing, Rico is a border collie, a _ known for its mental abilities. In addition, the 9-year-old dog has been trained to fetch toys by their names since the age of nine months.\nIt's hard to know if all dogs understand at least some of the words we say. Even if they do, they can't talk back. Still, it wouldn't hurt to sweet-talk your dog every now and then. You might just get a big, wet kiss in return!",
         questions: [
             {
                 number: 1,
@@ -796,11 +798,11 @@ const passages = [
     }),
     new Passage({
         id: "race-high10466",
-        text: "The literal meaning of philosophy is \"love of wisdom\". But this meaning does not tell us very much. Unlike the other disciplines ,philosophy cannot be defined by what you study, because it is actually unlimited. Anything can be the subject matter of philosophy: art, history, law, language, literature, mathematics, medicine, psychology, religion, science, and values. Philosophy is one of the world's oldest subjects of study, and in fact, the other academic disciplines are directly related to philosophy. For this reason you get a Doctorate  of Philosophy (Ph.D.) in biochemistry, or computer science, or psychology.\nTwo broad sub-fields of philosophy are logic and the history of philosophy. Logic is the science of argument and critical thinking. It provides sound methods for distinguishing good from bad reasoning. The history of philosophy involves the study of major philosophers and periods in the development of philosophy.\nOf what use is philosophy? First it is useful in educational advancement. It is necessary for understanding other disciplines.  Only philosophy questions the nature of the concepts used in a discipline, and its relation to other disciplines. And through the study of philosophy, one develops sound methods of research and analysis that can be applied to any field.\nThere are a number of general uses of philosophy. It strengthens one's ability to solve problems, to communicate, to organize ideas and issues, to persuade, and to take what is the most important from a large quantity of data.These general uses are of great benefit in the career field, not necessarily for obtaining one's first job after graduation, but for preparing for positions of responsibility, management and leadership later on. It is very short-sighted after all, to take a course of studies only for the purpose of getting one's first job. The useful skills developed through the study of philosophy have significant long-term benefits in career advancement. No other discipline systematically follows the ideals of wisdom, leadership, and capacity to resolve human conflict.",
+        text: "The literal meaning of philosophy is \"love of wisdom\". But this meaning does not tell us very much. Unlike the other disciplines, philosophy cannot be defined by what you study, because it is actually unlimited. Anything can be the subject matter of philosophy: art, history, law, language, literature, mathematics, medicine, psychology, religion, science, and values. Philosophy is one of the world's oldest subjects of study, and in fact, the other academic disciplines are directly related to philosophy. For this reason you get a Doctorate of Philosophy (Ph. D.) in biochemistry, or computer science, or psychology.\nTwo broad sub-fields of philosophy are logic and the history of philosophy. Logic is the science of argument and critical thinking. It provides sound methods for distinguishing good from bad reasoning. The history of philosophy involves the study of major philosophers and periods in the development of philosophy.\nOf what use is philosophy? First it is useful in educational advancement. It is necessary for understanding other disciplines. Only philosophy questions the nature of the concepts used in a discipline, and its relation to other disciplines. And through the study of philosophy, one develops sound methods of research and analysis that can be applied to any field.\nThere are a number of general uses of philosophy. It strengthens one's ability to solve problems, to communicate, to organize ideas and issues, to persuade, and to take what is the most important from a large quantity of data. These general uses are of great benefit in the career field, not necessarily for obtaining one's first job after graduation, but for preparing for positions of responsibility, management and leadership later on. It is very short-sighted after all, to take a course of studies only for the purpose of getting one's first job. The useful skills developed through the study of philosophy have significant long-term benefits in career advancement. No other discipline systematically follows the ideals of wisdom, leadership, and capacity to resolve human conflict.",
         questions: [
             {
                 number: 1,
-                question: "With the study of philosophy, you can  _  .",
+                question: "With the study of philosophy, you can _.",
                 options: { A: "become a great leader", B: "succeed in everything", C: "find a good job soon after graduation", D: "make progress in your career development" },
                 correctIndex: 3
             },
@@ -812,7 +814,7 @@ const passages = [
             },
             {
                 number: 3,
-                question: "From the passage, we can conclude  _  .",
+                question: "From the passage, we can conclude _.",
                 options: { A: "not all the subjects have to do with philosophy", B: "a person will get a Ph.", C: "philosophy can be helpful for the study of any other subjects", D: "philosophy is the only solution to all the problems to the world" },
                 correctIndex: 2
             },
@@ -820,29 +822,29 @@ const passages = [
     }),
     new Passage({
         id: "race-high10707",
-        text: "Bob was born in Cambridge.  When he was in elementary school, he asked his mother to take him to parks in their community so he could collect empty soda cans to recycle.  His mother agreed, as long as he saved part of the money he earned for college.\nBob's mother remembers Bob as the most determined of her seven kids.  Bob's persistence paid off.  On Friday, he will become the first person in his family, originally from El Salvador, to graduate from college.  And he's graduating with university honors.\nFor his honors thesis he researched unmanned solar-powered airplanes, which BYU students have been building and testing for about 10 years.  Bob's study helps discover the best way to fly a solar-powered airplane so that it uses the least amount of power.  The goal is to design and build an airplane that flies indefinitely.  Bob's thesis helps lay the foundation for this work.\n\"My parents were always diligent,\" Bob said.  \"They often tell us hard work leads to success. \" Bob's father taught him to read at the age of 3, and his mother is currently a student at Utah Valley University in a way to becoming a dentist.\nBob acknowledges he overcame some obstacles to get where he is.  For starters, English is his second language.  He also faced stereotypes .  Although Bob never doubted that he would be a college graduate, other people assumed he wouldn't because he didn't come from a family of high income.  There were other obstacles as well, but Bob viewed them all as opportunities.\nBob's mother says she feels very happy and proud that her son is about to graduate with honors, and remembers the sacrifices he's made to get there.  \"He has worked very hard.  He started something, and now he has finished it,\" Cathy says.  \"I have always told him, 'If this is your dream, then you can get it! Keep working hard and you can get it!'\"",
+        text: "Bob was born in Cambridge. When he was in elementary school, he asked his mother to take him to parks in their community so he could collect empty soda cans to recycle. His mother agreed, as long as he saved part of the money he earned for college.\nBob's mother remembers Bob as the most determined of her seven kids. Bob's persistence paid off. On Friday, he will become the first person in his family, originally from El Salvador, to graduate from college. And he's graduating with university honors.\nFor his honors thesis he researched unmanned solar-powered airplanes, which BYU students have been building and testing for about 10 years. Bob's study helps discover the best way to fly a solar-powered airplane so that it uses the least amount of power. The goal is to design and build an airplane that flies indefinitely. Bob's thesis helps lay the foundation for this work.\n\"My parents were always diligent,\" Bob said. \"They often tell us hard work leads to success. \" Bob's father taught him to read at the age of 3, and his mother is currently a student at Utah Valley University in a way to becoming a dentist.\nBob acknowledges he overcame some obstacles to get where he is. For starters, English is his second language. He also faced stereotypes. Although Bob never doubted that he would be a college graduate, other people assumed he wouldn't because he didn't come from a family of high income. There were other obstacles as well, but Bob viewed them all as opportunities.\nBob's mother says she feels very happy and proud that her son is about to graduate with honors, and remembers the sacrifices he's made to get there. \"He has worked very hard. He started something, and now he has finished it,\" Cathy says. \"I have always told him, 'If this is your dream, then you can get it! Keep working hard and you can get it!'\"",
         questions: [
             {
                 number: 1,
-                question: "From the passage we can know that Bob's honors thesis   _  .",
+                question: "From the passage we can know that Bob's honors thesis _.",
                 options: { A: "makes his mother feel surprised", B: "helps to save the power of flying a solar-powered airplane", C: "is done with BYU students", D: "doubts the way of flying a solar-powered airplane" },
                 correctIndex: 1
             },
             {
                 number: 2,
-                question: "According to the passage, Bob  _  .",
+                question: "According to the passage, Bob _.",
                 options: { A: "researched unmanned solar-powered airplanes for 10 years", B: "paid for all his study by collecting empty soda cans", C: "worked hard and has graduated from college", D: "was affected by his family and has made some achievements" },
                 correctIndex: 3
             },
             {
                 number: 3,
-                question: "People thought Bob couldn't graduate from college because  _  .",
+                question: "People thought Bob couldn't graduate from college because _.",
                 options: { A: "his parents had little money to support him", B: "his teacher didn't think he could graduate", C: "he didn't work hard on his study", D: "he didn't dare to face the obstacles for short of confidence" },
                 correctIndex: 0
             },
             {
                 number: 4,
-                question: "It can be inferred that  _  .",
+                question: "It can be inferred that _.",
                 options: { A: "Bob's mother is in a way to becoming a dentist", B: "Bob's mother works in their community", C: "Bon's father will graduate from Utah Valley University on Friday", D: "Bob's father learnt to read at the age of 3" },
                 correctIndex: 0
             },
@@ -850,11 +852,11 @@ const passages = [
     }),
     new Passage({
         id: "race-high11148",
-        text: "Some people collect stamps. Other people collect works of art or musical instruments. But a man in the American state of Maryland collects secrets.\nFor the past 10 years, people have been sending Frank Warren postcards and other objects with secrets written on them. He now has a million secrets. \"It's a drawing of a lift. And the secret says: 'I feel guilty when I take lifts for one floor, so I limp when I get out.'\" Frank said.\nTen years ago, Mr. Warren created an art project called PostSecret. People then began to send him postcards, other objects and emails telling their secrets. Every Sunday, he chooses 10 secrets and puts them on the website.\nMr. Warren says he created PostSecret so people could share their secrets in a safe place. \"I was struggling with secrets in my own life. And it was by creating this safe place where others could share their secrets with me, I think that space was something I needed just as much as they did.\"\nHe has published six books full of the secrets people have shared with him. One secret in each book is his. Eric Perry delivers mail for the U.S. Postal Service. He has brought thousands of secrets to Frank's home over the past three years. \"I have a couple of the books that Frank's given me and I've read them all and my family has read them all and it's wild!\"\nThe project itself was once one of Frank's secrets. His wife Jan didn't know exactly what he was doing until the first book was published. The publisher told him that the address was going to be on the book, and he refused. However, the address was there just because of the contract between them. Actually Warren wasn't very happy about that.\nSome people tell Frank of their secret desire to kill themselves. So he and the PostSecret community have raised more than $1 million to help prevent suicides .",
+        text: "Some people collect stamps. Other people collect works of art or musical instruments. But a man in the American state of Maryland collects secrets.\nFor the past 10 years, people have been sending Frank Warren postcards and other objects with secrets written on them. He now has a million secrets. \"It's a drawing of a lift. And the secret says: 'I feel guilty when I take lifts for one floor, so I limp when I get out.'\" Frank said.\nTen years ago, Mr. Warren created an art project called PostSecret. People then began to send him postcards, other objects and emails telling their secrets. Every Sunday, he chooses 10 secrets and puts them on the website.\nMr. Warren says he created PostSecret so people could share their secrets in a safe place. \"I was struggling with secrets in my own life. And it was by creating this safe place where others could share their secrets with me, I think that space was something I needed just as much as they did.\"\nHe has published six books full of the secrets people have shared with him. One secret in each book is his. Eric Perry delivers mail for the U. S. Postal Service. He has brought thousands of secrets to Frank's home over the past three years. \"I have a couple of the books that Frank's given me and I've read them all and my family has read them all and it's wild!\"\nThe project itself was once one of Frank's secrets. His wife Jan didn't know exactly what he was doing until the first book was published. The publisher told him that the address was going to be on the book, and he refused. However, the address was there just because of the contract between them. Actually Warren wasn't very happy about that.\nSome people tell Frank of their secret desire to kill themselves. So he and the PostSecret community have raised more than $1 million to help prevent suicides.",
         questions: [
             {
                 number: 1,
-                question: "Mr. Warren created PostSecret in order to   _  .",
+                question: "Mr. Warren created PostSecret in order to _.",
                 options: { A: "satisfy his curiosity about others' secrets", B: "collect more materials for his series of books", C: "offer a safe place for people to share their secrets", D: "earn a lot of money by sharing others' secrets online" },
                 correctIndex: 2
             },
@@ -874,7 +876,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high4083",
-        text: "Home to me means a sense of familiarity and nostalgia . It's fun to come home. It looks the same. It smells the same. You'll realize what's changed is you. Home is where we ran remember pain, live, and some other experiences; We parted here; My parents met here; I won three championships here.\nIf I close my eyes, I can still have a clear picture in mind of my first home. I walk in the door and see a brown sofa surrounding a low glass-top wooden table. To the right of the living room is my first bedroom. It's empty, but it's where my earliest memories are.\nThere is the dining room table where I celebrated birthdays, and where I cried on Halloween-when I didn't want to wear the skirt my mother made for me. I always liked standing on that table because it made me feel tall and strong. If I sit at this table, I can see my favorite room in the house, my parents' room. It is simple: a brown wooden dresser lines the right side of the wall next to a television and a couple of photos of my grandparents on each side. Their bed is my safe zone. I can jump on it anytime - waking up my parents if I am scared or if I have an important announcement that cannot wait until the morning.\nI'm lucky because I know my first home still exists. It exists in my mind and heart, on a physical property  on West 64th street on the western edge of Los Angeles. It is proof I lived, I grew and I learned.\nSometimes when I feel lost, I lie down and shut my eyes, and I go home. I know it's where I'll find my family, my dogs, and my belongings. I purposely leave the window open at night because I know I'll be blamed by Mom. But I don't mind, because I want to hear her say my name, which reminds me I'm home.",
+        text: "Home to me means a sense of familiarity and nostalgia. It's fun to come home. It looks the same. It smells the same. You'll realize what's changed is you. Home is where we ran remember pain, live, and some other experiences; We parted here; My parents met here; I won three championships here.\nIf I close my eyes, I can still have a clear picture in mind of my first home. I walk in the door and see a brown sofa surrounding a low glass-top wooden table. To the right of the living room is my first bedroom. It's empty, but it's where my earliest memories are.\nThere is the dining room table where I celebrated birthdays, and where I cried on Halloween-when I didn't want to wear the skirt my mother made for me. I always liked standing on that table because it made me feel tall and strong. If I sit at this table, I can see my favorite room in the house, my parents' room. It is simple: a brown wooden dresser lines the right side of the wall next to a television and a couple of photos of my grandparents on each side. Their bed is my safe zone. I can jump on it anytime - waking up my parents if I am scared or if I have an important announcement that cannot wait until the morning.\nI'm lucky because I know my first home still exists. It exists in my mind and heart, on a physical property on West 64th street on the western edge of Los Angeles. It is proof I lived, I grew and I learned.\nSometimes when I feel lost, I lie down and shut my eyes, and I go home. I know it's where I'll find my family, my dogs, and my belongings. I purposely leave the window open at night because I know I'll be blamed by Mom. But I don't mind, because I want to hear her say my name, which reminds me I'm home.",
         questions: [
             {
                 number: 1,
@@ -884,7 +886,7 @@ const passages = [
             },
             {
                 number: 2,
-                question: "Sometimes when she feels lost, the author will   _  .",
+                question: "Sometimes when she feels lost, the author will _.",
                 options: { A: "Open the window at night", B: "lie down in bed to have a dream", C: "try to bring back a sense of home", D: "go to Los Angeles to visit her mom" },
                 correctIndex: 2
             },
@@ -898,7 +900,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high17934",
-        text: "Born in America in 1898, William was an extraordinary boy, gifted with an amazing IQ between 250 and 300. The genius went to a grammar school when he was only 6 years old and graduated just within 7 months. At the age of 11, he became the youngest student of the Harvard University. He graduated with high scores at the age of 16 and entered Harvard Law School at 18.\n    Gifted with an amazing IQ between 220 and 230, Terence Tao makes it to this list of the people with the highest IQ in the world. Born in Adelaide, Australia in 1975, this genius first displayed his incredible intelligence at a mere age of 2, when he managed to solve basic arithmetic questions on his own. At the age of 16, he graduated with both Master's and Bachelor's degrees at the Flinders University. He has been considered as ''Mr. Fix it \" by Charles Fefferman, who is a professor of Mathematics at Princeton University, and many other mathematicians want to interest him in their problems.\n    This 31-year-old Japanese-American astrophysicist lands him third in this list. At the age of 12, Christopher Hirata already worked on college-level courses, around the time most of us were just in the 7th grade. At the age of 13, this gifted kid became the youngest American to have ever won the gold medal in the International physics Olympiad.\nAt the age of 16, he was already working with NASA on its project to conquer planet Mars. After he was awarded the Ph.D. at Princeton University, he went back to California Institute of Technology.\n    The next person with very high IQ is Albert Einstein. With an IQ between 160 and 190, Albert Einstein is the genius behind the theory of relativity, which has had great impact on the world of science. He possessed such an amazing ability that after his death, researchers were eager to preserve and make research on his brain in search for clues to his exceptional brilliance, which to this day, has remained a mystery. \nks5u",
+        text: "Born in America in 1898, William was an extraordinary boy, gifted with an amazing IQ between 250 and 300. The genius went to a grammar school when he was only 6 years old and graduated just within 7 months. At the age of 11, he became the youngest student of the Harvard University. He graduated with high scores at the age of 16 and entered Harvard Law School at 18.\n Gifted with an amazing IQ between 220 and 230, Terence Tao makes it to this list of the people with the highest IQ in the world. Born in Adelaide, Australia in 1975, this genius first displayed his incredible intelligence at a mere age of 2, when he managed to solve basic arithmetic questions on his own. At the age of 16, he graduated with both Master's and Bachelor's degrees at the Flinders University. He has been considered as ''Mr. Fix it \" by Charles Fefferman, who is a professor of Mathematics at Princeton University, and many other mathematicians want to interest him in their problems.\n This 31-year-old Japanese-American astrophysicist lands him third in this list. At the age of 12, Christopher Hirata already worked on college-level courses, around the time most of us were just in the 7th grade. At the age of 13, this gifted kid became the youngest American to have ever won the gold medal in the International physics Olympiad.\nAt the age of 16, he was already working with NASA on its project to conquer planet Mars. After he was awarded the Ph. D. at Princeton University, he went back to California Institute of Technology.\n The next person with very high IQ is Albert Einstein. With an IQ between 160 and 190, Albert Einstein is the genius behind the theory of relativity, which has had great impact on the world of science. He possessed such an amazing ability that after his death, researchers were eager to preserve and make research on his brain in search for clues to his exceptional brilliance, which to this day, has remained a mystery. \nks5u",
         questions: [
             {
                 number: 1,
@@ -920,32 +922,32 @@ const passages = [
             },
             {
                 number: 4,
-                question: "From the passage we can know that  _  .",
-                options: { A: ".when William graduated from the Harvard University, he got the highest scores", B: "at the age of 2, Terence solved basic arithmetic questions on his own", C: "Christopher Hirata is a Japanese", D: "researchers have found out why Albert Einstein was so brilliant" },
+                question: "From the passage we can know that _.",
+                options: { A: ". when William graduated from the Harvard University, he got the highest scores", B: "at the age of 2, Terence solved basic arithmetic questions on his own", C: "Christopher Hirata is a Japanese", D: "researchers have found out why Albert Einstein was so brilliant" },
                 correctIndex: 1
             },
         ]
     }),
     new Passage({
         id: "race-high17462",
-        text: "Golf in the USA was until quite recently the hobby of old,middle class white men.Not any more.The fact that the class,age and race barriers that existed in the sport have finally been  broken down is due almost entirely to two people.Tiger Woods and Michelle Wie.\nTiger Woods was born in California in 1975 and is one of the greatest golfers of all time.His ethnic background is marvelously rich and varied.His father Earl was of mixed of black,Chinese and Native American ancestry and his mother Kultida,who was originally from Thailand,also had Chinese and Dutch forefathers.\nWoods became a professional golfer in 1996 and,less than a year later,astonished the world easily winning the prestigious Masters Colf Tournament,an annual event which takes place at the Augusta Golf Club in Georgia,USA.At 21,he was the youngest golfer ever to win the tournament,but much more important,he was also the first Asian American to do it.\nWoods'amazing achievement is put into perspective when you realize that until 1990,no non-white American had ever been allowed to join Augusta Golf Club.Even in 2000,it only had two black members.In fact,in 1977,Clifford Roberts,the chairman of the club and founder of the Masters Tournament,proclaimed:\"As long as 1 am alive,golfers will be white and caddies\n will be black.\"Roberts died not long after making this racist remark...\nFortunately,his views were not shared by his successors and the dramatic appearance of Tiger Woods on the Golf scene radically changed attitudes to the sport and prompted a major surge of interest in the game among ethnic minorities end young people in the USA.\nMichelle Wie,a Korean American born in 1989 whose mother was an amateur golf champion in Korea,will probably became the greatest woman golfer of all time.She's 1.85 meters tall and she can play a golf ball further than most men.Like Woods,she has transformed the world of golf,and wants to do so in even more dramatic ways.She has expressed her determination to play on the men's tournament circuit,not just the women's,and has already appeared in several professional men's tournaments.\nThanks to Woods and Wie,golf in America will never be the same again.",
+        text: "Golf in the USA was until quite recently the hobby of old, middle class white men. Not any more. The fact that the class, age and race barriers that existed in the sport have finally been broken down is due almost entirely to two people. Tiger Woods and Michelle Wie.\nTiger Woods was born in California in 1975 and is one of the greatest golfers of all time. His ethnic background is marvelously rich and varied. His father Earl was of mixed of black, Chinese and Native American ancestry and his mother Kultida, who was originally from Thailand, also had Chinese and Dutch forefathers.\nWoods became a professional golfer in 1996 and, less than a year later, astonished the world easily winning the prestigious Masters Colf Tournament, an annual event which takes place at the Augusta Golf Club in Georgia, USA. At 21, he was the youngest golfer ever to win the tournament, but much more important, he was also the first Asian American to do it.\nWoods'amazing achievement is put into perspective when you realize that until 1990, no non-white American had ever been allowed to join Augusta Golf Club. Even in 2000, it only had two black members. In fact, in 1977, Clifford Roberts, the chairman of the club and founder of the Masters Tournament, proclaimed:\"As long as 1 am alive, golfers will be white and caddies\n will be black.\"Roberts died not long after making this racist remark...\nFortunately, his views were not shared by his successors and the dramatic appearance of Tiger Woods on the Golf scene radically changed attitudes to the sport and prompted a major surge of interest in the game among ethnic minorities end young people in the USA.\nMichelle Wie, a Korean American born in 1989 whose mother was an amateur golf champion in Korea, will probably became the greatest woman golfer of all time. She's 1.85 meters tall and she can play a golf ball further than most men. Like Woods, she has transformed the world of golf, and wants to do so in even more dramatic ways. She has expressed her determination to play on the men's tournament circuit, not just the women's, and has already appeared in several professional men's tournaments.\nThanks to Woods and Wie, golf in America will never be the same again.",
         questions: [
             {
                 number: 1,
                 question: "What is the text about?",
-                options: { A: "Tiger Woods'life in playing golf.", B: "The achievements of two golf players from ethnic minorities.", C: "Michelle Wie's determination.", D: "Playing golf in USA was once the hobby of old,middle class while men." },
+                options: { A: "Tiger Woods'life in playing golf.", B: "The achievements of two golf players from ethnic minorities.", C: "Michelle Wie's determination.", D: "Playing golf in USA was once the hobby of old, middle class while men." },
                 correctIndex: 1
             },
             {
                 number: 2,
-                question: "Less than a year after turning professional.Tiger Woods",
+                question: "Less than a year after turning professional. Tiger Woods",
                 options: { A: "easily won a major golf tournament.", B: "nearly won a major golf tournament.", C: "joined the Augusta Golf Club.", D: "won a completely new golf tournament." },
                 correctIndex: 0
             },
             {
                 number: 3,
                 question: "Which of the following sentences is true?",
-                options: { A: "Tiger Woods was of mixed black,Chinese,and Native America.", B: "Tiger Woods was not the first Asian American to win the Tournament.", C: "Tiger Woods'achievement was amazing because he was the youngest golfer.", D: "Tiger Woods'dramatic appearance on the golf scene had the attitude to this sport in USA changed." },
+                options: { A: "Tiger Woods was of mixed black, Chinese, and Native America.", B: "Tiger Woods was not the first Asian American to win the Tournament.", C: "Tiger Woods'achievement was amazing because he was the youngest golfer.", D: "Tiger Woods'dramatic appearance on the golf scene had the attitude to this sport in USA changed." },
                 correctIndex: 3
             },
             {
@@ -958,7 +960,7 @@ const passages = [
     }),
     new Passage({
         id: "race-high6752",
-        text: "Finally, I entered the university. Because of my careful savings, I                did not have to work during the school year. Then, summer came and it was time to work harder than ever.  I continued working as a waitress at night, instructed tennis camps several mornings a week and worked as a secretary for a few hours in the afternoons. I even decided to take a class at a community  college. This class at the community college saved me $650. It was an extremely tiring summer and made me anxious to return to my relatively easy life at the university.\nDuring my second and third years of undergraduate schooling, I decided to work about five hours per week in the campus   admissions office answering phones. This provided a little spending money and kept me from drawing my savings out. The overall situation looked hopeful as I approached my senior year as long as I could make as much money as I had the previous summer. I wanted to go to Israel to study for 3 weeks, but I hesitated in making this decision because it would cost me $1 600 more to get the credits in Israel. About two weeks later my Mom called to tell me that I had$1 600 in the bank that I had forgotten about! One of my concerns about this trip was not only the cost, but the loss of time to make money; however, I made as much that summer in the ten weeks when I was at home as I had made during the fourteen weeks when I was at home the summer before. The way everything worked together to make this trip possible was one of the most exciting things that have ever happened to me.\nThis experience has shaped me in many important ways. The first thing that I learned was the importance of a strong work ethic  . Working long hours did a lot to develop my character and helped me learn the value of a dollar. It also made me learn how to search for creative ways to settle difficult situations.",
+        text: "Finally, I entered the university. Because of my careful savings, I did not have to work during the school year. Then, summer came and it was time to work harder than ever. I continued working as a waitress at night, instructed tennis camps several mornings a week and worked as a secretary for a few hours in the afternoons. I even decided to take a class at a community college. This class at the community college saved me $650. It was an extremely tiring summer and made me anxious to return to my relatively easy life at the university.\nDuring my second and third years of undergraduate schooling, I decided to work about five hours per week in the campus admissions office answering phones. This provided a little spending money and kept me from drawing my savings out. The overall situation looked hopeful as I approached my senior year as long as I could make as much money as I had the previous summer. I wanted to go to Israel to study for 3 weeks, but I hesitated in making this decision because it would cost me $1 600 more to get the credits in Israel. About two weeks later my Mom called to tell me that I had$1 600 in the bank that I had forgotten about! One of my concerns about this trip was not only the cost, but the loss of time to make money; however, I made as much that summer in the ten weeks when I was at home as I had made during the fourteen weeks when I was at home the summer before. The way everything worked together to make this trip possible was one of the most exciting things that have ever happened to me.\nThis experience has shaped me in many important ways. The first thing that I learned was the importance of a strong work ethic. Working long hours did a lot to develop my character and helped me learn the value of a dollar. It also made me learn how to search for creative ways to settle difficult situations.",
         questions: [
             {
                 number: 1,
@@ -968,19 +970,19 @@ const passages = [
             },
             {
                 number: 2,
-                question: "The writer took a class at a community college mainly because   _  .",
+                question: "The writer took a class at a community college mainly because _.",
                 options: { A: "she wanted to save money", B: "life there was relatively easy", C: "summer time was tiring", D: "it was required by the university" },
                 correctIndex: 0
             },
             {
                 number: 3,
-                question: "The writer's major concern about the trip to Israel was that   _  .",
+                question: "The writer's major concern about the trip to Israel was that _.",
                 options: { A: "her mother would not give her approval", B: "she would fail to get credits in Israel", C: "a wellpaid summer job would be lost", D: "$1 600 couldn't be drawn out in time" },
                 correctIndex: 2
             },
             {
                 number: 4,
-                question: "The passage is mainly about how the writer   _  .",
+                question: "The passage is mainly about how the writer _.",
                 options: { A: "made money on the college campus", B: "managed to make full use of her vacation", C: "was forced to support herself by her mother", D: "was shaped by working parttime through college" },
                 correctIndex: 3
             },
@@ -988,23 +990,23 @@ const passages = [
     }),
     new Passage({
         id: "race-high10361",
-        text: "We are not rich by what we possess but rather by what we can do without.\n----Immauel Kant\nMany times my friend June would say, \"If I ever get rich, I'm getting a completely new wardrobe  and moving into a bigger apartment.\" I thought of her words and her chances of being rich are about as good as mine. But, to everyone's surprise, a few years ago June did come to large inheritance .\nAt first June said very little about the money. As the initial shock disappeared, she became excited, June is a great believer in making lists, so I was surprised to find her writing down all the ways she would spend her new wealth.\nAs time went on, she started revising the list. What had been midway down the list was now at the top. At last, I said to her, \"You know, it isn't necessary to spend all your inheritance at once. Take come time; think about it.\" \"I know, I know,\" she answered with a little bit anger.\nThen one morning June called, \"I've decided how I want to use my new inheritance. I want to see what you think,\" she said. This wasn't something I looked forward to, but we had been friends so long.\nAs we sat, June spread a sheet of paper on the table. To my great surprise, she had written only two words: Charities, and Grandchildren-in that order. Though I had promised to keep quiet, I couldn't keep from asking how she came to this decision.\n\"Well,\" she said, \"I took your advice and thought about it.\" She added, \"Helping others means a lot to me, so I'm hoping this gift will help people in need.\"\nI interrupted, \"But what about this big apartment you most hope to have?\"\n\"At first it was hard, but it doesn't seem as important any more\", she answered with a smile.\nThen June moved her hand, and I could see a few words written in tiny letters at the bottom of the page. After having a look at the small print, I burst into laughter. June had written: AND one new wardrobe.",
+        text: "We are not rich by what we possess but rather by what we can do without.\n----Immauel Kant\nMany times my friend June would say, \"If I ever get rich, I'm getting a completely new wardrobe and moving into a bigger apartment.\" I thought of her words and her chances of being rich are about as good as mine. But, to everyone's surprise, a few years ago June did come to large inheritance.\nAt first June said very little about the money. As the initial shock disappeared, she became excited, June is a great believer in making lists, so I was surprised to find her writing down all the ways she would spend her new wealth.\nAs time went on, she started revising the list. What had been midway down the list was now at the top. At last, I said to her, \"You know, it isn't necessary to spend all your inheritance at once. Take come time; think about it.\" \"I know, I know,\" she answered with a little bit anger.\nThen one morning June called, \"I've decided how I want to use my new inheritance. I want to see what you think,\" she said. This wasn't something I looked forward to, but we had been friends so long.\nAs we sat, June spread a sheet of paper on the table. To my great surprise, she had written only two words: Charities, and Grandchildren-in that order. Though I had promised to keep quiet, I couldn't keep from asking how she came to this decision.\n\"Well,\" she said, \"I took your advice and thought about it.\" She added, \"Helping others means a lot to me, so I'm hoping this gift will help people in need.\"\nI interrupted, \"But what about this big apartment you most hope to have?\"\n\"At first it was hard, but it doesn't seem as important any more\", she answered with a smile.\nThen June moved her hand, and I could see a few words written in tiny letters at the bottom of the page. After having a look at the small print, I burst into laughter. June had written: AND one new wardrobe.",
         questions: [
             {
                 number: 1,
-                question: "From the passage we can learn that the writer at first  _  .",
+                question: "From the passage we can learn that the writer at first _.",
                 options: { A: "was richer than her friend June", B: "was no richer than her friend June", C: "was poorer than her friend June", D: "was interested in money as June" },
                 correctIndex: 1
             },
             {
                 number: 2,
-                question: "When making a list of how to deal with her inheritance, June  _  .",
+                question: "When making a list of how to deal with her inheritance, June _.",
                 options: { A: "didn't change it at all", B: "had a quarrel with the writer", C: "kept it secret from the writer", D: "made some changes to it" },
                 correctIndex: 3
             },
             {
                 number: 3,
-                question: "When June called the writer to talk about her new decision, the writer  _  .",
+                question: "When June called the writer to talk about her new decision, the writer _.",
                 options: { A: "felt that June would do something meaningful", B: "refused the invitation at first, but changed her mind later", C: "had decided not to make any comments on June's list", D: "was eager to learn more about the new list" },
                 correctIndex: 2
             },
@@ -1028,13 +1030,13 @@ const passages = [
             },
             {
                 number: 2,
-                question: "Since the new system has performed,   _   of water can be saved.",
+                question: "Since the new system has performed, _ of water can be saved.",
                 options: { A: "a quarter", B: "one third", C: "one half", D: "two thirds" },
                 correctIndex: 2
             },
             {
                 number: 3,
-                question: "It can be inferred from the passage that   _  .",
+                question: "It can be inferred from the passage that _.",
                 options: { A: "the new operation can raise students' environmental awareness", B: "the new operation can solve the water crisis", C: "a similar operation has been set in other universities", D: "the university has saved a lot of water by using the new system" },
                 correctIndex: 0
             },
@@ -1048,23 +1050,23 @@ const passages = [
     }),
     new Passage({
         id: "race-high321",
-        text: "Cyberspace, the connections between computers in different places, considered as a real place where information, messages and pictures exist, mirrors the real world in many ways. People ask for information, play games, and share hobbies. Others buy and sell products. Still others look for friendship, or even love.\nUnlike the real world, however, your knowledge about a person is limited to words on a computer screen. Identity and appearance mean very little in cyberspace. Rather, a person's thoughts--or at least the thoughts they type--are what really count. So even the shyest person can become a chat room star.\nUsually, this \"faceless\" communication doesn't create problems. Identity doesn't really matter when you're in a chat room discussing politics or hobbies. In fact, this emphasis(,) on the ideas themselves makes the Internet a great place for exciting conversation. Where else can so many people come together to chat? But some Internet users want more than just someone to chat with. They're looking for serious love relationships. Is cyberspace a good place to find love? That answer depends on whom you ask. Some of these relationships actually succeed. Others fail miserably.\nSupporters of online relationships state that the Internet allows couples to get to know each other intellectually first. Personal appearance doesn't get in the way. But critics of online relationships argue that no one can truly know another person in cyberspace. Why? Because the Internet gives users a lot of control over how others view them. Internet users can carefully craft their words to fit whatever image they want to give. And they don't have to worry about what their \"nonverbal\"  communication is doing for their image. In a sense, they're not really themselves.\nAll of this may be fine if the relationship stays in cyberspace. But not knowing a person is a big problem in a love relationship. With so many unknowns, it's easy to let one's imagination \"fill in the blanks.\" This inevitably  leads to disappointment when couples meet in person. How someone imagines an online friend is often quite more different than the real person. So, before looking for love in cyberspace, remember the advice of Internet pioneer Clifford Stoll: \"Life in the real world is far richer than anything you'll find on a computer screen.\"",
+        text: "Cyberspace, the connections between computers in different places, considered as a real place where information, messages and pictures exist, mirrors the real world in many ways. People ask for information, play games, and share hobbies. Others buy and sell products. Still others look for friendship, or even love.\nUnlike the real world, however, your knowledge about a person is limited to words on a computer screen. Identity and appearance mean very little in cyberspace. Rather, a person's thoughts--or at least the thoughts they type--are what really count. So even the shyest person can become a chat room star.\nUsually, this \"faceless\" communication doesn't create problems. Identity doesn't really matter when you're in a chat room discussing politics or hobbies. In fact, this emphasis(,) on the ideas themselves makes the Internet a great place for exciting conversation. Where else can so many people come together to chat? But some Internet users want more than just someone to chat with. They're looking for serious love relationships. Is cyberspace a good place to find love? That answer depends on whom you ask. Some of these relationships actually succeed. Others fail miserably.\nSupporters of online relationships state that the Internet allows couples to get to know each other intellectually first. Personal appearance doesn't get in the way. But critics of online relationships argue that no one can truly know another person in cyberspace. Why? Because the Internet gives users a lot of control over how others view them. Internet users can carefully craft their words to fit whatever image they want to give. And they don't have to worry about what their \"nonverbal\" communication is doing for their image. In a sense, they're not really themselves.\nAll of this may be fine if the relationship stays in cyberspace. But not knowing a person is a big problem in a love relationship. With so many unknowns, it's easy to let one's imagination \"fill in the blanks.\" This inevitably leads to disappointment when couples meet in person. How someone imagines an online friend is often quite more different than the real person. So, before looking for love in cyberspace, remember the advice of Internet pioneer Clifford Stoll: \"Life in the real world is far richer than anything you'll find on a computer screen.\"",
         questions: [
             {
                 number: 1,
-                question: "According to the passage, chatting in the cyberspace   _  .",
+                question: "According to the passage, chatting in the cyberspace _.",
                 options: { A: "puts emphasis on people's thoughts", B: "needs people to be rich in knowledge", C: "stresses more about people's identity", D: "allows people to discuss politics secretly" },
                 correctIndex: 0
             },
             {
                 number: 2,
-                question: "People who are against online love think   _  .",
+                question: "People who are against online love think _.",
                 options: { A: "what is said online is under control of the Internet", B: "it is hard to protect the other's identity", C: "the faceless communication is exciting", D: "one may not show the real self in cyberspace" },
                 correctIndex: 3
             },
             {
                 number: 3,
-                question: "By saying \"With so many unknowns, it's easy to let one's imagination 'fill in the blanks'\", the writer means that   _  .",
+                question: "By saying \"With so many unknowns, it's easy to let one's imagination 'fill in the blanks'\", the writer means that _.",
                 options: { A: "the Internet allows people to get more information about their loved ones", B: "the Internet makes it easy for people to imagine how others view them", C: "people usually get to know each other by chance through the Internet", D: "people may be disappointed when they meet in person" },
                 correctIndex: 3
             },
@@ -1072,29 +1074,29 @@ const passages = [
     }),
     new Passage({
         id: "race-high4312",
-        text: "Being able to experience a different environment and custom will give us a new perspective on everything we thought we knew and understood. Maybe, going abroad is an opportunity to look again at not only the country and the people who live there but also ourselves.\nI had never expected to visit Paris. The French culture didn' t interest me that much, and Paris seemed too big, too touristy, too much. But when I found myself standing next to the Opera National de Paris, completely alone and totally lost, I knew I was in for an interesting ride. I had decided to take a summer history class abroad, and Paris just happened to be where it was set. My teacher eventually found me and other jet-lagged students and walked us down to where we would be staying. Even then, tired, hungry, and feeling displaced, I was unable to keep myself from marveling at the beauty of the city.\nThe next day in the grocery store, trying to decide if the box I was holding contained butter or cream cheese, I suddenly realized I was a foreigner that didn't speak the language.The cashier and I had a conversation completely with gestures. For the most part, it didn't seem to bother the French that I was utterly incompetent in speaking their language. In fact, from my first unclear \"bonjour\" , many of them would directly switch over to English.\nTime Hew by. In the mornings we had class, and in the afternoons we were given a lot of freedom to do what we pleased. We explored everywhere in the city, becoming experts at using the Metro, and walking so much that our legs were sore every night.\nLiving in Paris was a huge change in my lifestyle. Everything I did was more relaxed. I stopped worrying about the future and instead focused on living in the present. I stopped wearing a watch because time didn't matter.We ate when we were hungry, went to bed when we were tired and explored in between.I no longer mind that Paris is so big; it' s an old, beautiful metropolis full of culture and history.On one of my last days there, standing on top of the Arc du Triumph with a 360 degree view of Paris, I finally admitted something to myself.The city that I had never wanted to visit had turned into the city that I never wanted to leave.",
+        text: "Being able to experience a different environment and custom will give us a new perspective on everything we thought we knew and understood. Maybe, going abroad is an opportunity to look again at not only the country and the people who live there but also ourselves.\nI had never expected to visit Paris. The French culture didn' t interest me that much, and Paris seemed too big, too touristy, too much. But when I found myself standing next to the Opera National de Paris, completely alone and totally lost, I knew I was in for an interesting ride. I had decided to take a summer history class abroad, and Paris just happened to be where it was set. My teacher eventually found me and other jet-lagged students and walked us down to where we would be staying. Even then, tired, hungry, and feeling displaced, I was unable to keep myself from marveling at the beauty of the city.\nThe next day in the grocery store, trying to decide if the box I was holding contained butter or cream cheese, I suddenly realized I was a foreigner that didn't speak the language. The cashier and I had a conversation completely with gestures. For the most part, it didn't seem to bother the French that I was utterly incompetent in speaking their language. In fact, from my first unclear \"bonjour\", many of them would directly switch over to English.\nTime Hew by. In the mornings we had class, and in the afternoons we were given a lot of freedom to do what we pleased. We explored everywhere in the city, becoming experts at using the Metro, and walking so much that our legs were sore every night.\nLiving in Paris was a huge change in my lifestyle. Everything I did was more relaxed. I stopped worrying about the future and instead focused on living in the present. I stopped wearing a watch because time didn't matter. We ate when we were hungry, went to bed when we were tired and explored in between. I no longer mind that Paris is so big; it' s an old, beautiful metropolis full of culture and history. On one of my last days there, standing on top of the Arc du Triumph with a 360 degree view of Paris, I finally admitted something to myself. The city that I had never wanted to visit had turned into the city that I never wanted to leave.",
         questions: [
             {
                 number: 1,
-                question: "The writer came to Paris because   _  .",
+                question: "The writer came to Paris because _.",
                 options: { A: "he wanted to have an interesting ride", B: "he attended a course in summer", C: "he admired its beautiful scenery", D: "he was alone and lost his way" },
                 correctIndex: 1
             },
             {
                 number: 2,
-                question: "On the first day in Paris, the writer felt   _  .",
+                question: "On the first day in Paris, the writer felt _.",
                 options: { A: "lonely in the big city", B: "bored with his visit", C: "surprised at its beauty", D: "interested in its culture" },
                 correctIndex: 2
             },
             {
                 number: 3,
-                question: "The example of the grocery store is used to illustrate   _  .",
+                question: "The example of the grocery store is used to illustrate _.",
                 options: { A: "the little influence of language barrier", B: "the big difficulty of living abroad", C: "the great importance of gestures", D: "the intelligence of French people" },
                 correctIndex: 0
             },
             {
                 number: 4,
-                question: "By mentioning the uselessness of the watch, the author probably wants to prove   _",
+                question: "By mentioning the uselessness of the watch, the author probably wants to prove _",
                 options: { A: "time in Paris is not worth counting", B: "he enjoys the time in Paris very much", C: "life seems meaningful without time", D: "he has to spend a long time to visit the big city" },
                 correctIndex: 1
             },
@@ -1102,17 +1104,17 @@ const passages = [
     }),
     new Passage({
         id: "race-high13681",
-        text: "Scientists have exactly discovered the set of brain cells involved in making risky decisions, and have been able to control them in rats using targeted light. By changing the activity of the cells they were able to change the behaviour of risk-taking rats to avoid risk, hinting the approach could in future be used to treat people with impulse   control problems.\nRisk-taking is a key part of survival, knowing when to take a chance could pay off--such as moving to a new area to look for food when pickings are slim.\nWhile all animals need an element of risk, the preference towards it varies between individuals. Researchers found this variation, which determines how risk-averse an individual is, is regulated by brain cells in a region of the brain called the nucleus accumbens. This cluster of neurons releases the neurotransmitter dopamine, which regulates the brain's reward and pleasure centres.\nPrevious studies have shown that in patients with Parkinson's disease, taking medication which blocks specific dopamine receptors (DR2)   leads to increased gambling   behaviour and risk taking behaviour. In studies with rats, researchers were able to use a technique called optogenetics  --which uses light sensitive proteins to change the activity of cells--to modify cells with DR2 in the nucleus accumbens.\nRats were trained to choose one of two levers, offering them a choice between a \"safe\" or \"risky\" choice. The safe option resulted in a small, but consistent amount of a sugar water treat. But the risky choice consistently delivered smaller amounts of sugar water, with the occasional large pay off--essentially encouraging the animals to gamble for a bigger prize. Around two-thirds of the animals weren't keen on risk, opting for the safe option, but the remaining third were risk-seekers. Brain scans of the animals showed that those with low levels of DR2 consistently went for the gamble.\nBut using pulses of light to stimulate   the DR2 cells and improve their activity could cause the risk-takers to play it safe and opt for the guaranteed but less rewarding option. Once the light-pulses stopped, the risk-takers returned to their gambling strategy.\nIn the _ , stimulating the same cells had little to no effect.\nProfessor Karl Deisseroth, of Stanford University in California, said: \"Humans and rats have similar brain structures involved.\"And we found a drug known to increase risk preference in people had the same effect on the rats. So every indication is that these findings are relevant to humans. \"Risky behavior has its moments where it' s valuable. As a species, we wouldn't have come as far as we have without it.\"",
+        text: "Scientists have exactly discovered the set of brain cells involved in making risky decisions, and have been able to control them in rats using targeted light. By changing the activity of the cells they were able to change the behaviour of risk-taking rats to avoid risk, hinting the approach could in future be used to treat people with impulse control problems.\nRisk-taking is a key part of survival, knowing when to take a chance could pay off--such as moving to a new area to look for food when pickings are slim.\nWhile all animals need an element of risk, the preference towards it varies between individuals. Researchers found this variation, which determines how risk-averse an individual is, is regulated by brain cells in a region of the brain called the nucleus accumbens. This cluster of neurons releases the neurotransmitter dopamine, which regulates the brain's reward and pleasure centres.\nPrevious studies have shown that in patients with Parkinson's disease, taking medication which blocks specific dopamine receptors (DR2) leads to increased gambling behaviour and risk taking behaviour. In studies with rats, researchers were able to use a technique called optogenetics --which uses light sensitive proteins to change the activity of cells--to modify cells with DR2 in the nucleus accumbens.\nRats were trained to choose one of two levers, offering them a choice between a \"safe\" or \"risky\" choice. The safe option resulted in a small, but consistent amount of a sugar water treat. But the risky choice consistently delivered smaller amounts of sugar water, with the occasional large pay off--essentially encouraging the animals to gamble for a bigger prize. Around two-thirds of the animals weren't keen on risk, opting for the safe option, but the remaining third were risk-seekers. Brain scans of the animals showed that those with low levels of DR2 consistently went for the gamble.\nBut using pulses of light to stimulate the DR2 cells and improve their activity could cause the risk-takers to play it safe and opt for the guaranteed but less rewarding option. Once the light-pulses stopped, the risk-takers returned to their gambling strategy.\nIn the _, stimulating the same cells had little to no effect.\nProfessor Karl Deisseroth, of Stanford University in California, said: \"Humans and rats have similar brain structures involved.\"And we found a drug known to increase risk preference in people had the same effect on the rats. So every indication is that these findings are relevant to humans. \"Risky behavior has its moments where it' s valuable. As a species, we wouldn't have come as far as we have without it.\"",
         questions: [
             {
                 number: 1,
-                question: "The variation in people's preference towards risks is directly regulated by   _  .",
+                question: "The variation in people's preference towards risks is directly regulated by _.",
                 options: { A: "nucleus accumbens", B: "light sensitive proteins", C: "neurons", D: "dopamine" },
                 correctIndex: 3
             },
             {
                 number: 2,
-                question: "From the experiment with rats, we can conclude that   _  .",
+                question: "From the experiment with rats, we can conclude that _.",
                 options: { A: "the lack of DR2 cells results in a safe option", B: "the levels of DR2 have little to do with their choices", C: "the high levels of DR2 can make animals avoid risks", D: "the risky choice is a less rewarding option" },
                 correctIndex: 2
             },
@@ -1126,11 +1128,11 @@ const passages = [
     }),
     new Passage({
         id: "race-high16959",
-        text: "Now that America has declared a state of swine flu   public health emergency, you may be asking yourself -- what am Isupposed to do? Here is a list of practical steps you can take to prepare and protect yourself and your family.\n1) Know the symptoms-- Here are some of the symptoms that sound like swine flu -- fevers over 100 degrees (37.8degC), body aches, cough, runny nose, and sometimes, nausea   and diarrhea  . It's also useful to know if you might have had an exposure   either by recent travel to Mexico, or to the areas of known cases so far in America -- specific areas of California, Texas, New York, Ohio and Kansas. Or you may have been exposed to a sick person who came from those areas. \n2) Don't panic-- If you have symptoms that sound like swine flu, do not rush to hospitals. Not only is this difficult for the healthcare system, it can also be potentially dangerous for everyone. Call your doctor or local public health clinic before going in.\n3) Contain the illness-- Hand-washing works. Wash, wash and wash. Invest in some hand sanitizer   for the whole family. Avoid hugs and kisses of well-wishers, and do not share telephone handsets or computers. Be especially careful to always cough into the elbow of your arm (yes! the elbow, not your hand!). Cover your cough and sneeze to protect others. \n4) What about a mask?-- The data shows that masks do work --as long asthere is a tight seal   about the mouth and nose. \n5) Eat the pork(if you want) -- Swine flu gets its name because pigs can get the infection and spread it to each other -- as well as to humans. This latest virus contains pieces that indicate it evolved   from swine flu virus, and can now spread from person to person. Swine flu is not spread by properly prepared and cooked pork products. So if you want to eat pork, you can.\n6) Getting sick? Stay home!-- In our go-go-go culture and these severe economic times, it can be very hard to call a boss and cancel a day's work. Now, however, if you or your loved ones are feeling like there's a flu coming on, stay home.\n7) Stockpile?-- Right now, it's too early for any of us to become a Swine Flu Shut-In, but the public health department recommends that each home have two weeks of supplies, in case we must stay home -- either for illness or to help contain transmission. That means two weeks of food for everyone in your home, two weeks of all medications, and, if you're like most people, two weeks of books and DVDs.",
+        text: "Now that America has declared a state of swine flu public health emergency, you may be asking yourself -- what am Isupposed to do? Here is a list of practical steps you can take to prepare and protect yourself and your family.\n1) Know the symptoms-- Here are some of the symptoms that sound like swine flu -- fevers over 100 degrees (37.8degC), body aches, cough, runny nose, and sometimes, nausea and diarrhea. It's also useful to know if you might have had an exposure either by recent travel to Mexico, or to the areas of known cases so far in America -- specific areas of California, Texas, New York, Ohio and Kansas. Or you may have been exposed to a sick person who came from those areas. \n2) Don't panic-- If you have symptoms that sound like swine flu, do not rush to hospitals. Not only is this difficult for the healthcare system, it can also be potentially dangerous for everyone. Call your doctor or local public health clinic before going in.\n3) Contain the illness-- Hand-washing works. Wash, wash and wash. Invest in some hand sanitizer for the whole family. Avoid hugs and kisses of well-wishers, and do not share telephone handsets or computers. Be especially careful to always cough into the elbow of your arm (yes! the elbow, not your hand!). Cover your cough and sneeze to protect others. \n4) What about a mask?-- The data shows that masks do work --as long asthere is a tight seal about the mouth and nose. \n5) Eat the pork(if you want) -- Swine flu gets its name because pigs can get the infection and spread it to each other -- as well as to humans. This latest virus contains pieces that indicate it evolved from swine flu virus, and can now spread from person to person. Swine flu is not spread by properly prepared and cooked pork products. So if you want to eat pork, you can.\n6) Getting sick? Stay home!-- In our go-go-go culture and these severe economic times, it can be very hard to call a boss and cancel a day's work. Now, however, if you or your loved ones are feeling like there's a flu coming on, stay home.\n7) Stockpile?-- Right now, it's too early for any of us to become a Swine Flu Shut-In, but the public health department recommends that each home have two weeks of supplies, in case we must stay home -- either for illness or to help contain transmission. That means two weeks of food for everyone in your home, two weeks of all medications, and, if you're like most people, two weeks of books and DVDs.",
         questions: [
             {
                 number: 1,
-                question: "The purpose of the writer is mainly to   _  .",
+                question: "The purpose of the writer is mainly to _.",
                 options: { A: "analyze the possible causes of swine flu", B: "tell people how to protect themselves from swine flu", C: "give people some information about the present situation of swine flu", D: "suggest some treatments for swine flu" },
                 correctIndex: 1
             },
@@ -1156,17 +1158,17 @@ const passages = [
     }),
     new Passage({
         id: "race-high15079",
-        text: "According to Andrew, it never would have happened if he had not had a flat tire on Highway 10 last night at about 7:30. He was on his way to attend a three-day sales meeting when he had the flat. tyre. Unfortunately, he did not have a spare, so he pushed the car off the road, locked it up, and managed to thumb a ride back to Pine Grove. It was after eleven o'clock when he finally got home, and it was then that his real problems started.\nWhen Andrew left home at about 5:30, he had told his wife not to expect him back until Thursday or Friday. Knowing that his wife was nervous about staying in the house alone at night, Andrew took the precaution of checking all the windows in the house to be sure they were locked, so that he could report to his wife that the house was secure. He convinced his wife that the house was burglar-proof, and that she would be perfectly safe, providing she bolted  the front door as soon as he drove away.\nAndrew's only thought as he made his way in the dark to his front door was how surprised his wife was going to be to see him, since he was not supposed to be back until Thursday or Friday. He had forgotten about the bolt on the front door. When he turned his key in the lock and the door wouldn't _ he remembered the bolt. And he remembered that he had carefully locked all of the windows.\nAlthough Andrew didn't know it at the time, a next-door neighbor had seen him approaching the house and had watched him go up the steps to the front door. In the dark, it was impossible for the neighbor to recognize Andrew, and, besides, the neighbor knew that Andrew had gone out-of-town for a three-day meeting. As a matter of fact, Andrew had asked the neighbor to keep an eye on the house while he was gone.\nFinding that he couldn't get in, Andrew began pounding  on the front door to get his wife to open the door. According to Andrew, however, his wife is a very sound sleeper, and he knew it was going to be hard to wake her up. In the meantime, because of all the noise he had been making, the neighbor was convinced that somebody was trying to break into the house; so she called the police.\nWhen we talked to Andrew at the country jail this morning, he said that he still didn't understand how the police managed to circle the house without his seeing them. He stated that he had decided the only way to get in was to break one of the dining room windows, and that he was about, to hurl his briefcase into the window to break it when two of the officers grabbed him from behind.\nAndrew could not make the officers believe that he lived there; so they took him off to jail. Apparently, he did succeed in convincing them that they ought to wake up the woman in the house to check his story. But there was no answer when they knocked at the door. He tried to explain to them that his wife was a very sound sleeper, but they concluded there was nobody in the house.",
+        text: "According to Andrew, it never would have happened if he had not had a flat tire on Highway 10 last night at about 7:30. He was on his way to attend a three-day sales meeting when he had the flat. tyre. Unfortunately, he did not have a spare, so he pushed the car off the road, locked it up, and managed to thumb a ride back to Pine Grove. It was after eleven o'clock when he finally got home, and it was then that his real problems started.\nWhen Andrew left home at about 5:30, he had told his wife not to expect him back until Thursday or Friday. Knowing that his wife was nervous about staying in the house alone at night, Andrew took the precaution of checking all the windows in the house to be sure they were locked, so that he could report to his wife that the house was secure. He convinced his wife that the house was burglar-proof, and that she would be perfectly safe, providing she bolted the front door as soon as he drove away.\nAndrew's only thought as he made his way in the dark to his front door was how surprised his wife was going to be to see him, since he was not supposed to be back until Thursday or Friday. He had forgotten about the bolt on the front door. When he turned his key in the lock and the door wouldn't _ he remembered the bolt. And he remembered that he had carefully locked all of the windows.\nAlthough Andrew didn't know it at the time, a next-door neighbor had seen him approaching the house and had watched him go up the steps to the front door. In the dark, it was impossible for the neighbor to recognize Andrew, and, besides, the neighbor knew that Andrew had gone out-of-town for a three-day meeting. As a matter of fact, Andrew had asked the neighbor to keep an eye on the house while he was gone.\nFinding that he couldn't get in, Andrew began pounding on the front door to get his wife to open the door. According to Andrew, however, his wife is a very sound sleeper, and he knew it was going to be hard to wake her up. In the meantime, because of all the noise he had been making, the neighbor was convinced that somebody was trying to break into the house; so she called the police.\nWhen we talked to Andrew at the country jail this morning, he said that he still didn't understand how the police managed to circle the house without his seeing them. He stated that he had decided the only way to get in was to break one of the dining room windows, and that he was about, to hurl his briefcase into the window to break it when two of the officers grabbed him from behind.\nAndrew could not make the officers believe that he lived there; so they took him off to jail. Apparently, he did succeed in convincing them that they ought to wake up the woman in the house to check his story. But there was no answer when they knocked at the door. He tried to explain to them that his wife was a very sound sleeper, but they concluded there was nobody in the house.",
         questions: [
             {
                 number: 1,
-                question: "As Andrew had a flat tyre on the way, he  _  .",
+                question: "As Andrew had a flat tyre on the way, he _.",
                 options: { A: "had to take another car to attend the meeting", B: "rode on a bike to attend the meating", C: "asked for a lift to go back home", D: "borrowed a car to go back home" },
                 correctIndex: 2
             },
             {
                 number: 2,
-                question: "When Andrew was approaching the house  _  .",
+                question: "When Andrew was approaching the house _.",
                 options: { A: "he was sure he would pleasently surprise his wife", B: "he was deep in thought", C: "he was sure that his neighbor would help him", D: "he was worried about how to wake his wife up" },
                 correctIndex: 0
             },

@@ -7,11 +7,12 @@ import { passages } from '@/assets/labData.js';
 
 // Every screen the run can be on, in roughly the order a participant moves
 // through them. The practice stages walk through regular reading, then the
-// quiz UI, then RSVP, one at a time, before the real trials start. TIMED/
-// RSVP/QUIZ then repeat three times (once per main-trial speed, timed
-// first then rsvp at each) before landing on DONE. SAVING sits between the
-// last quiz and DONE since the Firestore write can fail and need a retry
-// before DONE is reachable.
+// quiz UI, then RSVP, one at a time, before the real trials start. Each of
+// the six main trials is preceded by its own TRIAL_INTRO explaining that
+// specific trial (mode, wpm or time limit) before TIMED/RSVP/QUIZ run, so a
+// participant always knows what's coming next rather than being dropped
+// into it. SAVING sits between the last quiz and DONE since the Firestore
+// write can fail and need a retry before DONE is reachable.
 const Stage = Object.freeze({
     START: 'start',
     PRACTICE_REGULAR: 'practice_regular',
@@ -19,6 +20,7 @@ const Stage = Object.freeze({
     PRACTICE_RSVP_INTRO: 'practice_rsvp_intro',
     PRACTICE_RSVP: 'practice_rsvp',
     PRACTICE_DONE: 'practice_done',
+    TRIAL_INTRO: 'trial_intro',
     TIMED: 'timed',
     RSVP: 'rsvp',
     QUIZ: 'quiz',
@@ -119,10 +121,17 @@ function beginMainTrials() {
     trials.value = buildMainTrials(passages);
     currentTrialIndex.value = 0;
     completedTrials.value = [];
-    enterCurrentTrial();
+    showTrialIntro();
 }
 
-function enterCurrentTrial() {
+// Shown before every main trial (timed or rsvp) so a participant always
+// knows what's coming next — which trial number, which mode, and its time
+// limit or wpm — rather than being dropped straight into it.
+function showTrialIntro() {
+    stage.value = Stage.TRIAL_INTRO;
+}
+
+function startCurrentTrial() {
     const trial = currentTrial.value;
     if (trial.mode === 'rsvp') {
         stage.value = Stage.RSVP;
@@ -146,9 +155,23 @@ function onRsvpTrialFinished() {
 const timedSecondsRemaining = ref(0);
 let timedIntervalId = null;
 
-function startTimedCountdown(trial) {
+// Same duration a timed trial's countdown will start at — factored out so
+// the TRIAL_INTRO screen can preview it before the countdown actually
+// starts (see upcomingTimedDisplay below).
+function computeTimedSeconds(trial) {
     const wordCount = trial.passage.text.trim().split(/\s+/).length;
-    const totalSeconds = Math.max(1, Math.round((wordCount / trial.wpm) * 60));
+    return Math.max(1, Math.round((wordCount / trial.wpm) * 60));
+}
+
+function formatSeconds(seconds) {
+    const s = Math.max(0, seconds);
+    const minutes = Math.floor(s / 60);
+    const secs = s % 60;
+    return `${minutes}:${String(secs).padStart(2, '0')}`;
+}
+
+function startTimedCountdown(trial) {
+    const totalSeconds = computeTimedSeconds(trial);
     timedSecondsRemaining.value = totalSeconds;
     trialStartTime = Date.now();
 
@@ -174,11 +197,15 @@ function finishTimedTrial(outcome = 'finishedEarly') {
 
 onUnmounted(() => clearInterval(timedIntervalId));
 
-const timedTimeDisplay = computed(() => {
-    const seconds = Math.max(0, timedSecondsRemaining.value);
-    const minutes = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${minutes}:${String(secs).padStart(2, '0')}`;
+const timedTimeDisplay = computed(() => formatSeconds(timedSecondsRemaining.value));
+
+// Preview of a timed trial's time limit, shown on its TRIAL_INTRO screen
+// before the countdown actually starts.
+const upcomingTimedDisplay = computed(() => {
+    if (!currentTrial.value || currentTrial.value.mode !== 'timed') {
+        return '';
+    }
+    return formatSeconds(computeTimedSeconds(currentTrial.value));
 });
 
 // ----- one-question-at-a-time comprehension quiz (shared by rsvp + timed) -----
@@ -270,7 +297,7 @@ function finishTrialQuiz() {
 
     if (currentTrialIndex.value < trials.value.length - 1) {
         currentTrialIndex.value++;
-        enterCurrentTrial();
+        showTrialIntro();
     } else {
         finalComparison.value = computeComparison(completedTrials.value);
         stage.value = Stage.SAVING;
@@ -445,6 +472,31 @@ async function finalizeRun() {
                 Take a moment if you need it. The real trials work the same way, just at different speeds.
             </p>
             <button class="btn-primary w-full" @click="beginMainTrials">Continue</button>
+        </div>
+    </div>
+
+    <!-- what's-next screen before every main trial: names the trial number,
+         the mode, and its time limit or wpm, so nothing starts unannounced -->
+    <div v-else-if="stage === Stage.TRIAL_INTRO" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
+            <p class="mb-2 text-xs font-semibold uppercase tracking-widest !text-ink-light">
+                Trial {{ currentTrialIndex + 1 }} of {{ trials.length }}
+            </p>
+            <h2 class="mb-3 text-2xl font-bold !text-ink">
+                {{ currentTrial.mode === 'timed' ? 'Regular Reading' : 'RSVP' }}
+            </h2>
+            <p class="mb-8 !text-ink-light">
+                <template v-if="currentTrial.mode === 'timed'">
+                    You'll have {{ upcomingTimedDisplay }} to read the passage at your own pace. Hit Done when
+                    you're finished, or it'll move on automatically once time runs out. Then you'll answer a
+                    few questions about it.
+                </template>
+                <template v-else>
+                    Words will appear one at a time at {{ currentTrial.wpm }} words per minute. Then you'll
+                    answer a few questions about what you read.
+                </template>
+            </p>
+            <button class="btn-primary w-full" @click="startCurrentTrial">Start</button>
         </div>
     </div>
 
