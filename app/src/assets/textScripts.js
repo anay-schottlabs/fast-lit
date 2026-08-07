@@ -700,7 +700,8 @@ export class ChangelogScripts {
                     "per-question detail packed into each row."
                 ]),
                 "Deployed updated Firestore security rules replacing labSessions/labTrials with a single labRuns collection (create-only, immutable), matching the Lab page's reworked data model.",
-                "Removed the old dark-navy theme entirely now that every page has moved to Orbit's palette — the legacy color tokens, .btn-red, and the site-wide color:white rule they depended on are all gone."
+                "Removed the old dark-navy theme entirely now that every page has moved to Orbit's palette — the legacy color tokens, .btn-red, and the site-wide color:white rule they depended on are all gone.",
+                "Restyled scrollbars site-wide to actually be visible — a normal-width, themed thumb and track (both Firefox's scrollbar-color and WebKit's ::-webkit-scrollbar are covered) instead of the invisible default, applied everywhere scrolling can happen: the page itself, the settings modal, and the Lab results tables."
             ]
         )
     ]
