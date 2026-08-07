@@ -18,8 +18,8 @@
                 <router-link to="/read" class="text-sm font-semibold text-ink-light hover:text-ink">Read</router-link>
                 <router-link to="/extension" class="text-sm font-semibold text-ink-light hover:text-ink">Extension</router-link>
                 <router-link to="/lab" class="text-sm font-semibold text-ink-light hover:text-ink">Lab</router-link>
-                <router-link to="/feedback" class="text-sm font-semibold text-ink-light hover:text-ink">Feedback</router-link>
                 <router-link to="/privacy" class="text-sm font-semibold text-ink-light hover:text-ink">Privacy</router-link>
+                <router-link to="/feedback" class="text-sm font-semibold text-ink-light hover:text-ink">Feedback</router-link>
             </div>
 
             <span class="text-[13px] font-medium text-ink-light">&copy; 2026 Orbit</span>
