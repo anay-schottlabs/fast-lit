@@ -377,15 +377,42 @@ async function finalizeRun() {
 </script>
 
 <template>
-    <!-- start screen -->
+    <!-- start screen: a primer covering what the study is, what to expect,
+         and where the passages come from, so nothing is a surprise before
+         hitting Begin -->
     <div v-if="stage === Stage.START" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
-        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
-            <h2 class="mb-3 text-2xl font-bold !text-ink">Reading Study</h2>
-            <p class="mb-8 !text-ink-light">
-                You'll start with a short walkthrough of how everything works, then read six short passages —
-                some normally with a time limit, some using word-at-a-time display — answering a few
-                comprehension questions after each one.
+        <div class="mt-16 rounded-3xl border border-border bg-card p-10 text-left">
+            <h2 class="mb-3 text-center text-2xl font-bold !text-ink">Reading Study</h2>
+            <p class="mb-6 !text-ink-light">
+                This study compares two ways of reading — <strong class="!text-ink">RSVP</strong> (words shown
+                one at a time, at a fixed pace) and <strong class="!text-ink">regular reading</strong> (a normal
+                passage, at your own pace, under a time limit) — to see how each affects comprehension.
             </p>
+
+            <div class="mb-6 rounded-2xl border border-border bg-bg p-5">
+                <p class="mb-3 text-xs font-semibold uppercase tracking-widest !text-ink-light">What to expect</p>
+                <ul class="flex flex-col gap-2 text-sm">
+                    <li class="flex items-baseline justify-between gap-4">
+                        <span class="!text-ink">Practice walkthrough</span>
+                        <span class="!text-ink-light">~2 min</span>
+                    </li>
+                    <li class="flex items-baseline justify-between gap-4">
+                        <span class="!text-ink">6 trials — 250, 350 &amp; 450 wpm, regular + RSVP, with a few questions after each</span>
+                        <span class="!text-ink-light shrink-0">~10 min</span>
+                    </li>
+                    <li class="flex items-baseline justify-between gap-4 border-t border-border pt-2 font-semibold">
+                        <span class="!text-ink">Total</span>
+                        <span class="!text-ink">~10–15 min</span>
+                    </li>
+                </ul>
+            </div>
+
+            <p class="mb-8 text-sm !text-ink-light">
+                Passages are real reading-comprehension texts from
+                <strong class="!text-ink">RACE</strong>, an academic dataset of English exam passages — not
+                filler, so your answers reflect genuine comprehension.
+            </p>
+
             <button class="btn-primary w-full" @click="beginPractice">Begin</button>
         </div>
     </div>
