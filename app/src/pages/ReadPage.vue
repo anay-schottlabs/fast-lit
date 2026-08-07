@@ -169,8 +169,11 @@ const settingsModal = ref(false);
     <!-- no separate page-title header — the sidebar already shows which
          page you're on, and this page's own content (gear icon, reading
          stage) is self-explanatory. -->
-    <!-- main page content -->
-    <div class="mx-auto max-w-4xl p-5">
+    <!-- main page content — vertically centered within whatever space
+         <main> has available (it's a flex-1 flex item in App.vue, so its
+         height is always definite), rather than hugging the top and
+         leaving a big gap above the footer on most screens. -->
+    <div class="relative mx-auto flex h-full max-w-4xl flex-col justify-center p-5">
         <div class="mb-5">
             <button
                 class="btn btn-circle btn-ghost absolute top-5 right-5 transition-colors hover:bg-ink/5"

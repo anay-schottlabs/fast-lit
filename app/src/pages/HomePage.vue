@@ -68,15 +68,15 @@ const statCards = computed(() => [
                 {{ HomeScripts.heroContent }}
             </p>
 
+            <!-- Same btn-primary/btn-secondary classes as every other page's
+                 CTAs (Extension, Feedback, ...) — the mockup's own literal
+                 padding/font-size for these was noticeably larger than
+                 those, which read as oversized and inconsistent with the
+                 rest of the site. min-w keeps them a bit more prominent
+                 than a typical inline button without needing custom sizing. -->
             <div class="mt-2 flex flex-wrap justify-center gap-4">
-                <router-link
-                    to="/read"
-                    class="min-w-[220px] rounded-2xl bg-ink px-9 py-[18px] text-center text-[19px] font-bold text-invert focus-ring"
-                >{{ HomeScripts.heroButton }}</router-link>
-                <router-link
-                    to="/lab"
-                    class="box-border min-w-[180px] rounded-2xl border-2 border-ink/35 px-[34px] py-4 text-center text-[19px] font-bold text-ink focus-ring"
-                >{{ HomeScripts.heroSecondaryButton }}</router-link>
+                <router-link to="/read" class="btn-primary min-w-[220px]">{{ HomeScripts.heroButton }}</router-link>
+                <router-link to="/lab" class="btn-secondary min-w-[180px]">{{ HomeScripts.heroSecondaryButton }}</router-link>
             </div>
         </section>
 
@@ -125,10 +125,7 @@ const statCards = computed(() => [
             <div class="flex flex-col items-center gap-4 rounded-[28px] bg-card px-8 py-14 text-center">
                 <h2 class="font-display text-[30px] font-bold text-ink">{{ HomeScripts.ctaTitle }}</h2>
                 <p class="text-base text-ink-light">{{ HomeScripts.ctaContent }}</p>
-                <router-link
-                    to="/read"
-                    class="mt-2 rounded-2xl bg-ink px-10 py-[18px] text-[19px] font-bold text-invert focus-ring"
-                >{{ HomeScripts.heroButton }}</router-link>
+                <router-link to="/read" class="btn-primary mt-2 min-w-[220px]">{{ HomeScripts.heroButton }}</router-link>
             </div>
         </section>
 

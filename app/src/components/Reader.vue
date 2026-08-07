@@ -496,27 +496,39 @@ window.addEventListener('keydown', (event) => {
              A subtle ink-tinted tile (matching the iOS app's own
              "inactiveTileBackground" treatment for its Back/Forward
              buttons), not a filled accent button — this whole reading
-             stage stays accent-free. -->
+             stage stays accent-free. No daisyUI .btn/.btn-square here —
+             that class brought its own border and slightly different box
+             model than the plain play/pause/end buttons below, which was
+             making this one a hair off in both size and having a visible
+             border they don't have. Plain custom classes matching those
+             exactly instead. -->
         <button
             v-if="!lockControls"
-            class="btn btn-square !text-ink bg-ink/5 rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 opacity-100 hover:bg-ink/10 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
+            class="!text-ink bg-ink/5 rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-all duration-200 hover:bg-ink/10 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
             :disabled="wordIndex == 0 || playState == PlayState.PLAYING"
             @click="wordIndex--"
             id="previousButton"
         >
             <svg
                 viewBox="0 0 64 64"
-                width="2.5rem"
-                height="2.5rem"
+                width="2.25rem"
+                height="2.25rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
+                class="mx-auto"
             >
-                <!-- Larger, thicker left arrow (flip of original) -->
+                <!-- Larger, thicker left arrow (flip of original). stroke
+                     is currentColor (was a hardcoded light-mode hex before)
+                     so it follows the button's own !text-ink color and
+                     adapts correctly in dark mode. Points nudged +3 in x
+                     from a perfectly-centered bounding box — like any
+                     triangle/chevron shape, centering it mathematically
+                     still reads as slightly off-center optically. -->
                 <polyline
-                    points="34,18 20,32 34,46"
+                    points="37,18 23,32 37,46"
                     fill="none"
-                    stroke="#3D3226"
+                    stroke="currentColor"
                     stroke-width="10"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -528,7 +540,7 @@ window.addEventListener('keydown', (event) => {
              used everywhere else on the site), matching the iOS app's own
              read screen, which stays fully monochrome. -->
         <button
-            class="bg-ink rounded-2xl !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
+            class="bg-ink rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
             @click="start"
             id="playButton"
             v-if="playState != PlayState.PLAYING"
@@ -536,20 +548,28 @@ window.addEventListener('keydown', (event) => {
 
             <svg
                 viewBox="0 0 48 48"
-                width="2rem"
-                height="2rem"
+                width="1.75rem"
+                height="1.75rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
                 class="mx-auto fill-invert"
             >
+                <!-- Rounded-corner triangle (each vertex cut in ~4 units
+                     along its adjacent edges, curving through the sharp
+                     corner as the control point) — was hard-cornered
+                     before. Also nudged +2 in x from a mathematically
+                     centered bounding box: a triangle's flat edge carries
+                     more visual weight than its point, so true-center
+                     reads as leaning left. -->
                 <path
-                    d="M10,8
-                       Q8,8 8,10
-                       L8,38
-                       Q8,40 10,40
-                       L38,24
-                       Q40,23 38,22
+                    d="M12,12
+                       L12,36
+                       Q12,40 15.5,38
+                       L38.5,26
+                       Q42,24 38.5,22
+                       L15.5,10
+                       Q12,8 12,12
                        Z"
                 />
             </svg>
@@ -558,15 +578,15 @@ window.addEventListener('keydown', (event) => {
         <!-- pause button — hidden under lockControls, so a started trial can
              only run to completion -->
         <button
-            class="bg-ink rounded-2xl !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
+            class="bg-ink rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
             @click="pause"
             id="pauseButton"
             v-if="playState == PlayState.PLAYING && !lockControls"
         >
             <svg
                 viewBox="0 0 8 8"
-                width="2rem"
-                height="2rem"
+                width="1.75rem"
+                height="1.75rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
@@ -584,14 +604,14 @@ window.addEventListener('keydown', (event) => {
              lockControls, so a trial can't be aborted/reset mid-playback -->
         <button
             v-if="!lockControls"
-            class="bg-ink rounded-2xl !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
+            class="bg-ink rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
             @click="end"
             id="endButton"
         >
             <svg
                 viewBox="0 0 64 64"
-                width="2rem"
-                height="2rem"
+                width="1.75rem"
+                height="1.75rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
@@ -608,27 +628,31 @@ window.addEventListener('keydown', (event) => {
             </svg>
         </button>
 
-        <!-- button to move to next word — hidden under lockControls -->
+        <!-- button to move to next word — hidden under lockControls. Same
+             plain-class/currentColor/centering treatment as the previous
+             button above. -->
         <button
             v-if="!lockControls"
-            class="btn btn-square !text-ink bg-ink/5 rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 hover:bg-ink/10 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
+            class="!text-ink bg-ink/5 rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-all duration-200 hover:bg-ink/10 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
             :disabled="wordIndex == wordList.length - 1 || playState == PlayState.PLAYING"
             @click="wordIndex++"
             id="nextButton"
         >
             <svg
                 viewBox="0 0 64 64"
-                width="2.5rem"
-                height="2.5rem"
+                width="2.25rem"
+                height="2.25rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
+                class="mx-auto"
             >
-                <!-- Larger, thicker right arrow -->
+                <!-- Larger, thicker right arrow. Nudged -3 in x, mirroring
+                     the previous button's +3. -->
                 <polyline
-                    points="30,18 44,32 30,46"
+                    points="27,18 41,32 27,46"
                     fill="none"
-                    stroke="#3D3226"
+                    stroke="currentColor"
                     stroke-width="10"
                     stroke-linecap="round"
                     stroke-linejoin="round"

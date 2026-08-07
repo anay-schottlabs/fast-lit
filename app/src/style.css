@@ -61,6 +61,17 @@ body {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
 }
 
+/* daisyUI's base .btn class carries its own default box-shadow (an inset
+   highlight plus a soft drop shadow, both derived from --btn-shadow) —
+   built for daisyUI's own themed buttons, not this site's flat design
+   language, and looked like a stray shadow on every button using .btn
+   (btn-primary/btn-secondary, plus the plain icon buttons like the read
+   page's settings gear). Unlayered, so it beats daisyUI's own layered
+   button.css rule regardless of specificity. */
+.btn {
+    box-shadow: none;
+}
+
 /* daisyUI's tooltip defaults to its own theme's --color-neutral /
    --color-neutral-content, which we never define (this site doesn't use
    daisyUI's theming system) — left alone, that falls back to daisyUI's

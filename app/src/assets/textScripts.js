@@ -764,7 +764,22 @@ export class ChangelogScripts {
                     "clipped, but the part bleeding past the sidebar's own 88px column into the page was still getting",
                     "painted over by the page content next to it, since neither side had an explicit stacking order.",
                     "The sidebar now has one, so tooltips reliably render on top of the page everywhere."
-                ])
+                ]),
+                text([
+                    "Reader control cleanup: the previous/next buttons no longer use daisyUI's .btn/.btn-square",
+                    "classes, which had been giving them a visible border and a very slightly different size than",
+                    "the play/pause/end buttons next to them — all five now share the exact same plain sizing. Their",
+                    "arrows also switched from a hardcoded light-mode hex color to currentColor, so they're actually",
+                    "visible in dark mode instead of rendering dark-on-dark. And every triangle/chevron in the",
+                    "controls (previous, next, the play button) got nudged a few units off dead-center, since",
+                    "mathematically centering a pointed shape reliably reads as optically off-center; the play",
+                    "button's triangle also picked up properly rounded corners instead of sharp ones."
+                ]),
+                "Fixed the sidebar's Lab flask icon rendering a couple pixels right of center — its path was already symmetric, the viewBox framing it wasn't.",
+                "Removed daisyUI's default button shadow (an inset highlight plus a soft drop shadow, meant for its own theme) from every button on the site — it read as a stray, out-of-place shadow against this site's flat design.",
+                "Vertically centered the read page's content within the available space below the sidebar/above the footer, instead of it hugging the top with a large gap underneath on most screens.",
+                "Scaled the home page's hero buttons down to the same btn-primary/btn-secondary sizing used everywhere else on the site (Extension, Feedback, ...) — the literal padding/font-size from the design handoff was noticeably larger than that and read as inconsistent with the rest of the site.",
+                "Sized the reader's five controls (previous, play/pause, end, next) down from 56px to 48px squares, with their icons scaled down to match — the uniform size from unifying their styling still felt a little large."
             ]
         )
     ]

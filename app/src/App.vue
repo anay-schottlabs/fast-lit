@@ -109,7 +109,13 @@ const footerVariant = computed(() => {
                     </svg>
                 </router-link>
                 <router-link to="/lab" :class="navItemClass('/lab')" data-tip="Lab">
-                    <svg width="19" height="21" viewBox="0 0 20 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                    <!-- The flask path itself is symmetric around x=12, not
+                         x=10 — the old "0 0 20 24" viewBox framed it off-
+                         center, shifting the whole icon right within its
+                         button. Shifting the viewBox's own origin to
+                         "2 0 20 24" (same width, just re-centered on the
+                         shape) fixes it without touching the path. -->
+                    <svg width="19" height="21" viewBox="2 0 20 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
                         <path d="M9 3h6" /><path d="M10 3v6l-6 10a2 2 0 002 3h12a2 2 0 002-3l-6-10V3" /><path d="M7.5 14h9" />
                     </svg>
                 </router-link>
