@@ -649,7 +649,12 @@ export class ChangelogScripts {
                     "no aggregate word-count stats tracking, and playback controls hidden until a passage finishes)",
                     "so it can be reused for Lab trials without affecting normal reading progress or site-wide stats."
                 ]),
-                "Added a Lab entry to the sidebar, directly under Extension, using a simple flask icon matching the rest of the icon set."
+                "Added a Lab entry to the sidebar, directly under Extension, using a simple flask icon matching the rest of the icon set.",
+                text([
+                    "Deployed Firestore security rules for the fast-lit project, covering the existing stats",
+                    "collection plus the new labSessions and labTrials collections the Lab page writes to —",
+                    "fixes the permission errors those writes were hitting with no rules in place."
+                ])
             ]
         )
     ]
