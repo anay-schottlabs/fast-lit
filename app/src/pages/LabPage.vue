@@ -90,6 +90,29 @@ function onPracticeRsvpFinished() {
 
 const MAIN_SPEEDS = [250, 350, 450];
 
+// Rough per-trial duration estimates for the start-screen primer, derived
+// from the actual pool's average word count/question count rather than a
+// guessed number — reading time is exact (wordCount/wpm), quiz time is a
+// rough 10s/question guess. Individual trials vary with whichever passage
+// gets drawn, so this is an estimate, not a promise.
+const AVG_WORD_COUNT = passages.reduce((sum, p) => sum + p.text.trim().split(/\s+/).length, 0) / passages.length;
+const AVG_QUESTIONS_PER_PASSAGE = passages.reduce((sum, p) => sum + p.questions.length, 0) / passages.length;
+const SECONDS_PER_QUESTION_ESTIMATE = 10;
+
+function estimateTrialMinutes(wpm) {
+    const readSeconds = (AVG_WORD_COUNT / wpm) * 60;
+    const quizSeconds = AVG_QUESTIONS_PER_PASSAGE * SECONDS_PER_QUESTION_ESTIMATE;
+    return `~${((readSeconds + quizSeconds) / 60).toFixed(1)} min`;
+}
+
+// One row per main trial, in the same fixed order the run actually uses —
+// regular reading then rsvp at each speed, ascending — for the start
+// screen's trial-by-trial breakdown.
+const trialPreview = MAIN_SPEEDS.flatMap((wpm, i) => [
+    { label: `Trial ${i * 2 + 1} — Regular Reading @ ${wpm} wpm`, minutes: estimateTrialMinutes(wpm) },
+    { label: `Trial ${i * 2 + 2} — RSVP @ ${wpm} wpm`, minutes: estimateTrialMinutes(wpm) }
+]);
+
 // One passage per trial (timed + rsvp, at each of the three speeds), drawn
 // without replacement so no passage repeats within a run.
 function buildMainTrials(pool) {
@@ -386,7 +409,8 @@ async function finalizeRun() {
             <p class="mb-6 !text-ink-light">
                 This study compares two ways of reading — <strong class="!text-ink">RSVP</strong> (words shown
                 one at a time, at a fixed pace) and <strong class="!text-ink">regular reading</strong> (a normal
-                passage, at your own pace, under a time limit) — to see how each affects comprehension.
+                passage, at your own pace, under a time limit) — to see how each affects comprehension. Each
+                trial is followed by a few comprehension questions about what you just read.
             </p>
 
             <div class="mb-6 rounded-2xl border border-border bg-bg p-5">
@@ -396,9 +420,13 @@ async function finalizeRun() {
                         <span class="!text-ink">Practice walkthrough</span>
                         <span class="!text-ink-light">~2 min</span>
                     </li>
-                    <li class="flex items-baseline justify-between gap-4">
-                        <span class="!text-ink">6 trials — 250, 350 &amp; 450 wpm, regular + RSVP, with a few questions after each</span>
-                        <span class="!text-ink-light shrink-0">~10 min</span>
+                    <li
+                        v-for="t in trialPreview"
+                        :key="t.label"
+                        class="flex items-baseline justify-between gap-4"
+                    >
+                        <span class="!text-ink">{{ t.label }}</span>
+                        <span class="!text-ink-light shrink-0">{{ t.minutes }}</span>
                     </li>
                     <li class="flex items-baseline justify-between gap-4 border-t border-border pt-2 font-semibold">
                         <span class="!text-ink">Total</span>
