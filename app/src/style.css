@@ -56,13 +56,20 @@ body {
    selector's own compiled rule — the element itself never carries a
    literal "btn" class, only "btn-primary"/"btn-secondary", so a separate
    ".btn { box-shadow: none }" rule can never match it. Has to be undone
-   right here instead. */
+   right here instead.
+
+   Same story for the focus outline: daisyUI's base .btn rule sets
+   outline-color: var(--btn-color, ...), and --btn-color for these two
+   classes resolves to daisyUI's own default-theme --color-primary/
+   --color-secondary (blue-violet / pink-red) since this site never
+   defines those tokens. The focus-visible utilities below swap that out
+   for the same ink-colored ring used everywhere else on the site. */
 .btn-primary {
-    @apply btn bg-ink !text-invert border-0 disabled:opacity-50 hover:opacity-85 rounded-2xl shadow-none;
+    @apply btn bg-ink !text-invert border-0 disabled:opacity-50 hover:opacity-85 rounded-2xl shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
 }
 
 .btn-secondary {
-    @apply btn bg-transparent border-2 border-ink/35 !text-ink disabled:opacity-50 hover:bg-ink/5 rounded-2xl shadow-none;
+    @apply btn bg-transparent border-2 border-ink/35 !text-ink disabled:opacity-50 hover:bg-ink/5 rounded-2xl shadow-none focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
 }
 
 .focus-ring {
@@ -75,6 +82,10 @@ body {
    daisyUI's own layered button.css rule regardless of specificity. */
 .btn {
     box-shadow: none;
+}
+
+.btn:focus-visible {
+    outline-color: var(--color-ink);
 }
 
 /* daisyUI's tooltip defaults to its own theme's --color-neutral /
