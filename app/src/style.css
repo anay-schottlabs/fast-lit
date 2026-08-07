@@ -2,14 +2,6 @@
 @plugin "daisyui";
 
 @theme {
-    /* Legacy dark-navy tokens — kept only until every page has been
-       migrated to Orbit's new palette below (a final cleanup commit
-       removes these, .btn-red, and the color:white rule further down
-       once nothing references them anymore). */
-    --color-deepblue: #120A3D;
-    --color-red: #E43247;
-    --color-red-light: #FF5C74;
-
     /* Orbit's palette — matches the iOS app's Theme.swift / ReadColor
        design system exactly (warm cream background, off-white card
        surface, dark brown ink text, terracotta accent). Light-only, no
@@ -37,23 +29,8 @@ body {
     color: var(--color-ink);
 }
 
-h1, div, p, button {
-    color: white;
-}
-
-/* Legacy — kept byte-for-byte as a safety net for any page not yet
-   migrated to .btn-primary/.btn-secondary below; removed once nothing
-   uses it anymore. */
-.btn-red {
-    @apply btn bg-red disabled:opacity-50 hover:opacity-80 rounded-2xl;
-}
-
 /* Orbit's pill-shaped buttons — filled/outlined, matching the iOS app's
-   Capsule() PrimaryButtonStyle/SecondaryButtonStyle exactly. The !text-*
-   here (and site-wide elsewhere) beats the unlayered "button { color:
-   white }" rule above, which otherwise wins over a plain (non-important)
-   Tailwind utility on a <button> regardless of specificity — see this
-   repo's own notes on Tailwind's cascade layers for why. */
+   Capsule() PrimaryButtonStyle/SecondaryButtonStyle exactly. */
 .btn-primary {
     @apply btn bg-terracotta !text-cream border-0 disabled:opacity-50 hover:opacity-85 rounded-full;
 }

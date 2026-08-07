@@ -699,7 +699,8 @@ export class ChangelogScripts {
                     "with the same average-accuracy-by-speed summary, and its CSV export includes the full",
                     "per-question detail packed into each row."
                 ]),
-                "Deployed updated Firestore security rules replacing labSessions/labTrials with a single labRuns collection (create-only, immutable), matching the Lab page's reworked data model."
+                "Deployed updated Firestore security rules replacing labSessions/labTrials with a single labRuns collection (create-only, immutable), matching the Lab page's reworked data model.",
+                "Removed the old dark-navy theme entirely now that every page has moved to Orbit's palette — the legacy color tokens, .btn-red, and the site-wide color:white rule they depended on are all gone."
             ]
         )
     ]
