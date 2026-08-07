@@ -50,8 +50,18 @@ const footerVariant = computed(() => {
              overflow-x to clip too (per the CSS spec, you can't have one
              axis auto/hidden and the other visible), which was cutting
              the tooltips off. Content fits within a normal viewport
-             height without needing to scroll anyway. -->
-        <aside class="sticky top-0 box-border flex h-screen w-[88px] shrink-0 flex-col items-center gap-1 border-r border-border bg-bg px-3 py-8">
+             height without needing to scroll anyway.
+
+             z-30 is the other half of that fix: this sticky aside and the
+             main content div next to it are both un-z-indexed siblings, so
+             which one paints on top of the other where they visually
+             overlap (the tooltip bleeding past x=88px into the main
+             content's own column) was left to default stacking order —
+             inconsistent across pages depending on what stacking contexts
+             their own content happens to create. An explicit z-index
+             settles it outright: the sidebar (tooltips included) always
+             paints above page content. -->
+        <aside class="sticky top-0 z-30 box-border flex h-screen w-[88px] shrink-0 flex-col items-center gap-1 border-r border-border bg-bg px-3 py-8">
             <!-- logo mark -->
             <router-link
                 to="/"

@@ -758,7 +758,13 @@ export class ChangelogScripts {
                     "and looked off in dark mode. Tooltips now render outside the rail correctly and use the same",
                     "ink-fill/inverted-text treatment as everything else."
                 ]),
-                "Removed the pinned \"Start Reading\" play button from the bottom of the sidebar — Read is already one click away as a regular nav item just above it."
+                "Removed the pinned \"Start Reading\" play button from the bottom of the sidebar — Read is already one click away as a regular nav item just above it.",
+                text([
+                    "Actually fixed the sidebar tooltips this time — the earlier overflow fix stopped them from being",
+                    "clipped, but the part bleeding past the sidebar's own 88px column into the page was still getting",
+                    "painted over by the page content next to it, since neither side had an explicit stacking order.",
+                    "The sidebar now has one, so tooltips reliably render on top of the page everywhere."
+                ])
             ]
         )
     ]
