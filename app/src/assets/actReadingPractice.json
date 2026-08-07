@@ -1,0 +1,463 @@
+{
+  "_meta": {
+    "source": "ACT official free online practice test (Reading section), retrieved from the PSI-hosted ACT sample exam (na-nirvana.apec.psiexams.com), 2026-08-06.",
+    "note": "correctIndex is null for every question until the answer key PDF is supplied. Once supplied, fill in correctIndex (0=A, 1=B, 2=C, 3=D) for each question.",
+    "totalQuestions": 36,
+    "totalPassages": 4,
+    "timeLimitMinutes": 40
+  },
+  "passages": [
+    {
+      "id": "act1",
+      "type": "LITERARY NARRATIVE",
+      "title": "Janus",
+      "attribution": "This passage is adapted from the short story \"Janus\" by Ann Beattie (©1985 by The New Yorker Magazine, Inc.).",
+      "text": "The bowl was perfect. Perhaps it was not what you'd select if you faced a shelf of bowls, and not the sort of thing that would inevitably attract a lot of attention at a crafts fair, yet it had real presence. It was as predictably admired as a mutt who has no reason to suspect he might be funny. Just such a dog, in fact, was often brought out (and in) along with the bowl.\n\nAndrea was a real-estate agent, and when she thought that some prospective buyers might be dog-lovers, she would drop off her dog at the same time she placed the bowl in the house that was up for sale. She would put a dish of water in the kitchen for Mondo, take his squeaking plastic frog out of her purse and drop it on the floor. He would pounce delightedly, just as he did every day at home, batting around his favorite toy. The bowl usually sat on a coffee table, though recently she had displayed it on top of a pine blanket chest and on a lacquered table. It was once placed on a cherry table beneath a glorious still-life painting, where it held its own.\n\nEveryone who has purchased a house or who has wanted to sell a house must be familiar with some of the tricks used to convince a buyer that the house is quite special: a fire in the fireplace in early evening; jonquils in a pitcher on the kitchen counter, where no one ordinarily has space to put flowers; perhaps the slight aroma of spring, made by a single drop of scent vaporizing from a lamp bulb.\n\nThe wonderful thing about the bowl, Andrea thought, was that it was both subtle and noticeable—a paradox of a bowl. Its glaze was the color of cream and seemed to glow no matter what light it was placed in. There were a few bits of color in it—tiny geometric flashes—and some of these were tinged with flecks of silver. They were as mysterious as cells seen under a microscope; it was difficult not to study them, because they shimmered, flashing for a split second, and then resumed their shape. Something about the colors and their random placement suggested motion. People who liked country furniture always commented on the bowl, but then it turned out that people who felt comfortable with opulence loved it just as much. But the bowl was not at all ostentatious, or even so noticeable that anyone would suspect that it had been put in place deliberately. They might notice the height of the ceiling on first entering a room, and only when their eye moved down from that, or away from the refraction of sunlight on a pale wall, would they see the bowl. Then they would go immediately to it and comment. Yet they always faltered when they tried to say something. Perhaps it was because they were in the house for a serious reason, not to notice some object.\n\nOnce, Andrea got a call from a woman who had not put in an offer on a house she had shown her. That bowl, she said—would it be possible to find out where the owners had bought that beautiful bowl? Andrea pretended that she did not know what the woman was referring to. A bowl, somewhere in the house? Oh, on a table under the window. Yes, she would ask, of course. She let a couple of days pass, then called back to say that the bowl had been a present and the people did not know where it had been purchased.\n\nShe was sure that the bowl brought her luck. Bids were often put in on houses where she had displayed the bowl. Sometimes the owners, who were always asked to be away or to step outside when the house was being shown, didn't even know that the bowl had been in their house. Once—she could not imagine how—she left it behind, and then she was so afraid that something might have happened to it that she rushed back to the house and sighed with relief when the owner opened the door. The bowl, Andrea explained—she had purchased a bowl and set it on the chest for safekeeping while she toured the house with the prospective buyers, and she . . . She felt like rushing past the frowning woman and seizing her bowl. The owner stepped aside. In the few seconds before Andrea picked up the bowl, she realized that the owner must have just seen that it had been perfectly placed, that the sunlight struck the bluer part of it. Her pitcher had been moved to the far side of the chest, and the bowl predominated. All the way home, Andrea wondered how she could have left the bowl behind. It was like leaving a friend at an outing—just walking off. Sometimes there were stories in the paper about families forgetting a child somewhere and driving to the next city. Andrea had only gone a mile down the road before she remembered.",
+      "questions": [
+        {
+          "number": 1,
+          "question": "The point of view from which the passage is told is best described as that of a:",
+          "options": {
+            "A": "first person narrator, present in the action, who relates events as they happen.",
+            "B": "first person narrator, not present in the action, who relates events that happened in the past.",
+            "C": "third person narrator, present in the action, who relates the thoughts and feelings of many characters.",
+            "D": "third person narrator, not present in the action, who relates the thoughts and feelings of primarily one character."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 2,
+          "question": "The passage as a whole can best be described as an exploration of the:",
+          "options": {
+            "A": "career of a real estate agent and the agent's typically mundane transactions with clients.",
+            "B": "special glaze on a bowl and why the glaze makes the bowl both subtle and noticeable.",
+            "C": "perceived perfection of an object and that object's effect on people.",
+            "D": "problems that can result from a person's unyielding focus on obtaining material goods."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 3,
+          "question": "The passage most strongly suggests that a useful characteristic of the bowl, in terms of Andrea's purpose for the object, is the bowl's:",
+          "options": {
+            "A": "universal appeal.",
+            "B": "famous designer.",
+            "C": "ostentatious look.",
+            "D": "commercial availability."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 4,
+          "question": "In the highlighted text, Andrea responds to an inquiry about her bowl and explains why her bowl was placed in a client's home with statements that can best be described as:",
+          "highlightedText": "The bowl, Andrea explained—she had purchased a bowl and set it on the chest for safekeeping while she toured the house with the prospective buyers, and she . . .",
+          "options": {
+            "A": "vague generalizations.",
+            "B": "absolute truths.",
+            "C": "half-truths.",
+            "D": "lies."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 5,
+          "question": "In the passage, Andrea is characterized as believing that compared to most tricks used by real estate agents to impress potential buyers, her trick of placing the bowl in a home is:",
+          "options": {
+            "A": "more humorous to potential buyers.",
+            "B": "more obvious to potential buyers.",
+            "C": "less familiar to potential buyers.",
+            "D": "less enticing to potential buyers."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 6,
+          "question": "According to the passage, the random placement of colors in the bowl's glaze creates a surface that:",
+          "options": {
+            "A": "acts as a mirror.",
+            "B": "seems to move.",
+            "C": "appears cracked in the sunlight.",
+            "D": "scatters prisms on the walls of a room."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 7,
+          "question": "One main point of the highlighted paragraph is that:",
+          "highlightedText": "Once, Andrea got a call from a woman who had not put in an offer on a house she had shown her. That bowl, she said—would it be possible to find out where the owners had bought that beautiful bowl? Andrea pretended that she did not know what the woman was referring to. A bowl, somewhere in the house? Oh, on a table under the window. Yes, she would ask, of course. She let a couple of days pass, then called back to say that the bowl had been a present and the people did not know where it had been purchased.",
+          "options": {
+            "A": "Andrea's bowl sometimes attracts more interest than does the house itself.",
+            "B": "Andrea's bowl does not actually belong to her, but she hopes to find its owner.",
+            "C": "Andrea is often asked about the bowl when a client puts in an offer on a house.",
+            "D": "Andrea sometimes forgets where in a house she has placed the bowl."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 8,
+          "question": "In the passage, the admiration the bowl receives is directly compared to the admiration received by:",
+          "options": {
+            "A": "a mutt.",
+            "B": "a plastic frog.",
+            "C": "a cherry table.",
+            "D": "the aroma of spring."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 9,
+          "question": "The passage suggests that one reason prospective home buyers have difficulty sharing their thoughts about the bowl is that they realize:",
+          "options": {
+            "A": "they are not visiting the home for the purpose of noticing decorative objects.",
+            "B": "they do not want to reveal that they have the financial means to buy the bowl.",
+            "C": "Andrea might start talking about the bowl instead of discussing the home that is for sale.",
+            "D": "Andrea might find the bowl even more intriguing than they do."
+          },
+          "correctIndex": null
+        }
+      ]
+    },
+    {
+      "id": "act2",
+      "type": "INFORMATIONAL",
+      "title": "The Botany of Desire",
+      "attribution": "This passage is from the book The Botany of Desire: A Plant's-Eye View of the World by Michael Pollan (©2001 by Michael Pollan). Used by permission of Random House, an imprint and division of Penguin Random House LLC. All rights reserved.",
+      "text": "Originally cultivated in the Ottoman Empire, tulips were introduced to Europe at the end of the sixteenth century and became wildly popular in the seventeenth century.\n\nOne crucial element of the beauty of the tulip that intoxicated the Dutch, the Turks, the French, and the English has been lost to us. To them the tulip was a magic flower because it was prone to spontaneous and brilliant eruptions of color. In a planting of a hundred tulips, one of them might be so possessed, opening to reveal the white or yellow ground of its petals painted, as if by the finest brush and steadiest hand, with intricate feathers or flames of a vividly contrasting hue. When this happened, the tulip was said to have \"broken,\" and if a tulip broke in a particularly striking manner—if the flames of the applied color reached clear to the petal's lip, say, and its pigment was brilliant and pure and its pattern symmetrical—the owner of that bulb had won the lottery. For the offsets of that bulb would inherit its pattern and hues and command a fantastic price. The fact that broken tulips for some unknown reason produced fewer and smaller offsets than ordinary tulips drove their prices still higher. Semper Augustus was the most famous such break.\n\nThe closest we have to a broken tulip today is the group known as the Rembrandts—so named because Rembrandt painted some of the most admired breaks of his time. But these latter-day tulips, with their heavy patterning of one or more contrasting colors, look clumsy by comparison, as if painted in haste with a thick brush. To judge from the paintings we have of the originals, the petals of broken tulips could be as fine and intricate as marbleized papers, the extravagant swirls of color somehow managing to seem both bold and delicate at once. In the most striking examples—such as the fiery carmine that Semper Augustus splashed on its pure white ground—the outbreak of color juxtaposed with the orderly, linear form of the tulip could be breathtaking, with the leaping, wayward patterns just barely contained by the petal's edge.\n\nAnna Pavord recounts the extraordinary lengths to which Dutch growers would go to make their tulips break, sometimes borrowing their techniques from alchemists, who faced what must have seemed a comparable challenge. Over the earth above a bed planted with white tulips, gardeners would liberally sprinkle paint powders of the desired hue, on the theory that rainwater would wash the color down to the roots, where it would be taken up by the bulb. Charlatans sold recipes believed to produce the magic color breaks; pigeon droppings were thought to be an effective agent, as was plaster dust taken from the walls of old houses. Unlike the alchemists, whose attempts to change base metals into gold reliably failed, now and then the would-be tulip changers would be rewarded with a good break, inspiring everybody to redouble their efforts.\n\nWhat the Dutch could not have known was that a virus was responsible for the magic of the broken tulip, a fact that, as soon as it was discovered, doomed the beauty it had made possible. The color of a tulip actually consists of two pigments working in concert—a base color that is always yellow or white and a second, laid-on color called an anthocyanin; the mix of these two hues determines the unitary color we see. The virus works by partially and irregularly suppressing the anthocyanin, thereby allowing a portion of the underlying color to show through. It wasn't until the 1920s, after the invention of the electron microscope, that scientists discovered the virus was being spread from tulip to tulip by Myzus persicae, the peach potato aphid. Peach trees were a common feature of seventeenth-century gardens.\n\nBy the 1920s the Dutch regarded their tulips as commodities to trade rather than jewels to display, and since the virus weakened the bulbs it infected (the reason the offsets of broken tulips were so small and few in number), Dutch growers set about ridding their fields of the infection. Color breaks, when they did occur, were promptly destroyed, and a certain peculiar manifestation of natural beauty abruptly lost its claim on human affection.\n\nI can't help thinking that the virus was supplying something the tulip needed, just the touch of abandon the flower's chilly formality called for. Maybe that's why the broken tulip became such a treasure in seventeenth-century Holland: the wayward color loosed on a tulip by a good break perfected the flower, even as the virus responsible set about destroying it.\n\nOn its face the story of the virus and the tulip would seem to throw a wrench into any evolutionary understanding of beauty.",
+      "questions": [
+        {
+          "number": 10,
+          "question": "The main purpose of the passage is to:",
+          "options": {
+            "A": "highlight changes in the flower industry from the seventeenth century through today.",
+            "B": "examine the way certain plants have been represented in art over the centuries.",
+            "C": "provide an overview of plant viruses and the way they affect the flower market.",
+            "D": "explain a particular flower variation and how it has been perceived historically."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 11,
+          "question": "The main point of the highlighted paragraph is that:",
+          "highlightedText": "The closest we have to a broken tulip today is the group known as the Rembrandts—so named because Rembrandt painted some of the most admired breaks of his time. But these latter-day tulips, with their heavy patterning of one or more contrasting colors, look clumsy by comparison, as if painted in haste with a thick brush. To judge from the paintings we have of the originals, the petals of broken tulips could be as fine and intricate as marbleized papers, the extravagant swirls of color somehow managing to seem both bold and delicate at once. In the most striking examples—such as the fiery carmine that Semper Augustus splashed on its pure white ground—the outbreak of color juxtaposed with the orderly, linear form of the tulip could be breathtaking, with the leaping, wayward patterns just barely contained by the petal's edge.",
+          "options": {
+            "A": "modern Rembrandt tulips have been painted by many of today's most famous artists.",
+            "B": "compared to seventeenth-century broken tulips, today's multicolored tulips are less visually appealing.",
+            "C": "the tulip break known as Semper Augustus was a striking example of the seventeenth-century broken tulip.",
+            "D": "Rembrandt was responsible for painting the most famous tulip breaks of his time."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 12,
+          "question": "It can reasonably be inferred from the passage that some seventeenth-century tulip growers believed tulip breaks were mainly caused by:",
+          "options": {
+            "A": "suppliers' storage conditions.",
+            "B": "diseased tulip bulbs.",
+            "C": "certain growing techniques.",
+            "D": "certain weather patterns."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 13,
+          "question": "The information in the highlighted text primarily functions to:",
+          "highlightedText": "The color of a tulip actually consists of two pigments working in concert—a base color that is always yellow or white and a second, laid-on color called an anthocyanin; the mix of these two hues determines the unitary color we see. The virus works by partially and irregularly suppressing the anthocyanin, thereby allowing a portion of the underlying color to show through.",
+          "options": {
+            "A": "describe the range of potential tulip colors.",
+            "B": "explain how the color variation in a broken tulip occurs.",
+            "C": "argue that yellow and white are the only natural tulip colors.",
+            "D": "indicate why broken tulips contain no anthocyanin."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 14,
+          "question": "The highlighted paragraph differs from the rest of the passage in that it:",
+          "highlightedText": "I can't help thinking that the virus was supplying something the tulip needed, just the touch of abandon the flower's chilly formality called for. Maybe that's why the broken tulip became such a treasure in seventeenth-century Holland: the wayward color loosed on a tulip by a good break perfected the flower, even as the virus responsible set about destroying it.",
+          "options": {
+            "A": "questions whether the virus that caused broken tulips was harmful to bulbs.",
+            "B": "argues that growers should have dealt with broken tulips differently.",
+            "C": "challenges the idea that broken tulips were beautiful.",
+            "D": "presents a personal meditation on broken tulips."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 15,
+          "question": "According to the passage, in the seventeenth century, the fact that broken tulip bulbs tended to produce fewer and smaller offsets compared to typical tulip bulbs resulted in:",
+          "options": {
+            "A": "a decrease in the demand for broken tulips.",
+            "B": "a fear among growers that broken tulips were diseased.",
+            "C": "an increase in prices for broken tulips.",
+            "D": "a desire among growers to plant a wider variety of crops."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 16,
+          "question": "In the passage, the author compares broken tulips as they are represented in Rembrandt's paintings to:",
+          "options": {
+            "A": "peach-tree blossoms.",
+            "B": "paint powders sprinkled on the ground.",
+            "C": "a painting hastily done with a thick brush.",
+            "D": "intricately marbleized papers."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 17,
+          "question": "The passage author most likely mentions that peach trees were a staple of seventeenth-century gardens to:",
+          "options": {
+            "A": "highlight a crop favored by growers who did not cultivate tulips.",
+            "B": "emphasize that peach trees are not as popular in gardens today.",
+            "C": "explain how peach potato aphids spread the tulip virus.",
+            "D": "compare tulips to another popular seventeenth-century crop."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 18,
+          "question": "As it is used in the passage, the highlighted word \"abandon\" most nearly means:",
+          "highlightedText": "just the touch of abandon the flower's chilly formality called for",
+          "options": {
+            "A": "uninhibitedness.",
+            "B": "relinquishment.",
+            "C": "retreat.",
+            "D": "denial."
+          },
+          "correctIndex": null
+        }
+      ]
+    },
+    {
+      "id": "act3",
+      "type": "INFORMATIONAL",
+      "paired": true,
+      "title": "Passage A and B: Hip-Hop Culture",
+      "attribution": "Passage A is from the book Foundation: B-Boys, B-Girls, and Hip-Hop Culture in New York by Joseph G. Schloss (©2009 by Oxford University Press). Passage B is from the book The Tanning of America: How Hip-Hop Created a Culture That Rewrote the Rules of the New Economy by Steve Stoute with Mim Eichler Rivas (©2011 by Steve Stoute).",
+      "passageA": {
+        "author": "Joseph G. Schloss",
+        "text": "[The term b-boying refers to break dancing.]\n\nIn the first sense of the term, hip-hop refers collectively to a group of related art forms in different media (visual, sound, movement) that were practiced in Afro-Caribbean, African American, and Latino neighborhoods in New York City in the 1970s. The term, when used in this sense, also refers to the events at which these forms were practiced, the people who practiced them, their shared aesthetic sensibility, and contemporary activities that maintain those traditions.\n\nPerhaps the most important aspect of this variety of hip-hop is that it is unmediated, in the sense that most of the practices associated with it are both taught and performed in the context of face-to-face interactions between human beings. To some degree, this constitutes an intentional rejection of the mass media by its practitioners, but to a great extent it is just the natural result of the practices themselves. Activities like b-boying and graffiti writing are simply not well suited to the mass media. Although in both cases, brief attempts were made to bring these forms of expression into mainstream contexts (b-boying in a series of low-budget \"breaksploition\" movies in the early 1980s and graffiti as part of a short-lived gallery trend around the same time), neither developed substantially in those environments. This, it has been suggested, was not so much because the forms lacked appeal, but because—on an economic level—b-boying was an advertisement with no product. This reality is reflected in the phrase that is often used to refer to this branch of hip-hop: \"hip-hop culture,\" which suggests something that is lived rather than bought and sold.\n\nThe second sense of the term hip-hop refers to a form of popular music that developed, or was developed, out of hip-hop culture. This hip-hop, also known as \"rap music,\" resulted from the interaction between hip-hop culture and the preexisting music industry. As we would expect, this hip-hop features elements of both sensibilities. My students are often surprised when I point out that, even when hip-hop lyrics seem to reject every aspect of mainstream culture and morality, the one thing they almost never reject is a strict 16-bar verse structure derived from Tin Pan Alley pop music. But this should not be surprising. This hip-hop, in contrast to hip-hop culture, is deeply intertwined with the mass media and its needs, largely because it does have a product: records, CDs, MP3s, and ringtones."
+      },
+      "passageB": {
+        "author": "Steve Stoute",
+        "text": "It wasn't until I was nine years old, late in 1979, that I even heard the words \"hip\" and \"hop\" strung together or was able to grasp the notion of what being a rapper actually meant. That was when, fatefully, I heard a record that changed my life (and pop culture) forever.\n\nLike it's yesterday, I can still remember that moment over at my aunt's home in Brooklyn—where it seemed there was always a party under way with relatives and neighbors hanging out, a great spread of food, and new, hot music on the record player. Most stereo systems in those days could be adapted for the single two-sided records that were smaller and had the big hole in the middle (45 RPM) as well as the bigger records with the small holes (33⅓ RPM)—which were the full albums that had several songs on each side.\n\nBut as the intro plays to what I recognize as \"Good Times\" by the group Chic and I'm drawn into the living room because it's a familiar hit song from the previous summer, I encounter a record on the turntable that defies categorization. Instead of the sweet female lead vocals of that disco smash, I hear something totally different and spot a baby-blue label on the black vinyl record I've never seen before. Even though it's a twelve-inch disc, the size of an album, as I listen to the rhyming words being spoken—\"Singin' on 'n' 'n' on 'n' on / The beat don't stop until the break of dawn / Singin' on 'n' 'n' on 'n' on on 'n' on / Like a hot buttered a pop da pop da pop dibbie dibbie pop da pop pop / Ya don't dare stop\"—it hits me that this entire side is one long song.\n\nAlmost fifteen minutes long as it turns out. Or, to be exact, fourteen minutes and thirty-six seconds of pure fun laid over the thumping bass beat from the break of \"Good Times\" with sing-along words easy to remember and repeat. The record, I discover, is by an unknown group, the Sugarhill Gang, and is called \"Rapper's Delight.\"\n\nFrom then on, nobody ever has to tell me what rap is. It's whatever words are spoken, chanted, or talk-sung, or whatever philosophies, stories, or ideas are espoused, by the house party Master of Ceremonies."
+      },
+      "questions": [
+        {
+          "number": 19,
+          "question": "According to Passage A, one reason elements of hip-hop culture such as b-boying are rarely represented in mass media is that these art forms:",
+          "options": {
+            "A": "have never been brought to the public's attention.",
+            "B": "are not bought and sold as products.",
+            "C": "do not appeal to young people.",
+            "D": "declined in popularity after the 1970s."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 20,
+          "question": "As it is used in the passage, the highlighted word \"sensibilities\" most nearly means:",
+          "highlightedText": "this hip-hop features elements of both sensibilities",
+          "options": {
+            "A": "emotions.",
+            "B": "sensitivities.",
+            "C": "perspectives.",
+            "D": "feelings of gratitude."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 21,
+          "question": "Based on Passage A, which statement best captures the relationship between Tin Pan Alley pop music and rap music?",
+          "options": {
+            "A": "Rap artists have rejected every aspect of Tin Pan Alley pop.",
+            "B": "Rap artists have been aware of Tin Pan Alley pop but not influenced by it.",
+            "C": "Tin Pan Alley pop developed at the same time as rap.",
+            "D": "Tin Pan Alley pop has influenced many rap artists."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 22,
+          "question": "Which of the following details does the author of Passage B highlight as one that caused \"Rapper's Delight\" to stand out as different compared to other songs he knew?",
+          "options": {
+            "A": "The song's intro",
+            "B": "The female vocals",
+            "C": "The length of the song",
+            "D": "The fact that the song was on a vinyl record"
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 23,
+          "question": "In the context of Passage B, the main point of the highlighted paragraph is that the author was:",
+          "highlightedText": "But as the intro plays to what I recognize as \"Good Times\" by the group Chic and I'm drawn into the living room because it's a familiar hit song from the previous summer, I encounter a record on the turntable that defies categorization. Instead of the sweet female lead vocals of that disco smash, I hear something totally different and spot a baby-blue label on the black vinyl record I've never seen before.",
+          "options": {
+            "A": "struck by the combination of new and established musical elements in the music he was hearing.",
+            "B": "uncomfortable with what he viewed as an unwelcome change to a favorite song.",
+            "C": "more interested in an unfamiliar album label than in the new music that was playing.",
+            "D": "convinced that the new form of music he was hearing would become more popular than disco."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 24,
+          "question": "Based on Passage B, it can reasonably be inferred that the author views his first exposure to rap music as:",
+          "options": {
+            "A": "memorable but ultimately not very important.",
+            "B": "significant for his childhood but less so for his adulthood.",
+            "C": "a transformative experience.",
+            "D": "a disappointing experience."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 25,
+          "question": "Compared to Passage A, Passage B focuses more on:",
+          "options": {
+            "A": "early hip-hop's interaction with the marketplace.",
+            "B": "attempts to move hip-hop art into galleries.",
+            "C": "the mass media.",
+            "D": "the author's personal experience."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 26,
+          "question": "Which of the following elements of Passage B is not included in Passage A?",
+          "options": {
+            "A": "A story involving a particular rap song",
+            "B": "A discussion of the early days of hip-hop",
+            "C": "A mention of the New York City area in the context of hip-hop",
+            "D": "An acknowledgment of rap's interaction with other musical forms"
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 27,
+          "question": "The authors of both passages would most likely agree with the idea that early rap music:",
+          "options": {
+            "A": "represented artists' rejection of the music industry and its practices.",
+            "B": "represented a significant development in American popular culture.",
+            "C": "was more popular than today's rap music.",
+            "D": "was slow to find an audience."
+          },
+          "correctIndex": null
+        }
+      ]
+    },
+    {
+      "id": "act4",
+      "type": "NATURAL SCIENCE",
+      "title": "The Rise and Fall of the Living Fossil",
+      "attribution": "This passage is from the article \"The Rise and Fall of the Living Fossil\" by Ferris Jabr (©2015 by Nautilus).",
+      "text": "The term \"living fossil\" refers to creatures that had emerged long ago and seemed to have stopped evolving.\n\nLike all living fossils, crocodiles were thought to have emerged in the distant past and then stayed largely unchanged. The standard theory held that the crocodilian species we know today originated in Africa during the Cretaceous (145 to 66 million years ago), when the seven continents were much closer together. As the continents drifted apart, the crocodilians went with them, explaining how they ended up in a band of tropics encircling the globe. If that were true, then modern crocodilian species should be very different from one another at the level of genes and molecules, because there would have been more than enough time for substantial mutations to accumulate. By the 1990s, however, molecular analysis revealed that immune system molecules conserved across living crocodilian species were remarkably similar in structure and behavior.\n\nIntrigued by this puzzle, a post-doctoral research fellow at the University of Washington named Jamie Oaks began collecting DNA samples from all 23 living crocodilian species, comparing sections of the genome where mutations were most likely to have appeared. Oaks did not find nearly as many differences between the modern crocodilian genomes as one would expect had those species diverged all the way back in the Cretaceous. He concluded that modern crocodilian species split from their last common ancestor between 8 and 13 million years ago, not long before ancient hominins split from their last common ancestor with chimpanzees. The living fossil theory of crocodiles had overestimated their evolutionary age by about a factor of 10.\n\nOaks also noticed something odd about the DNA samples he had acquired from the iconic Nile crocodiles (Crocodylus niloticus): they did not match up with each other. In fact, the variation between them was great enough to suggest that he was looking at two distinct species. If so, then not only were modern crocodiles much too young to be living fossils, but they had also continued to speciate after diverging from their basal ancestor—something living fossils are not supposed to do. On its own, Oaks' study was intriguing, but not enough to convince the larger scientific community to cleave the Nile crocodile into two species.\n\nUnbeknownst to him, however, a separate team of scientists was preparing to corroborate his results. In the early 2000s, on an excursion to Chad, the wildlife conservationist Michael Klemens encountered some odd little crocodiles in a desert oasis. They were so docile that he and his companions could swim beside them without concern. He took a tissue sample from one that had recently perished and sent it to the American Museum of Natural History in New York City, where Evon Hekkala, an assistant professor at Fordham University studying crocodilian diversity, sequenced its genome. When she compared the docile croc's DNA to other Nile crocodiles, she noticed some rather striking differences. Could these tame crocs be an entirely distinct species?\n\nDNA analysis of 123 African crocodiles—as well as 57 separate samples from museum specimens, including crocodiles mummified in ancient Egypt—confirmed her suspicion. In a few sections of their respective genomes, all the mild-mannered crocs would have one DNA sequence, and all the typical Nile crocs another. They even had different numbers of chromosomes. \"That made us very confident that there were actually two different populations and they were not mixing their DNA,\" Hekkala says. The two different species had diverged between 3 and 6 million years ago: Crocodylus niloticus in the East and the smaller, less aggressive Crocodylus suchus in the West. The vast majority of mummified crocodiles were C. suchus, suggesting that ancient Egyptians had recognized the difference.\n\nTogether, Hekkala, Oaks, and other scientists helped redraw the map of how crocodilians evolved in space and time, and conclusively removed them from the category of living fossils.",
+      "questions": [
+        {
+          "number": 28,
+          "question": "In the context of the passage, how does the analysis of crocodilian immune system molecules relate to the living fossil theory of crocodilian evolution?",
+          "options": {
+            "A": "The analysis confirms the living fossil theory.",
+            "B": "The analysis suggests the living fossil theory is accurate.",
+            "C": "The analysis supports the living fossil theory in some ways and does not support the theory in other ways.",
+            "D": "The analysis does not support the living fossil theory."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 29,
+          "question": "Which of the following statements best summarizes Oaks's analysis of Nile crocodiles' DNA as it is presented in the highlighted paragraph?",
+          "highlightedText": "Oaks also noticed something odd about the DNA samples he had acquired from the iconic Nile crocodiles (Crocodylus niloticus): they did not match up with each other. In fact, the variation between them was great enough to suggest that he was looking at two distinct species. If so, then not only were modern crocodiles much too young to be living fossils, but they had also continued to speciate after diverging from their basal ancestor—something living fossils are not supposed to do. On its own, Oaks' study was intriguing, but not enough to convince the larger scientific community to cleave the Nile crocodile into two species.",
+          "options": {
+            "A": "It suggested that Nile crocodiles are older than what was previously believed, which does not support the living fossil theory of crocodiles.",
+            "B": "It suggested that different species of crocodiles do not share a basal ancestor, which the scientific community has confirmed.",
+            "C": "It suggested that the analysis was hastily done, which prompted the scientific community to ignore it.",
+            "D": "It suggested that the DNA came from two species, which did not support the living fossil theory of crocodiles."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 30,
+          "question": "The main purpose of the highlighted paragraph is to:",
+          "highlightedText": "DNA analysis of 123 African crocodiles—as well as 57 separate samples from museum specimens, including crocodiles mummified in ancient Egypt—confirmed her suspicion. In a few sections of their respective genomes, all the mild-mannered crocs would have one DNA sequence, and all the typical Nile crocs another. They even had different numbers of chromosomes.",
+          "options": {
+            "A": "describe the DNA analysis that confirmed Crocodylus niloticus and Crocodylus suchus were two distinct species.",
+            "B": "provide information on the mummification of crocodiles that was pertinent to Hekkala's analysis.",
+            "C": "explain how Hekkala revolutionized DNA analysis by comparing the DNA of 123 different African crocodiles.",
+            "D": "introduce the behavioral differences between Crocodylus niloticus and Crocodylus suchus."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 31,
+          "question": "According to the passage, molecular analysis revealed that immune system molecules from living crocodilian species were similar in:",
+          "options": {
+            "A": "structure and behavior.",
+            "B": "color and size.",
+            "C": "density and age.",
+            "D": "shape and weight."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 32,
+          "question": "In the context of the passage, the highlighted statement mainly serves to:",
+          "highlightedText": "They were so docile that he and his companions could swim beside them without concern.",
+          "options": {
+            "A": "indicate that Klemens and his companions believed that the crocodiles were diseased.",
+            "B": "establish the tameness of the crocodiles in the desert oasis.",
+            "C": "suggest that Klemens and his companions suspected they were swimming with Crocodylus niloticus.",
+            "D": "indicate that the crocodiles in the desert oasis had not yet fully matured."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 33,
+          "question": "According to the passage, after Klemens sent a tissue sample of a perished crocodile to Hekkala, Hekkala then:",
+          "options": {
+            "A": "estimated the crocodile's age.",
+            "B": "studied the crocodile's immune system.",
+            "C": "sequenced the crocodile's genome.",
+            "D": "identified mutations in the crocodile's molecular structure."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 34,
+          "question": "In the context of the passage, the detail that Crocodylus niloticus and Crocodylus suchus have different numbers of chromosomes provides support for the claim that the two species:",
+          "options": {
+            "A": "diverged during the Cretaceous.",
+            "B": "had similar diets.",
+            "C": "did not evolve from the same ancestor.",
+            "D": "were not mixing their DNA."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 35,
+          "question": "According to the passage, Crocodylus niloticus and Crocodylus suchus diverged between:",
+          "options": {
+            "A": "1 and 2 million years ago.",
+            "B": "3 and 6 million years ago.",
+            "C": "8 and 13 million years ago.",
+            "D": "66 and 145 million years ago."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 36,
+          "question": "Based on the passage, the phrase \"redraw the map\" (highlighted text) is most likely meant to be read:",
+          "highlightedText": "redraw the map",
+          "options": {
+            "A": "literally; scientists no longer believed crocodiles originated in Africa.",
+            "B": "literally; scientists no longer believed crocodiles once lived in a band of tropics.",
+            "C": "figuratively; scientists amended the narrative of the natural history of crocodiles.",
+            "D": "figuratively; scientists believed their findings would have broader implications on archaeology."
+          },
+          "correctIndex": null
+        }
+      ]
+    }
+  ]
+}
