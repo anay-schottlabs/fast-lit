@@ -29,22 +29,19 @@ const rows = computed(() => {
                 runId: run.id,
                 runCreatedAt: run.createdAt,
                 position: trial.position,
+                mode: trial.mode,
                 passageId: trial.passageId,
                 wpm: trial.wpm,
-                achievedWpm: trial.achievedWpm,
                 wordCount: trial.wordCount,
-                actualDurationMs: trial.actualDurationMs,
-                expectedDurationMs: trial.expectedDurationMs,
-                durationMismatchFlag: trial.durationMismatchFlag,
-                accuracyPct: trial.quiz?.accuracyPct ?? 0,
+                readingDurationMs: trial.readingDurationMs,
+                timedOutcome: trial.timedOutcome,
+                accuracyPct: trial.accuracyPct ?? 0,
+                comprehensionEfficiency: trial.comprehensionEfficiency ?? 0,
+                avgTimeToAnswerMs: trial.avgTimeToAnswerMs ?? 0,
                 correctCount: trial.quiz?.correctCount ?? 0,
                 totalQuestions: trial.quiz?.totalQuestions ?? 0,
-                quizDurationMs: trial.quiz?.quizDurationMs ?? 0,
                 questions: trial.quiz?.questions ?? [],
                 runTotalElapsedMs: run.totalElapsedMs,
-                runTotalReadingMs: run.totalReadingMs,
-                runTotalQuizMs: run.totalQuizMs,
-                runOverallAccuracyPct: run.overallAccuracyPct,
                 userAgent: run.userAgent
             });
         }
@@ -60,14 +57,14 @@ const sortDir = ref('desc');
 const sortableColumns = [
     { key: 'runId', label: 'Run' },
     { key: 'position', label: 'Order' },
+    { key: 'mode', label: 'Mode' },
     { key: 'passageId', label: 'Passage' },
     { key: 'wpm', label: 'WPM' },
-    { key: 'achievedWpm', label: 'Achieved WPM' },
     { key: 'accuracyPct', label: 'Accuracy %' },
-    { key: 'actualDurationMs', label: 'Reading (ms)' },
-    { key: 'expectedDurationMs', label: 'Expected (ms)' },
-    { key: 'durationMismatchFlag', label: 'Flag' },
-    { key: 'quizDurationMs', label: 'Quiz (ms)' }
+    { key: 'comprehensionEfficiency', label: 'Efficiency' },
+    { key: 'readingDurationMs', label: 'Reading (ms)' },
+    { key: 'avgTimeToAnswerMs', label: 'Avg. Time/Q (ms)' },
+    { key: 'timedOutcome', label: 'Outcome' }
 ];
 
 function setSort(key) {
@@ -94,10 +91,6 @@ const sortedRows = computed(() => {
             av = toMillis(a.runCreatedAt);
             bv = toMillis(b.runCreatedAt);
         }
-        if (typeof av === 'boolean' || typeof bv === 'boolean') {
-            av = av ? 1 : 0;
-            bv = bv ? 1 : 0;
-        }
         if (typeof av === 'string' || typeof bv === 'string') {
             av = (av ?? '').toString();
             bv = (bv ?? '').toString();
@@ -111,21 +104,49 @@ const sortedRows = computed(() => {
     return sorted;
 });
 
-// ----- average comprehension per wpm bucket -----
+// ----- rsvp vs. timed comparison, computed directly from every loaded trial
+// (not just each run's own precomputed comparison field) so it reflects
+// every run at once -----
 
-const wpmBuckets = computed(() => {
-    const buckets = new Map();
-    for (const r of rows.value) {
-        if (!buckets.has(r.wpm)) {
-            buckets.set(r.wpm, { wpm: r.wpm, trialCount: 0, accuracySum: 0 });
+function mean(list, key) {
+    return list.length ? list.reduce((sum, r) => sum + r[key], 0) / list.length : 0;
+}
+
+const overallComparison = computed(() => {
+    const rsvpRows = rows.value.filter((r) => r.mode === 'rsvp');
+    const timedRows = rows.value.filter((r) => r.mode === 'timed');
+    const finishedEarlyCount = timedRows.filter((r) => r.timedOutcome === 'finishedEarly').length;
+
+    return {
+        rsvp: {
+            trialCount: rsvpRows.length,
+            meanAccuracyPct: mean(rsvpRows, 'accuracyPct'),
+            meanEfficiency: mean(rsvpRows, 'comprehensionEfficiency'),
+            meanTimeToAnswerMs: mean(rsvpRows, 'avgTimeToAnswerMs')
+        },
+        timed: {
+            trialCount: timedRows.length,
+            meanAccuracyPct: mean(timedRows, 'accuracyPct'),
+            meanEfficiency: mean(timedRows, 'comprehensionEfficiency'),
+            meanTimeToAnswerMs: mean(timedRows, 'avgTimeToAnswerMs'),
+            completionRatePct: timedRows.length ? (finishedEarlyCount / timedRows.length) * 100 : 0
         }
-        const bucket = buckets.get(r.wpm);
-        bucket.trialCount++;
-        bucket.accuracySum += r.accuracyPct;
-    }
-    return [...buckets.values()]
-        .map((b) => ({ ...b, avgAccuracyPct: b.accuracySum / b.trialCount }))
-        .sort((a, b) => a.wpm - b.wpm);
+    };
+});
+
+const bySpeedComparison = computed(() => {
+    const speeds = [...new Set(rows.value.map((r) => r.wpm))].sort((a, b) => a - b);
+    return speeds.map((wpm) => {
+        const rsvpRows = rows.value.filter((r) => r.wpm === wpm && r.mode === 'rsvp');
+        const timedRows = rows.value.filter((r) => r.wpm === wpm && r.mode === 'timed');
+        return {
+            wpm,
+            rsvpAccuracyPct: mean(rsvpRows, 'accuracyPct'),
+            rsvpCount: rsvpRows.length,
+            timedAccuracyPct: mean(timedRows, 'accuracyPct'),
+            timedCount: timedRows.length
+        };
+    });
 });
 
 // ----- CSV export -----
@@ -145,10 +166,11 @@ function csvEscape(value) {
 }
 
 const csvColumns = [
-    'runId', 'position', 'passageId', 'wpm', 'achievedWpm', 'wordCount',
-    'actualDurationMs', 'expectedDurationMs', 'durationMismatchFlag',
-    'accuracyPct', 'correctCount', 'totalQuestions', 'quizDurationMs', 'questions',
-    'runTotalElapsedMs', 'runTotalReadingMs', 'runTotalQuizMs', 'runOverallAccuracyPct', 'userAgent'
+    'runId', 'position', 'mode', 'passageId', 'wpm', 'wordCount',
+    'readingDurationMs', 'timedOutcome',
+    'accuracyPct', 'comprehensionEfficiency', 'avgTimeToAnswerMs',
+    'correctCount', 'totalQuestions', 'questions',
+    'runTotalElapsedMs', 'userAgent'
 ];
 
 function downloadCsv() {
@@ -185,25 +207,67 @@ function downloadCsv() {
         <p v-else-if="loadError" class="mt-10 text-center text-error">{{ loadError }}</p>
 
         <template v-else>
-            <!-- average comprehension per speed bucket -->
+            <!-- rsvp vs. timed, overall -->
             <div class="mt-6 rounded-2xl border border-border bg-card p-5">
-                <h2 class="mb-3 text-lg font-semibold !text-ink">Average Accuracy by Speed</h2>
+                <h2 class="mb-3 text-lg font-semibold !text-ink">RSVP vs. Timed Reading</h2>
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left text-sm">
+                        <thead>
+                            <tr class="!text-ink-light">
+                                <th class="py-1 pr-6">Mode</th>
+                                <th class="py-1 pr-6">Trials</th>
+                                <th class="py-1 pr-6">Avg. Accuracy</th>
+                                <th class="py-1 pr-6">Avg. Efficiency</th>
+                                <th class="py-1 pr-6">Avg. Time/Question</th>
+                                <th class="py-1 pr-6">Completion Rate</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr class="border-t border-border">
+                                <td class="py-2 pr-6 !text-ink">RSVP</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ overallComparison.rsvp.trialCount }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ overallComparison.rsvp.meanAccuracyPct.toFixed(1) }}%</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ overallComparison.rsvp.meanEfficiency.toFixed(2) }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ overallComparison.rsvp.meanTimeToAnswerMs.toFixed(0) }}ms</td>
+                                <td class="py-2 pr-6 !text-ink-light">—</td>
+                            </tr>
+                            <tr class="border-t border-border">
+                                <td class="py-2 pr-6 !text-ink">Timed (normal reading)</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ overallComparison.timed.trialCount }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ overallComparison.timed.meanAccuracyPct.toFixed(1) }}%</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ overallComparison.timed.meanEfficiency.toFixed(2) }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ overallComparison.timed.meanTimeToAnswerMs.toFixed(0) }}ms</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ overallComparison.timed.completionRatePct.toFixed(0) }}%</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <p class="mt-3 text-xs !text-ink-light">
+                    Efficiency is accuracy % per second of reading time. Completion rate is the share of timed
+                    trials finished via "Done" rather than cut off by the countdown — RSVP has no equivalent
+                    since it always runs to completion.
+                </p>
+            </div>
+
+            <!-- rsvp vs. timed, by speed -->
+            <div class="mt-6 rounded-2xl border border-border bg-card p-5">
+                <h2 class="mb-3 text-lg font-semibold !text-ink">Accuracy by Speed</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
                             <tr class="!text-ink-light">
                                 <th class="py-1 pr-6">WPM</th>
-                                <th class="py-1 pr-6">Trials</th>
-                                <th class="py-1 pr-6">Avg. Accuracy</th>
+                                <th class="py-1 pr-6">RSVP Accuracy</th>
+                                <th class="py-1 pr-6">Timed Accuracy</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="bucket in wpmBuckets" :key="bucket.wpm" class="border-t border-border">
+                            <tr v-for="bucket in bySpeedComparison" :key="bucket.wpm" class="border-t border-border">
                                 <td class="py-2 pr-6 font-mono !text-ink">{{ bucket.wpm }}</td>
-                                <td class="py-2 pr-6 !text-ink">{{ bucket.trialCount }}</td>
-                                <td class="py-2 pr-6 font-mono !text-ink">{{ bucket.avgAccuracyPct.toFixed(1) }}%</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ bucket.rsvpAccuracyPct.toFixed(1) }}% ({{ bucket.rsvpCount }})</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ bucket.timedAccuracyPct.toFixed(1) }}% ({{ bucket.timedCount }})</td>
                             </tr>
-                            <tr v-if="wpmBuckets.length === 0">
+                            <tr v-if="bySpeedComparison.length === 0">
                                 <td class="py-2 !text-ink-light" colspan="3">No trials yet.</td>
                             </tr>
                         </tbody>
@@ -233,16 +297,14 @@ function downloadCsv() {
                             <tr v-for="row in sortedRows" :key="row.runId + '-' + row.position" class="border-t border-border">
                                 <td class="py-2 pr-6 font-mono text-xs !text-ink-light">{{ row.runId.slice(0, 6) }}</td>
                                 <td class="py-2 pr-6 font-mono !text-ink">{{ row.position }}</td>
+                                <td class="py-2 pr-6 !text-ink">{{ row.mode }}</td>
                                 <td class="py-2 pr-6 !text-ink">{{ row.passageId }}</td>
                                 <td class="py-2 pr-6 font-mono !text-ink">{{ row.wpm }}</td>
-                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.achievedWpm }}</td>
                                 <td class="py-2 pr-6 font-mono !text-ink">{{ row.accuracyPct.toFixed(0) }}% ({{ row.correctCount }}/{{ row.totalQuestions }})</td>
-                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.actualDurationMs }}</td>
-                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.expectedDurationMs }}</td>
-                                <td class="py-2 pr-6">
-                                    <span v-if="row.durationMismatchFlag" class="rounded-full bg-error/10 px-2 py-0.5 text-xs text-error">flagged</span>
-                                </td>
-                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.quizDurationMs }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.comprehensionEfficiency.toFixed(2) }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.readingDurationMs }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.avgTimeToAnswerMs.toFixed(0) }}</td>
+                                <td class="py-2 pr-6 !text-ink-light">{{ row.timedOutcome ?? '—' }}</td>
                             </tr>
                             <tr v-if="sortedRows.length === 0">
                                 <td class="py-2 !text-ink-light" colspan="10">No trials yet.</td>

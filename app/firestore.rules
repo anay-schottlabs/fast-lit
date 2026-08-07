@@ -22,18 +22,19 @@ service cloud.firestore {
       allow create, delete: if false;
     }
 
-    // One doc per completed /lab run (see LabPage.vue's finalizeRun) — all
-    // three trials of a run, plus run-level totals. No participant/session
-    // identity is collected at all, so there's nothing to key separate
-    // writes on; the whole run is written once, atomically, at the end.
-    // Readable/listable so /lab/results can pull every record; immutable
-    // once written, since these are research data and shouldn't be
-    // editable from the client after the fact.
+    // One doc per completed /lab run (see LabPage.vue's finalizeRun) — a
+    // practice trial plus six main trials (rsvp/timed pairs at 250/350/450
+    // wpm), plus run-level totals and a precomputed rsvp-vs-timed
+    // comparison. No participant/session identity is collected at all, so
+    // there's nothing to key separate writes on; the whole run is written
+    // once, atomically, at the end. Readable/listable so /lab/results can
+    // pull every record; immutable once written, since these are research
+    // data and shouldn't be editable from the client after the fact.
     match /labRuns/{runId} {
       allow get, list: if true;
       allow create: if request.resource.data.keys().hasOnly([
-        'trials', 'runStartedAt', 'runEndedAt', 'totalElapsedMs',
-        'totalReadingMs', 'totalQuizMs', 'overallAccuracyPct', 'userAgent', 'createdAt'
+        'trials', 'comparison', 'runStartedAt', 'runEndedAt', 'totalElapsedMs',
+        'userAgent', 'createdAt'
       ]);
       allow update, delete: if false;
     }
