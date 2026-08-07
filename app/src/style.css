@@ -29,11 +29,12 @@
 }
 
 html {
-    background-color: var(--color-deepblue);
+    background-color: var(--color-cream);
 }
 
 body {
     font-family: var(--font-sans);
+    color: var(--color-ink);
 }
 
 h1, div, p, button {

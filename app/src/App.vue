@@ -27,8 +27,8 @@ function navigateTo(path) {
 // paired with a data-tip attribute below.
 const navBaseClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right is-drawer-close:justify-center flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-colors duration-150 focus-ring cursor-pointer";
 
-// Active page gets a soft red pill background; everything else is a muted
-// white that brightens on hover. Icons carry no color classes of their own
+// Active page gets a soft terracotta pill background; everything else is a
+// muted ink that darkens on hover. Icons carry no color classes of their own
 // — they inherit through currentColor from whichever of these wins, so the
 // icon and label always recolor together. Forced !important because
 // style.css's unlayered "button { color: white }" rule otherwise beats
@@ -38,8 +38,8 @@ function navItemClass(path) {
     return [
         navBaseClass,
         isActive
-            ? "bg-red/10 !text-red"
-            : "!text-white/70 hover:bg-white/10 hover:!text-white",
+            ? "bg-terracotta/10 !text-terracotta"
+            : "!text-ink-light hover:bg-terracotta/5 hover:!text-ink",
     ];
 }
 </script>
@@ -60,7 +60,7 @@ function navItemClass(path) {
 
         <div class="drawer-side is-drawer-close:overflow-visible fixed top-4 bottom-4 left-4 !h-auto">
             <div
-                class="flex min-h-full flex-col rounded-2xl border border-white/10 bg-white/5 shadow-2xl shadow-black/40 is-drawer-close:w-18 is-drawer-open:w-64 transition-[width] duration-200 ease-out"
+                class="flex min-h-full flex-col rounded-2xl border border-border bg-card card-shadow is-drawer-close:w-18 is-drawer-open:w-64 transition-[width] duration-200 ease-out"
             >
                 <!-- Sidebar content here -->
                 <!-- Collapse/expand control — deliberately kept OUTSIDE the
@@ -71,7 +71,7 @@ function navItemClass(path) {
                 <div class="w-full px-2 pt-3 pb-2">
                     <label
                         for="sidebar-drawer-toggle"
-                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right is-drawer-close:justify-center flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 !text-white/40 transition-colors duration-150 hover:bg-white/5 hover:!text-white/70 focus-ring"
+                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right is-drawer-close:justify-center flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 !text-ink-light/60 transition-colors duration-150 hover:bg-terracotta/5 hover:!text-ink-light focus-ring"
                         data-tip="Toggle sidebar"
                     >
                         <svg
@@ -90,7 +90,7 @@ function navItemClass(path) {
                         <span class="is-drawer-close:hidden whitespace-nowrap text-sm">Collapse</span>
                     </label>
                 </div>
-                <div class="mx-4 border-t border-white/10"></div>
+                <div class="mx-4 border-t border-border"></div>
 
                 <ul class="flex w-full grow flex-col gap-1 px-2 pt-2 pb-3">
                     <!-- button to navigate to the home page -->
@@ -261,7 +261,7 @@ function navItemClass(path) {
                      hit target. -->
                 <div class="is-drawer-close:hidden mt-auto w-full px-2 pb-3">
                     <button
-                        :class="[navBaseClass, 'justify-center border border-red/30 bg-red/10 hover:bg-red/20 !text-red-light']"
+                        :class="[navBaseClass, 'justify-center border border-terracotta/30 bg-terracotta/10 hover:bg-terracotta/20 !text-terracotta']"
                         @click="navigateTo('/changelog')"
                     >
                         <span class="font-mono text-lg font-bold">v{{ currentVersion }}</span>

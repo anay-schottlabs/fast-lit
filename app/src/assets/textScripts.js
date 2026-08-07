@@ -663,6 +663,11 @@ export class ChangelogScripts {
                     "warm shadows instead of heavy black ones, and a new orbit ring-and-dot mark replacing the old",
                     "favicon. Light-only by design, matching the app's light theme — no theme switcher. Rolling out",
                     "page by page over the next several entries."
+                ]),
+                text([
+                    "Restyled the sidebar and header logo to match: the floating sidebar card is now cream/off-white",
+                    "with a terracotta active-page pill, and the wordmark's old hand-drawn mark is replaced with a",
+                    "simple ring-and-dot orbit mark, matching the new favicon."
                 ])
             ]
         )
