@@ -685,7 +685,20 @@ export class ChangelogScripts {
                     "modal (borders, cards, kbd chips, the Update button) picks up the standard new palette."
                 ]),
                 "Restyled the Extension and Feedback pages to the new palette, including the old glow-wrapper technique both used purely to support the removed decorative glow — simplified away now that it's gone.",
-                "Restyled the Changelog and Privacy Policy pages to the new palette — version pills, numbered badges, and section dividers now use terracotta/border tokens instead of red/white."
+                "Restyled the Changelog and Privacy Policy pages to the new palette — version pills, numbered badges, and section dividers now use terracotta/border tokens instead of red/white.",
+                text([
+                    "Reworked the Lab page for research use: dropped the participant name and session ID fields",
+                    "entirely (the study is now just three fixed passage/speed trials, no identity collected), and",
+                    "the comprehension quiz now shows one question at a time so time-to-answer can be measured per",
+                    "question instead of only for the whole quiz. Every trial now records the possible answers, the",
+                    "specific answer chosen, correctness, and time taken for each individual question, plus the",
+                    "achieved reading speed vs. the trial's nominal speed. Each run (all three trials) is saved as",
+                    "one record with total elapsed time, total time spent reading, total time spent answering, and",
+                    "overall accuracy, along with lightweight environment context (browser user agent) for filtering",
+                    "later. The Lab Results page now shows one row per trial across every run, still sortable and",
+                    "with the same average-accuracy-by-speed summary, and its CSV export includes the full",
+                    "per-question detail packed into each row."
+                ])
             ]
         )
     ]

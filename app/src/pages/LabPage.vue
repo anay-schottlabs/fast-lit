@@ -1,37 +1,27 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { db } from '@/firebase/index.js';
-import { collection, doc, setDoc, addDoc, serverTimestamp } from 'firebase/firestore';
+import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import Header from '../components/Header.vue';
 import Reader from '../components/Reader.vue';
 import { trials as trialConfig, passages, quizzes } from '@/assets/labData.js';
 
-// enum for the four screens a lab session moves through, in order
+// enum for the screens a run moves through, in order (SAVING sits between
+// the last trial's last question and DONE, since the Firestore write can
+// fail and need a retry before DONE is reachable)
 const Stage = Object.freeze({
-    SETUP: 'setup',
+    START: 'start',
     READING: 'reading',
     QUIZ: 'quiz',
+    SAVING: 'saving',
     DONE: 'done'
 });
 
-const stage = ref(Stage.SETUP);
+const stage = ref(Stage.START);
 
-// ----- session setup -----
-
-const participantId = ref('');
-const isStarting = ref(false);
-const startError = ref('');
-
-function generateSessionId() {
-    return `session_${Date.now()}_${Math.random().toString(36).slice(2, 8)}`;
-}
-
-// Generated once up front (not at submit time) so the setup screen can show
-// the participant the actual ID that will be recorded before they commit.
-const sessionId = ref(generateSessionId());
-
-// Fisher-Yates shuffle — randomizes trial order per participant to control
-// for practice/fatigue effects, per the study design.
+// Fisher-Yates shuffle — randomizes trial order per run to control for
+// practice/fatigue effects; the position actually shown is still recorded
+// per trial below.
 function shuffle(array) {
     const result = [...array];
     for (let i = result.length - 1; i > 0; i--) {
@@ -41,55 +31,37 @@ function shuffle(array) {
     return result;
 }
 
-// The shuffled trial list actually shown to this participant, each entry
-// tagged with the order index it was shown in (trialOrderIndex is what gets
-// written to every trial record, not the original config-array position).
 const trialOrder = ref([]);
 const currentTrialIndex = ref(0);
 
-async function startSession() {
-    if (!participantId.value.trim() || isStarting.value) {
-        return;
-    }
-    isStarting.value = true;
-    startError.value = '';
+// Finished trial records accumulate here as the run progresses, then get
+// bundled into one Firestore write at the very end (see finalizeRun) —
+// there's no participant/session identity to key separate writes on, so a
+// single per-run document is simpler and keeps a run's data together.
+const completedTrials = ref([]);
 
-    const shuffled = shuffle(trialConfig).map((trial, index) => ({
+let runStartTime = null;
+
+function beginRun() {
+    trialOrder.value = shuffle(trialConfig).map((trial, index) => ({
         ...trial,
-        trialOrderIndex: index
+        position: index
     }));
-
-    try {
-        await setDoc(doc(db, 'labSessions', sessionId.value), {
-            sessionId: sessionId.value,
-            participantId: participantId.value.trim(),
-            trialOrder: shuffled,
-            createdAt: serverTimestamp()
-        });
-
-        trialOrder.value = shuffled;
-        currentTrialIndex.value = 0;
-        stage.value = Stage.READING;
-    } catch (err) {
-        console.error('Failed to start lab session:', err);
-        startError.value = 'Could not start the session — check your connection and try again.';
-    } finally {
-        isStarting.value = false;
-    }
+    currentTrialIndex.value = 0;
+    completedTrials.value = [];
+    runStartTime = Date.now();
+    stage.value = Stage.READING;
 }
-
-// ----- trial sequence -----
 
 const currentTrial = computed(() => trialOrder.value[currentTrialIndex.value]);
 const currentPassage = computed(() => passages.find((p) => p.id === currentTrial.value?.passageId));
-const currentQuiz = computed(() => quizzes[currentTrial.value?.passageId] ?? []);
+const currentQuizQuestions = computed(() => quizzes[currentTrial.value?.passageId] ?? []);
 
 // Timestamps for the current trial's reading stage, captured via Reader's
-// "started"/"finished" events (see the Reader below). Plain vars, not refs —
-// nothing in the template needs to react to these directly.
+// "started"/"finished" events. Plain vars, not refs — nothing in the
+// template reacts to these directly.
 let trialStartTime = null;
 let trialEndTime = null;
-let quizStartTime = null;
 
 function onTrialStarted() {
     trialStartTime = Date.now();
@@ -97,122 +69,155 @@ function onTrialStarted() {
 
 function onTrialFinished() {
     trialEndTime = Date.now();
-    quizAnswers.value = new Array(currentQuiz.value.length).fill(null);
-    quizStartTime = Date.now();
+    currentQuestionIndex.value = 0;
+    selectedOption.value = null;
+    questionAnswers.value = [];
+    questionShownAt = Date.now();
     stage.value = Stage.QUIZ;
 }
 
-// ----- comprehension quiz -----
+// ----- one-question-at-a-time comprehension quiz -----
 
-// selected option index per question, null until answered
-const quizAnswers = ref([]);
-const isSubmittingQuiz = ref(false);
-const submitError = ref('');
+const currentQuestionIndex = ref(0);
+const selectedOption = ref(null);
+const questionAnswers = ref([]);
+let questionShownAt = null;
 
-const allAnswered = computed(() => {
-    return quizAnswers.value.length === currentQuiz.value.length
-        && quizAnswers.value.every((answer) => answer !== null && answer !== undefined);
-});
+const currentQuestion = computed(() => currentQuizQuestions.value[currentQuestionIndex.value]);
+const isLastQuestionOfTrial = computed(() => currentQuestionIndex.value === currentQuizQuestions.value.length - 1);
+const isFinalQuestionOfRun = computed(() => isLastQuestionOfTrial.value && currentTrialIndex.value === trialOrder.value.length - 1);
 
-// A naive word-count / wpm estimate. Reader.vue adds extra pause ticks after
-// punctuation (periods, commas, etc.), so actualDurationMs is *expected* to
-// run somewhat longer than this — that's normal RSVP pacing, not a bug. The
-// 30% threshold below is a guess at a gap wide enough to flag something else
-// going on (a backgrounded tab throttling timers, a stalled participant,
-// etc.) without flagging every trial purely for having punctuation pauses.
-const DURATION_MISMATCH_THRESHOLD = 0.3;
-
-async function submitQuiz() {
-    if (!allAnswered.value || isSubmittingQuiz.value) {
+function submitQuestion() {
+    if (selectedOption.value === null) {
         return;
     }
-    isSubmittingQuiz.value = true;
-    submitError.value = '';
 
-    const quizDurationMs = Date.now() - quizStartTime;
-    const actualDurationMs = trialEndTime - trialStartTime;
+    // Time-to-answer for exactly this question, per the paper's own
+    // "time per question" requirement — not just a whole-quiz total.
+    const timeMs = Date.now() - questionShownAt;
+    questionAnswers.value.push({
+        question: currentQuestion.value.question,
+        options: currentQuestion.value.options,
+        correctIndex: currentQuestion.value.correctIndex,
+        selectedIndex: selectedOption.value,
+        selectedOption: currentQuestion.value.options[selectedOption.value],
+        isCorrect: selectedOption.value === currentQuestion.value.correctIndex,
+        timeMs
+    });
+
+    if (isLastQuestionOfTrial.value) {
+        finishTrialQuiz();
+    } else {
+        currentQuestionIndex.value++;
+        selectedOption.value = null;
+        questionShownAt = Date.now();
+    }
+}
+
+// A naive word-count / wpm estimate. Reader.vue adds extra pause ticks after
+// punctuation, so actualDurationMs is *expected* to run a bit longer than
+// this — normal RSVP pacing, not a bug. 30% is a guess at a gap wide enough
+// to flag something else going on (a backgrounded tab throttling timers, a
+// stalled reader) without flagging every trial purely for punctuation pauses.
+const DURATION_MISMATCH_THRESHOLD = 0.3;
+
+function finishTrialQuiz() {
     const wordCount = currentPassage.value.text.trim().split(/\s+/).length;
+    const actualDurationMs = trialEndTime - trialStartTime;
     const expectedDurationMs = Math.round((wordCount / currentTrial.value.wpm) * 60000);
     const durationMismatchFlag =
         Math.abs(actualDurationMs - expectedDurationMs) / expectedDurationMs > DURATION_MISMATCH_THRESHOLD;
+    // The reading speed the participant actually achieved, vs. the trial's
+    // configured/nominal wpm — useful on its own as an analysis variable.
+    const achievedWpm = Math.round(wordCount / (actualDurationMs / 60000));
 
-    const correctCount = quizAnswers.value.reduce((count, answer, i) => {
-        return count + (answer === currentQuiz.value[i].correctIndex ? 1 : 0);
-    }, 0);
+    const correctCount = questionAnswers.value.filter((a) => a.isCorrect).length;
+    const totalQuestions = questionAnswers.value.length;
+    const quizDurationMs = questionAnswers.value.reduce((sum, a) => sum + a.timeMs, 0);
 
-    const trialRecord = {
-        sessionId: sessionId.value,
-        participantId: participantId.value.trim(),
+    completedTrials.value.push({
+        position: currentTrial.value.position,
         passageId: currentTrial.value.passageId,
         wpm: currentTrial.value.wpm,
-        trialOrderIndex: currentTrial.value.trialOrderIndex,
+        wordCount,
         actualStartTime: trialStartTime,
         actualEndTime: trialEndTime,
         actualDurationMs,
         expectedDurationMs,
         durationMismatchFlag,
-        quizAnswers: [...quizAnswers.value],
-        correctCount,
-        totalQuestions: currentQuiz.value.length,
-        quizDurationMs,
-        timestamp: serverTimestamp()
-    };
-
-    try {
-        await addDoc(collection(db, 'labTrials'), trialRecord);
-    } catch (err) {
-        console.error('Failed to save trial record:', err);
-        submitError.value = 'Could not save this trial — check your connection and try again.';
-        isSubmittingQuiz.value = false;
-        return;
-    }
-
-    isSubmittingQuiz.value = false;
+        achievedWpm,
+        quiz: {
+            totalQuestions,
+            correctCount,
+            accuracyPct: totalQuestions ? (correctCount / totalQuestions) * 100 : 0,
+            quizDurationMs,
+            questions: [...questionAnswers.value]
+        }
+    });
 
     if (currentTrialIndex.value < trialOrder.value.length - 1) {
         currentTrialIndex.value++;
         stage.value = Stage.READING;
     } else {
+        stage.value = Stage.SAVING;
+        finalizeRun();
+    }
+}
+
+// ----- save the whole run as one Firestore document -----
+
+const isSaving = ref(false);
+const saveError = ref('');
+
+async function finalizeRun() {
+    isSaving.value = true;
+    saveError.value = '';
+    const runEndTime = Date.now();
+
+    const totalReadingMs = completedTrials.value.reduce((sum, t) => sum + t.actualDurationMs, 0);
+    const totalQuizMs = completedTrials.value.reduce((sum, t) => sum + t.quiz.quizDurationMs, 0);
+    const totalCorrect = completedTrials.value.reduce((sum, t) => sum + t.quiz.correctCount, 0);
+    const totalQuestions = completedTrials.value.reduce((sum, t) => sum + t.quiz.totalQuestions, 0);
+
+    const runRecord = {
+        trials: completedTrials.value,
+        runStartedAt: runStartTime,
+        runEndedAt: runEndTime,
+        totalElapsedMs: runEndTime - runStartTime,
+        totalReadingMs,
+        totalQuizMs,
+        overallAccuracyPct: totalQuestions ? (totalCorrect / totalQuestions) * 100 : 0,
+        // Lightweight, non-identifying environment context — useful for a
+        // paper (e.g. filtering out mobile vs. desktop) without asking the
+        // participant anything.
+        userAgent: navigator.userAgent,
+        createdAt: serverTimestamp()
+    };
+
+    try {
+        await addDoc(collection(db, 'labRuns'), runRecord);
         stage.value = Stage.DONE;
+    } catch (err) {
+        console.error('Failed to save lab run:', err);
+        saveError.value = 'Could not save your results — check your connection and try again.';
+    } finally {
+        isSaving.value = false;
     }
 }
 </script>
 
 <template>
-    <!-- session setup screen -->
-    <div v-if="stage === Stage.SETUP" class="mx-auto max-w-xl p-5">
+    <!-- start screen — no participant/session fields, just an explanation and a Begin button -->
+    <div v-if="stage === Stage.START" class="mx-auto max-w-xl p-5 text-center">
         <Header pageName="Lab" />
 
-        <div class="mt-10 rounded-3xl border border-white/10 bg-white/5 p-8 shadow-2xl shadow-black/40">
-            <h2 class="mb-2 text-2xl font-bold">New Session</h2>
-            <p class="mb-6 text-sm text-white/60">
-                Enter a participant name or ID to begin. A session ID is generated automatically below.
+        <div class="mt-16 rounded-3xl border border-border bg-card card-shadow p-10">
+            <h2 class="mb-3 text-2xl font-bold !text-ink">Reading Study</h2>
+            <p class="mb-8 !text-ink-light">
+                You'll read three short passages at different speeds. After each one, answer a few quick
+                comprehension questions. It takes about five minutes.
             </p>
-
-            <label class="mb-2 block text-xs font-semibold uppercase tracking-widest text-white/50">
-                Participant Name / ID
-            </label>
-            <input
-                v-model="participantId"
-                type="text"
-                class="input w-full mb-5 rounded-2xl border border-white/10 bg-white/5 focus-ring"
-                placeholder="e.g. P07"
-                @keyup.enter="startSession"
-            />
-
-            <p class="mb-6 text-xs text-white/40">
-                Session ID: <span class="font-mono text-white/60">{{ sessionId }}</span>
-            </p>
-
-            <p v-if="startError" class="mb-4 text-center text-sm text-red-light">{{ startError }}</p>
-
-            <button
-                class="btn-red w-full"
-                :disabled="!participantId.trim() || isStarting"
-                @click="startSession"
-            >
-                {{ isStarting ? 'Starting…' : 'Start Session' }}
-            </button>
+            <button class="btn-primary w-full" @click="beginRun">Begin</button>
         </div>
     </div>
 
@@ -222,8 +227,8 @@ async function submitQuiz() {
     <div v-else-if="stage === Stage.READING" class="mx-auto max-w-4xl p-5">
         <Header pageName="Lab" />
 
-        <p class="mb-4 mt-2 text-center text-xs font-semibold uppercase tracking-widest text-white/50">
-            Trial {{ currentTrialIndex + 1 }} of {{ trialOrder.length }}
+        <p class="mb-4 mt-2 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
+            Passage {{ currentTrialIndex + 1 }} of {{ trialOrder.length }}
         </p>
 
         <Reader
@@ -243,58 +248,61 @@ async function submitQuiz() {
         />
     </div>
 
-    <!-- comprehension quiz, shown immediately after a trial's passage finishes -->
+    <!-- comprehension quiz — one question at a time, so time-to-answer can
+         be measured per question rather than only for the quiz as a whole -->
     <div v-else-if="stage === Stage.QUIZ" class="mx-auto max-w-2xl p-5">
         <Header pageName="Lab" />
 
-        <p class="mb-6 mt-2 text-center text-xs font-semibold uppercase tracking-widest text-white/50">
-            Trial {{ currentTrialIndex + 1 }} of {{ trialOrder.length }} — Comprehension Check
+        <p class="mb-2 mt-2 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
+            Passage {{ currentTrialIndex + 1 }} of {{ trialOrder.length }} — Question
+            {{ currentQuestionIndex + 1 }} of {{ currentQuizQuestions.length }}
         </p>
 
-        <div
-            v-for="(question, qi) in currentQuiz"
-            :key="qi"
-            class="mb-6 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/40"
-        >
-            <p class="mb-3 font-semibold">{{ qi + 1 }}. {{ question.question }}</p>
+        <div class="mt-6 rounded-2xl border border-border bg-card card-shadow p-6">
+            <p class="mb-5 text-lg font-semibold !text-ink">{{ currentQuestion.question }}</p>
             <div class="flex flex-col gap-2">
                 <label
-                    v-for="(option, oi) in question.options"
+                    v-for="(option, oi) in currentQuestion.options"
                     :key="oi"
-                    class="flex cursor-pointer items-center gap-3 rounded-xl border border-white/10 px-4 py-2 transition-colors hover:bg-white/10"
-                    :class="{ '!border-red bg-red/10': quizAnswers[qi] === oi }"
+                    class="flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition-colors hover:bg-terracotta/5"
+                    :class="selectedOption === oi ? 'border-terracotta bg-terracotta/10' : 'border-border'"
                 >
-                    <input
-                        type="radio"
-                        class="radio"
-                        :name="'trial-question-' + qi"
-                        :value="oi"
-                        v-model="quizAnswers[qi]"
-                    />
-                    <span>{{ option }}</span>
+                    <input type="radio" class="radio accent-terracotta" name="quiz-option" :value="oi" v-model="selectedOption" />
+                    <span class="!text-ink">{{ option }}</span>
                 </label>
             </div>
         </div>
 
-        <p v-if="submitError" class="mb-4 text-center text-sm text-red-light">{{ submitError }}</p>
-
         <button
-            class="btn-red w-full"
-            :disabled="!allAnswered || isSubmittingQuiz"
-            @click="submitQuiz"
+            class="btn-primary w-full mt-6"
+            :disabled="selectedOption === null"
+            @click="submitQuestion"
         >
-            {{ isSubmittingQuiz ? 'Saving…' : (currentTrialIndex < trialOrder.length - 1 ? 'Next Trial' : 'Finish') }}
+            {{ isFinalQuestionOfRun ? 'Finish' : 'Next' }}
         </button>
     </div>
 
-    <!-- end screen — deliberately shows no results, so a participant running
-         multiple sessions (however unlikely) isn't biased by their own past performance -->
+    <!-- saving the run — a distinct screen (not folded into DONE) so a
+         failed write shows a retry instead of silently losing the data -->
+    <div v-else-if="stage === Stage.SAVING" class="mx-auto max-w-xl p-5 text-center">
+        <Header pageName="Lab" />
+
+        <div class="mt-16 rounded-3xl border border-border bg-card card-shadow p-10">
+            <p v-if="isSaving" class="!text-ink-light">Saving your results…</p>
+            <template v-else>
+                <p class="mb-4 text-error">{{ saveError }}</p>
+                <button class="btn-primary w-full" @click="finalizeRun">Try Again</button>
+            </template>
+        </div>
+    </div>
+
+    <!-- end screen — no results shown -->
     <div v-else-if="stage === Stage.DONE" class="mx-auto max-w-xl p-5 text-center">
         <Header pageName="Lab" />
 
-        <div class="mt-16 rounded-3xl border border-white/10 bg-white/5 p-10 shadow-2xl shadow-black/40">
-            <h2 class="mb-3 text-3xl font-bold !text-red">Thanks, you're done!</h2>
-            <p class="text-white/70">Your responses have been recorded. You can close this window now.</p>
+        <div class="mt-16 rounded-3xl border border-border bg-card card-shadow p-10">
+            <h2 class="mb-3 text-3xl font-bold !text-ink">Thanks, you're done!</h2>
+            <p class="!text-ink-light">Your responses have been recorded. You can close this window now.</p>
         </div>
     </div>
 </template>

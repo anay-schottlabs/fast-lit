@@ -7,9 +7,8 @@
 // order actually shown (see trialOrderIndex in the trial record).
 export const trials = [
     { passageId: 'p1', wpm: 250 },
-    { passageId: 'p2', wpm: 350 },
-    { passageId: 'p3', wpm: 450 },
-    { passageId: 'p4', wpm: 550 },
+    { passageId: 'p2', wpm: 400 },
+    { passageId: 'p3', wpm: 550 },
 ];
 
 // Placeholder passages, ~150-250 words each. Swap in the real, difficulty
@@ -63,21 +62,6 @@ export const passages = [
         genuine scientific curiosity about what lay beyond Earth. Apollo 11 proved that with enough
         coordination, funding, and willingness to take calculated risks, humanity could accomplish feats that
         had previously belonged only to fiction, opening the door to decades of further space exploration.`
-    },
-    {
-        id: 'p4',
-        text: `Honeybees communicate the location of food sources to each other using a behavior known as the
-        waggle dance. When a scout bee finds a promising patch of flowers, it returns to the hive and performs
-        a figure eight pattern on the vertical surface of the honeycomb, waggling its body rapidly during the
-        straight segment of the pattern. The angle of that straight run relative to straight up on the comb
-        indicates the direction of the food relative to the sun, while the duration of the waggle indicates
-        how far away the food source is. Other bees in the hive crowd around the dancing scout, sensing the
-        vibrations and following along to decode the message before flying out to the same location themselves.
-        This system allows a colony to quickly redirect its foraging effort toward the richest nearby food
-        sources without any single bee needing to understand the colony's overall strategy. Researchers have
-        studied the waggle dance for decades as a striking example of complex communication arising from a
-        very small brain, and some have even built robotic bees capable of performing a simplified version of
-        the dance to influence real hive behavior in experiments.`
     },
 ];
 
@@ -183,38 +167,6 @@ export const quizzes = {
                 'Environmental research and education'
             ],
             correctIndex: 1
-        }
-    ],
-    p4: [
-        {
-            question: 'What behavior do honeybees use to communicate food locations?',
-            options: ['The spiral dance', 'The waggle dance', 'The hover dance', 'The circle call'],
-            correctIndex: 1
-        },
-        {
-            question: 'What does the angle of the waggle run indicate?',
-            options: ['The size of the food source', 'The temperature outside', 'The direction of the food relative to the sun', 'The number of scouts needed'],
-            correctIndex: 2
-        },
-        {
-            question: 'What does the duration of the waggle indicate?',
-            options: ['The quality of the nectar', 'The distance to the food source', 'The size of the hive', 'The age of the scout bee'],
-            correctIndex: 1
-        },
-        {
-            question: 'How do other bees interpret the dance?',
-            options: [
-                'By tasting the dancer\'s wings',
-                'By sensing vibrations and following along',
-                'By smelling pheromones released during the dance',
-                'By watching from a distance without contact'
-            ],
-            correctIndex: 1
-        },
-        {
-            question: 'What have some researchers built to study the waggle dance?',
-            options: ['Robotic bees', 'Miniature hives', 'Synthetic pollen', 'Bee translation software'],
-            correctIndex: 0
         }
     ]
 };

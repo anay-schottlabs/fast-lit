@@ -4,54 +4,71 @@ import { db } from '@/firebase/index.js';
 import { collection, getDocs } from 'firebase/firestore';
 import Header from '../components/Header.vue';
 
-const records = ref([]);
+const runs = ref([]);
 const isLoading = ref(true);
 const loadError = ref('');
 
-// Firestore Timestamp objects (from serverTimestamp()) expose .toDate(); a
-// still-pending local write can hand back null instead, so guard both.
-function toDate(value) {
-    if (!value) {
-        return null;
-    }
-    return typeof value.toDate === 'function' ? value.toDate() : new Date(value);
-}
-
 onMounted(async () => {
     try {
-        const snapshot = await getDocs(collection(db, 'labTrials'));
-        records.value = snapshot.docs.map((docSnap) => {
-            const data = docSnap.data();
-            return {
-                id: docSnap.id,
-                ...data,
-                timestampDate: toDate(data.timestamp)
-            };
-        });
+        const snapshot = await getDocs(collection(db, 'labRuns'));
+        runs.value = snapshot.docs.map((docSnap) => ({ id: docSnap.id, ...docSnap.data() }));
     } catch (err) {
-        console.error('Failed to load lab trial records:', err);
-        loadError.value = 'Could not load trial records — check your connection and try again.';
+        console.error('Failed to load lab runs:', err);
+        loadError.value = 'Could not load results — check your connection and try again.';
     } finally {
         isLoading.value = false;
     }
 });
 
+// ----- flatten runs -> one row per trial, for a sortable table and CSV export -----
+
+const rows = computed(() => {
+    const flattened = [];
+    for (const run of runs.value) {
+        for (const trial of run.trials ?? []) {
+            flattened.push({
+                runId: run.id,
+                runCreatedAt: run.createdAt,
+                position: trial.position,
+                passageId: trial.passageId,
+                wpm: trial.wpm,
+                achievedWpm: trial.achievedWpm,
+                wordCount: trial.wordCount,
+                actualDurationMs: trial.actualDurationMs,
+                expectedDurationMs: trial.expectedDurationMs,
+                durationMismatchFlag: trial.durationMismatchFlag,
+                accuracyPct: trial.quiz?.accuracyPct ?? 0,
+                correctCount: trial.quiz?.correctCount ?? 0,
+                totalQuestions: trial.quiz?.totalQuestions ?? 0,
+                quizDurationMs: trial.quiz?.quizDurationMs ?? 0,
+                questions: trial.quiz?.questions ?? [],
+                runTotalElapsedMs: run.totalElapsedMs,
+                runTotalReadingMs: run.totalReadingMs,
+                runTotalQuizMs: run.totalQuizMs,
+                runOverallAccuracyPct: run.overallAccuracyPct,
+                userAgent: run.userAgent
+            });
+        }
+    }
+    return flattened;
+});
+
 // ----- sorting -----
 
-const sortKey = ref('timestampDate');
+const sortKey = ref('runCreatedAt');
 const sortDir = ref('desc');
 
 const sortableColumns = [
-    { key: 'participantId', label: 'Participant' },
-    { key: 'wpm', label: 'WPM' },
+    { key: 'runId', label: 'Run' },
+    { key: 'position', label: 'Order' },
     { key: 'passageId', label: 'Passage' },
-    { key: 'trialOrderIndex', label: 'Order' },
-    { key: 'comprehensionPct', label: 'Comprehension %' },
-    { key: 'actualDurationMs', label: 'Actual (ms)' },
+    { key: 'wpm', label: 'WPM' },
+    { key: 'achievedWpm', label: 'Achieved WPM' },
+    { key: 'accuracyPct', label: 'Accuracy %' },
+    { key: 'actualDurationMs', label: 'Reading (ms)' },
     { key: 'expectedDurationMs', label: 'Expected (ms)' },
     { key: 'durationMismatchFlag', label: 'Flag' },
-    { key: 'quizDurationMs', label: 'Quiz (ms)' },
-    { key: 'timestampDate', label: 'Recorded' }
+    { key: 'quizDurationMs', label: 'Quiz (ms)' }
 ];
 
 function setSort(key) {
@@ -63,12 +80,10 @@ function setSort(key) {
     }
 }
 
-const rows = computed(() => {
-    return records.value.map((r) => ({
-        ...r,
-        comprehensionPct: r.totalQuestions ? (r.correctCount / r.totalQuestions) * 100 : 0
-    }));
-});
+function toMillis(value) {
+    if (!value) return 0;
+    return typeof value.toMillis === 'function' ? value.toMillis() : Number(value) || 0;
+}
 
 const sortedRows = computed(() => {
     const sorted = [...rows.value];
@@ -76,9 +91,9 @@ const sortedRows = computed(() => {
         let av = a[sortKey.value];
         let bv = b[sortKey.value];
 
-        if (av instanceof Date || bv instanceof Date) {
-            av = av ? av.getTime() : 0;
-            bv = bv ? bv.getTime() : 0;
+        if (sortKey.value === 'runCreatedAt') {
+            av = toMillis(a.runCreatedAt);
+            bv = toMillis(b.runCreatedAt);
         }
         if (typeof av === 'boolean' || typeof bv === 'boolean') {
             av = av ? 1 : 0;
@@ -103,35 +118,25 @@ const wpmBuckets = computed(() => {
     const buckets = new Map();
     for (const r of rows.value) {
         if (!buckets.has(r.wpm)) {
-            buckets.set(r.wpm, { wpm: r.wpm, trialCount: 0, comprehensionSum: 0 });
+            buckets.set(r.wpm, { wpm: r.wpm, trialCount: 0, accuracySum: 0 });
         }
         const bucket = buckets.get(r.wpm);
         bucket.trialCount++;
-        bucket.comprehensionSum += r.comprehensionPct;
+        bucket.accuracySum += r.accuracyPct;
     }
     return [...buckets.values()]
-        .map((b) => ({ ...b, avgComprehensionPct: b.comprehensionSum / b.trialCount }))
+        .map((b) => ({ ...b, avgAccuracyPct: b.accuracySum / b.trialCount }))
         .sort((a, b) => a.wpm - b.wpm);
 });
 
 // ----- CSV export -----
 
-const csvColumns = [
-    'sessionId', 'participantId', 'passageId', 'wpm', 'trialOrderIndex',
-    'actualStartTime', 'actualEndTime', 'actualDurationMs', 'expectedDurationMs',
-    'durationMismatchFlag', 'quizAnswers', 'correctCount', 'totalQuestions',
-    'quizDurationMs', 'timestampDate'
-];
-
 function csvEscape(value) {
     if (value === null || value === undefined) {
         return '';
     }
-    if (Array.isArray(value)) {
-        value = value.join('|');
-    }
-    if (value instanceof Date) {
-        value = value.toISOString();
+    if (Array.isArray(value) || typeof value === 'object') {
+        value = JSON.stringify(value);
     }
     const str = String(value);
     if (/[",\n]/.test(str)) {
@@ -140,9 +145,16 @@ function csvEscape(value) {
     return str;
 }
 
+const csvColumns = [
+    'runId', 'position', 'passageId', 'wpm', 'achievedWpm', 'wordCount',
+    'actualDurationMs', 'expectedDurationMs', 'durationMismatchFlag',
+    'accuracyPct', 'correctCount', 'totalQuestions', 'quizDurationMs', 'questions',
+    'runTotalElapsedMs', 'runTotalReadingMs', 'runTotalQuizMs', 'runOverallAccuracyPct', 'userAgent'
+];
+
 function downloadCsv() {
     const lines = [csvColumns.join(',')];
-    for (const r of records.value) {
+    for (const r of rows.value) {
         lines.push(csvColumns.map((col) => csvEscape(r[col])).join(','));
     }
     const blob = new Blob([lines.join('\n')], { type: 'text/csv;charset=utf-8;' });
@@ -162,36 +174,38 @@ function downloadCsv() {
         <Header pageName="Lab Results" />
 
         <div class="mt-6 flex items-center justify-between">
-            <p class="text-sm text-white/60">{{ records.length }} trial record{{ records.length === 1 ? '' : 's' }} loaded</p>
-            <button class="btn-red" :disabled="isLoading || records.length === 0" @click="downloadCsv">
+            <p class="text-sm !text-ink-light">
+                {{ runs.length }} run{{ runs.length === 1 ? '' : 's' }}, {{ rows.length }} trial{{ rows.length === 1 ? '' : 's' }} loaded
+            </p>
+            <button class="btn-primary" :disabled="isLoading || rows.length === 0" @click="downloadCsv">
                 Download as CSV
             </button>
         </div>
 
-        <p v-if="isLoading" class="mt-10 text-center text-white/50">Loading…</p>
-        <p v-else-if="loadError" class="mt-10 text-center text-red-light">{{ loadError }}</p>
+        <p v-if="isLoading" class="mt-10 text-center !text-ink-light">Loading…</p>
+        <p v-else-if="loadError" class="mt-10 text-center text-error">{{ loadError }}</p>
 
         <template v-else>
             <!-- average comprehension per speed bucket -->
-            <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/40">
-                <h2 class="mb-3 text-lg font-semibold">Average Comprehension by Speed</h2>
+            <div class="mt-6 rounded-2xl border border-border bg-card card-shadow p-5">
+                <h2 class="mb-3 text-lg font-semibold !text-ink">Average Accuracy by Speed</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
-                            <tr class="text-white/50">
+                            <tr class="!text-ink-light">
                                 <th class="py-1 pr-6">WPM</th>
                                 <th class="py-1 pr-6">Trials</th>
-                                <th class="py-1 pr-6">Avg. Comprehension</th>
+                                <th class="py-1 pr-6">Avg. Accuracy</th>
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="bucket in wpmBuckets" :key="bucket.wpm" class="border-t border-white/10">
-                                <td class="py-2 pr-6 font-mono">{{ bucket.wpm }}</td>
-                                <td class="py-2 pr-6">{{ bucket.trialCount }}</td>
-                                <td class="py-2 pr-6 font-mono">{{ bucket.avgComprehensionPct.toFixed(1) }}%</td>
+                            <tr v-for="bucket in wpmBuckets" :key="bucket.wpm" class="border-t border-border">
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ bucket.wpm }}</td>
+                                <td class="py-2 pr-6 !text-ink">{{ bucket.trialCount }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ bucket.avgAccuracyPct.toFixed(1) }}%</td>
                             </tr>
                             <tr v-if="wpmBuckets.length === 0">
-                                <td class="py-2 text-white/40" colspan="3">No trials yet.</td>
+                                <td class="py-2 !text-ink-light" colspan="3">No trials yet.</td>
                             </tr>
                         </tbody>
                     </table>
@@ -199,16 +213,16 @@ function downloadCsv() {
             </div>
 
             <!-- raw trial records -->
-            <div class="mt-6 rounded-2xl border border-white/10 bg-white/5 p-5 shadow-2xl shadow-black/40">
-                <h2 class="mb-3 text-lg font-semibold">All Trials</h2>
+            <div class="mt-6 rounded-2xl border border-border bg-card card-shadow p-5">
+                <h2 class="mb-3 text-lg font-semibold !text-ink">All Trials</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
                         <thead>
-                            <tr class="text-white/50">
+                            <tr class="!text-ink-light">
                                 <th
                                     v-for="col in sortableColumns"
                                     :key="col.key"
-                                    class="cursor-pointer select-none whitespace-nowrap py-1 pr-6 hover:text-white"
+                                    class="cursor-pointer select-none whitespace-nowrap py-1 pr-6 hover:!text-ink"
                                     @click="setSort(col.key)"
                                 >
                                     {{ col.label }}
@@ -217,22 +231,22 @@ function downloadCsv() {
                             </tr>
                         </thead>
                         <tbody>
-                            <tr v-for="row in sortedRows" :key="row.id" class="border-t border-white/10">
-                                <td class="py-2 pr-6 whitespace-nowrap">{{ row.participantId }}</td>
-                                <td class="py-2 pr-6 font-mono">{{ row.wpm }}</td>
-                                <td class="py-2 pr-6">{{ row.passageId }}</td>
-                                <td class="py-2 pr-6 font-mono">{{ row.trialOrderIndex }}</td>
-                                <td class="py-2 pr-6 font-mono">{{ row.comprehensionPct.toFixed(0) }}% ({{ row.correctCount }}/{{ row.totalQuestions }})</td>
-                                <td class="py-2 pr-6 font-mono">{{ row.actualDurationMs }}</td>
-                                <td class="py-2 pr-6 font-mono">{{ row.expectedDurationMs }}</td>
+                            <tr v-for="row in sortedRows" :key="row.runId + '-' + row.position" class="border-t border-border">
+                                <td class="py-2 pr-6 font-mono text-xs !text-ink-light">{{ row.runId.slice(0, 6) }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.position }}</td>
+                                <td class="py-2 pr-6 !text-ink">{{ row.passageId }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.wpm }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.achievedWpm }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.accuracyPct.toFixed(0) }}% ({{ row.correctCount }}/{{ row.totalQuestions }})</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.actualDurationMs }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.expectedDurationMs }}</td>
                                 <td class="py-2 pr-6">
-                                    <span v-if="row.durationMismatchFlag" class="rounded-full bg-red/20 px-2 py-0.5 text-xs !text-red-light">flagged</span>
+                                    <span v-if="row.durationMismatchFlag" class="rounded-full bg-error/10 px-2 py-0.5 text-xs text-error">flagged</span>
                                 </td>
-                                <td class="py-2 pr-6 font-mono">{{ row.quizDurationMs }}</td>
-                                <td class="py-2 pr-6 whitespace-nowrap text-white/60">{{ row.timestampDate ? row.timestampDate.toLocaleString() : '—' }}</td>
+                                <td class="py-2 pr-6 font-mono !text-ink">{{ row.quizDurationMs }}</td>
                             </tr>
                             <tr v-if="sortedRows.length === 0">
-                                <td class="py-2 text-white/40" colspan="10">No trials yet.</td>
+                                <td class="py-2 !text-ink-light" colspan="10">No trials yet.</td>
                             </tr>
                         </tbody>
                     </table>
