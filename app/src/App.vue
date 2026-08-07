@@ -114,17 +114,6 @@ const footerVariant = computed(() => {
                     </svg>
                 </router-link>
             </nav>
-
-            <!-- pinned "Start Reading" CTA -->
-            <router-link
-                to="/read"
-                class="tooltip tooltip-right mt-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-ink text-invert focus-ring"
-                data-tip="Start Reading"
-            >
-                <svg width="18" height="18" viewBox="0 0 24 24" class="shrink-0 fill-invert">
-                    <path d="M8 5v14l11-7z" />
-                </svg>
-            </router-link>
         </aside>
 
         <div class="flex min-h-screen min-w-0 flex-1 flex-col">

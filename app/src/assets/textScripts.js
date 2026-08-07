@@ -757,7 +757,8 @@ export class ChangelogScripts {
                     "88px width) and were using daisyUI's default tooltip colors, which don't track this site's palette",
                     "and looked off in dark mode. Tooltips now render outside the rail correctly and use the same",
                     "ink-fill/inverted-text treatment as everything else."
-                ])
+                ]),
+                "Removed the pinned \"Start Reading\" play button from the bottom of the sidebar — Read is already one click away as a regular nav item just above it."
             ]
         )
     ]
