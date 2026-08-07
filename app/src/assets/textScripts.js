@@ -683,7 +683,8 @@ export class ChangelogScripts {
                     "how the iOS app's own read screen deliberately drops its terracotta accent there and leans on",
                     "ink vs. muted-ink contrast instead of a colored focal letter. Everywhere else in the settings",
                     "modal (borders, cards, kbd chips, the Update button) picks up the standard new palette."
-                ])
+                ]),
+                "Restyled the Extension and Feedback pages to the new palette, including the old glow-wrapper technique both used purely to support the removed decorative glow — simplified away now that it's gone."
             ]
         )
     ]
