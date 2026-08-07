@@ -655,7 +655,15 @@ export class ChangelogScripts {
                     "collection plus the new labSessions and labTrials collections the Lab page writes to —",
                     "fixes the permission errors those writes were hitting with no rules in place."
                 ]),
-                "Renamed the app from Fast Lit to Orbit across the site's live copy — the wordmark, page title, hero/feature copy, and privacy policy. The Fast Lit Grabber browser extension keeps its own shipped name, and historical changelog entries below are left as written at the time."
+                "Renamed the app from Fast Lit to Orbit across the site's live copy — the wordmark, page title, hero/feature copy, and privacy policy. The Fast Lit Grabber browser extension keeps its own shipped name, and historical changelog entries below are left as written at the time.",
+                text([
+                    "Started a full visual redesign to match the look of the Orbit iOS app: a warm cream and",
+                    "off-white palette with a terracotta accent (replacing the old dark navy/red theme), Nunito as",
+                    "the site-wide rounded font (standing in for the app's SF Rounded), pill-shaped buttons, soft",
+                    "warm shadows instead of heavy black ones, and a new orbit ring-and-dot mark replacing the old",
+                    "favicon. Light-only by design, matching the app's light theme — no theme switcher. Rolling out",
+                    "page by page over the next several entries."
+                ])
             ]
         )
     ]
