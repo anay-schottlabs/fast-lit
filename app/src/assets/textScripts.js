@@ -668,6 +668,13 @@ export class ChangelogScripts {
                     "Restyled the sidebar and header logo to match: the floating sidebar card is now cream/off-white",
                     "with a terracotta active-page pill, and the wordmark's old hand-drawn mark is replaced with a",
                     "simple ring-and-dot orbit mark, matching the new favicon."
+                ]),
+                text([
+                    "Restyled the home page: removed the old decorative red glow behind the hero, recolored every",
+                    "card/badge/button to the new palette, and settled on a rule carried through the rest of the",
+                    "redesign — terracotta is used for fills (buttons, badges, icon circles, progress) and never as",
+                    "plain heading or body text, matching how the iOS app itself only ever uses its accent color",
+                    "that way."
                 ])
             ]
         )
