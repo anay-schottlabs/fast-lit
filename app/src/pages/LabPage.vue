@@ -54,7 +54,7 @@ function beginPractice() {
 
 const PRACTICE_WPM = 100;
 const PRACTICE_TEXT =
-    "This experiment tests how well people understand text shown using a technique called RSVP, or rapid serial visual presentation. Instead of reading a full page, words appear one at a time, right here on the screen, at a fixed pace you don't control. Today, you'll read several short passages this way, at three different speeds, and after each one you'll answer a few comprehension questions. You'll also read some passages normally, but with a time limit. Just read naturally and answer as best you can. This practice round starts with a regular passage, just like the one you're reading now.";
+    "This experiment tests how well people understand text shown using a technique called RSVP, or rapid serial visual presentation. Instead of reading a full page, words appear one at a time, right here on the screen, at a fixed pace you don't control. Today, you'll read several short passages this way, at a couple different speeds, and after each one you'll answer a few comprehension questions. You'll also read some passages normally, but with a time limit. Just read naturally and answer as best you can. This practice round starts with a regular passage, just like the one you're reading now.";
 
 function onPracticeRegularContinue() {
     stage.value = Stage.PRACTICE_QUIZ_DEMO;
@@ -88,7 +88,7 @@ function onPracticeRsvpFinished() {
 
 // ----- main trials: fixed ascending speed order, timed then rsvp at each -----
 
-const MAIN_SPEEDS = [250, 350, 450];
+const MAIN_SPEEDS = [250, 450];
 
 // Rough per-trial duration estimates for the start-screen primer, derived
 // from the actual pool's average word count/question count rather than a
@@ -98,11 +98,12 @@ const MAIN_SPEEDS = [250, 350, 450];
 const AVG_WORD_COUNT = passages.reduce((sum, p) => sum + p.text.trim().split(/\s+/).length, 0) / passages.length;
 const AVG_QUESTIONS_PER_PASSAGE = passages.reduce((sum, p) => sum + p.questions.length, 0) / passages.length;
 const SECONDS_PER_QUESTION_ESTIMATE = 10;
+const PRACTICE_MINUTES_ESTIMATE = 2;
 
 function estimateTrialMinutes(wpm) {
     const readSeconds = (AVG_WORD_COUNT / wpm) * 60;
     const quizSeconds = AVG_QUESTIONS_PER_PASSAGE * SECONDS_PER_QUESTION_ESTIMATE;
-    return `~${((readSeconds + quizSeconds) / 60).toFixed(1)} min`;
+    return (readSeconds + quizSeconds) / 60;
 }
 
 // One row per main trial, in the same fixed order the run actually uses —
@@ -113,7 +114,12 @@ const trialPreview = MAIN_SPEEDS.flatMap((wpm, i) => [
     { label: `Trial ${i * 2 + 2} — RSVP @ ${wpm} wpm`, minutes: estimateTrialMinutes(wpm) }
 ]);
 
-// One passage per trial (timed + rsvp, at each of the three speeds), drawn
+// Total primer estimate — practice plus every trial above — so this can't
+// silently drift out of sync with MAIN_SPEEDS or trialPreview the way a
+// hardcoded "~10-15 min" string could.
+const totalMinutesEstimate = PRACTICE_MINUTES_ESTIMATE + trialPreview.reduce((sum, t) => sum + t.minutes, 0);
+
+// One passage per trial (timed + rsvp, at each speed), drawn
 // without replacement so no passage repeats within a run.
 function buildMainTrials(pool) {
     const drawn = shuffle(pool).slice(0, MAIN_SPEEDS.length * 2);
@@ -418,7 +424,7 @@ async function finalizeRun() {
                 <ul class="flex flex-col gap-2 text-sm">
                     <li class="flex items-baseline justify-between gap-4">
                         <span class="!text-ink">Practice walkthrough</span>
-                        <span class="!text-ink-light">~2 min</span>
+                        <span class="!text-ink-light">~{{ PRACTICE_MINUTES_ESTIMATE }} min</span>
                     </li>
                     <li
                         v-for="t in trialPreview"
@@ -426,11 +432,11 @@ async function finalizeRun() {
                         class="flex items-baseline justify-between gap-4"
                     >
                         <span class="!text-ink">{{ t.label }}</span>
-                        <span class="!text-ink-light shrink-0">{{ t.minutes }}</span>
+                        <span class="!text-ink-light shrink-0">~{{ t.minutes.toFixed(1) }} min</span>
                     </li>
                     <li class="flex items-baseline justify-between gap-4 border-t border-border pt-2 font-semibold">
                         <span class="!text-ink">Total</span>
-                        <span class="!text-ink">~10–15 min</span>
+                        <span class="!text-ink">~{{ Math.round(totalMinutesEstimate) }}–{{ Math.round(totalMinutesEstimate * 1.5) }} min</span>
                     </li>
                 </ul>
             </div>
