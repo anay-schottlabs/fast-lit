@@ -7,7 +7,7 @@ export class HomeScripts {
     static heroTitle = "Unlock your potential.";
     static heroContent = text([
         "Read faster, stay focused, and absorb more.",
-        "Fast Lit uses RSVP and a focal point system to help you concentrate and cut out distractions.",
+        "Orbit uses RSVP and a focal point system to help you concentrate and cut out distractions.",
         "No ads—just a clean, efficient reading experience."
     ]);
     static heroButton = "Start Reading";
@@ -38,7 +38,7 @@ export class HomeScripts {
 
 export class ReadScripts {
     static sampleText = text([
-        "Welcome to Fast Lit.",
+        "Welcome to Orbit.",
         "This application uses Rapid Serial Visual Presentation, or RSVP,",
         "to display words one at a time and help you focus on the content instead of moving your eyes across a page.",
         "Each word is centered around a red focal point letter,",
@@ -63,7 +63,7 @@ export class ReadScripts {
         "but to allow your brain to absorb information more efficiently.",
         "You may also notice that traditional reading often involves jumping backward",
         "to reread words or lines.",
-        "Fast Lit removes much of that temptation by presenting text in a steady stream,",
+        "Orbit removes much of that temptation by presenting text in a steady stream,",
         "helping you maintain focus and momentum.",
 
         "Like any skill, speed reading improves with practice.",
@@ -80,11 +80,11 @@ export class ReadScripts {
         "The consistent pace encourages active attention",
         "and helps train you to remain focused on the content in front of you.",
 
-        "Fast Lit also includes the Fast Lit Grabber browser extension,",
+        "Orbit also includes the Fast Lit Grabber browser extension,",
         "which allows you to import articles directly from the web.",
         "Instead of copying and pasting text manually,",
         "simply open an article, activate the extension,",
-        "and send the content directly into Fast Lit.",
+        "and send the content directly into Orbit.",
         "The extension extracts the readable text from a page and loads it into the reader,",
         "making it easy to move from browsing to focused reading in just a few clicks.",
         "Whether you are reading news articles, blog posts, research papers,",
@@ -106,7 +106,7 @@ export class ExtensionScripts {
     static heroBadge = "Chrome Extension";
     static heroTitle = "Fast Lit Grabber";
     static heroContent = text([
-        "Fast Lit Grabber pulls the readable text out of any article and sends it straight into Fast Lit —",
+        "Fast Lit Grabber pulls the readable text out of any article and sends it straight into Orbit —",
         "no copying, no pasting, no cleanup.",
         "Open an article, click the extension, and start reading at speed in seconds."
     ]);
@@ -115,7 +115,7 @@ export class ExtensionScripts {
     static features = [
         {
             title: "One-Click Import",
-            description: "Click the Fast Lit Grabber icon on any article and its content lands directly in Fast Lit's reader, ready to go."
+            description: "Click the Fast Lit Grabber icon on any article and its content lands directly in Orbit's reader, ready to go."
         },
         {
             title: "Clean Article Extraction",
@@ -143,7 +143,7 @@ export class ExtensionScripts {
         },
         {
             title: "Read Instantly",
-            description: "Fast Lit opens automatically with your text loaded and ready — press play and start reading at speed."
+            description: "Orbit opens automatically with your text loaded and ready — press play and start reading at speed."
         }
     ];
 
@@ -154,11 +154,11 @@ export class ExtensionScripts {
         },
         {
             question: "What happens to the page content?",
-            answer: "The extension only reads a page when you click its icon. The extracted text is sent to Fast Lit to display for reading — it isn't stored by the extension or shared with third parties."
+            answer: "The extension only reads a page when you click its icon. The extracted text is sent to Orbit to display for reading — it isn't stored by the extension or shared with third parties."
         },
         {
             question: "What if a page won't grab cleanly?",
-            answer: "Some pages (paywalled articles, apps disguised as websites, pages with little actual text) can't be reliably extracted. You can always paste text into Fast Lit directly instead."
+            answer: "Some pages (paywalled articles, apps disguised as websites, pages with little actual text) can't be reliably extracted. You can always paste text into Orbit directly instead."
         },
         {
             question: "Is it available for browsers other than Chrome?",
@@ -179,10 +179,10 @@ export class FeedbackScripts {
         "https://docs.google.com/forms/d/e/1FAIpQLSdaEN4WwLu2AzdmdHN8mrzijrTXoN-K_JK5rBbj5dCeXVxqdA/viewform?usp=publish-editor";
     static heroTitle = "Tell Us What You Think";
     static heroContent = text([
-        "Fast Lit is built to help people read faster and stay focused.",
+        "Orbit is built to help people read faster and stay focused.",
         "If you've found a bug, have an idea for a new feature,",
         "or want to share your experience using the app, we'd love to hear from you.",
-        "Every suggestion helps make Fast Lit better for everyone."
+        "Every suggestion helps make Orbit better for everyone."
     ]);
     static heroButton = "Share Your Feedback";
     static categories = ["Bug Reports", "Feature Ideas", "General Thoughts"];
@@ -192,7 +192,7 @@ export class PrivacyScripts {
     static title = "Privacy Policy for Fast Lit Grabber";
     static lastUpdated = "Last Updated: July 2026";
     static intro = text([
-        "Fast Lit Grabber is designed to help users quickly send article text from webpages to the Fast Lit reading application.",
+        "Fast Lit Grabber is designed to help users quickly send article text from webpages to the Orbit reading application.",
         "We respect your privacy and are committed to collecting as little information as possible."
     ]);
     static sections = [
@@ -201,8 +201,8 @@ export class PrivacyScripts {
             paragraphs: [
                 text([
                     "When you use the extension, Fast Lit Grabber temporarily accesses the content of the webpage you choose.",
-                    "This content is used solely to extract readable article text and send it to the Fast Lit web application",
-                    "so you can read it using Fast Lit's interface."
+                    "This content is used solely to extract readable article text and send it to the Orbit web application",
+                    "so you can read it using Orbit's interface."
                 ]),
                 "The extension does not access webpage content unless you explicitly activate it."
             ]
@@ -230,7 +230,7 @@ export class PrivacyScripts {
             list: [
                 "Read only when you activate the extension.",
                 "Processed to extract readable text.",
-                "Sent to the Fast Lit website so the text can be displayed for reading."
+                "Sent to the Orbit website so the text can be displayed for reading."
             ],
             after: [
                 text([
@@ -240,10 +240,10 @@ export class PrivacyScripts {
             ]
         },
         {
-            heading: "Data Stored by Fast Lit",
+            heading: "Data Stored by Orbit",
             paragraphs: [
                 text([
-                    "The Fast Lit website may maintain anonymous aggregate statistics, such as the total number of words read",
+                    "The Orbit website may maintain anonymous aggregate statistics, such as the total number of words read",
                     "across all users. These statistics do not identify individual users and are not linked to personal information."
                 ])
             ]
@@ -252,7 +252,7 @@ export class PrivacyScripts {
             heading: "Third-Party Services",
             paragraphs: [
                 text([
-                    "Fast Lit uses Google Firebase to store anonymous aggregate application statistics.",
+                    "Orbit uses Google Firebase to store anonymous aggregate application statistics.",
                     "No personally identifiable information is stored through Firebase."
                 ])
             ]
@@ -266,7 +266,7 @@ export class PrivacyScripts {
         {
             heading: "Security",
             paragraphs: [
-                "Communication between the extension and the Fast Lit website occurs over encrypted HTTPS connections."
+                "Communication between the extension and the Orbit website occurs over encrypted HTTPS connections."
             ]
         },
         {
@@ -654,7 +654,8 @@ export class ChangelogScripts {
                     "Deployed Firestore security rules for the fast-lit project, covering the existing stats",
                     "collection plus the new labSessions and labTrials collections the Lab page writes to —",
                     "fixes the permission errors those writes were hitting with no rules in place."
-                ])
+                ]),
+                "Renamed the app from Fast Lit to Orbit across the site's live copy — the wordmark, page title, hero/feature copy, and privacy policy. The Fast Lit Grabber browser extension keeps its own shipped name, and historical changelog entries below are left as written at the time."
             ]
         )
     ]

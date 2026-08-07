@@ -22,7 +22,7 @@ const props = defineProps({
     >
         <div class="text-4xl font-bold flex items-center space-x-3">
             <!-- name of website -->
-            <span>Fast Lit</span>
+            <span>Orbit</span>
 
             <!-- logo -->
             <svg

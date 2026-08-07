@@ -56,7 +56,7 @@ import { PrivacyScripts } from '@/assets/textScripts.js';
                 </div>
             </div>
 
-            <p class="mt-8 text-center text-sm text-white/40">&copy; 2026 Fast Lit</p>
+            <p class="mt-8 text-center text-sm text-white/40">&copy; 2026 Orbit</p>
         </div>
     </div>
 </template>
