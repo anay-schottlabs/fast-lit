@@ -2,7 +2,6 @@
 import { ref, computed } from 'vue';
 import { db } from '@/firebase/index.js';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
-import Header from '../components/Header.vue';
 import Reader from '../components/Reader.vue';
 import { trials as trialConfig, passages, quizzes } from '@/assets/labData.js';
 
@@ -208,10 +207,8 @@ async function finalizeRun() {
 
 <template>
     <!-- start screen — no participant/session fields, just an explanation and a Begin button -->
-    <div v-if="stage === Stage.START" class="mx-auto max-w-xl p-5 text-center">
-        <Header pageName="Lab" />
-
-        <div class="mt-16 rounded-3xl border border-border bg-card card-shadow p-10">
+    <div v-if="stage === Stage.START" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
             <h2 class="mb-3 text-2xl font-bold !text-ink">Reading Study</h2>
             <p class="mb-8 !text-ink-light">
                 You'll read three short passages at different speeds. After each one, answer a few quick
@@ -224,9 +221,7 @@ async function finalizeRun() {
     <!-- reading stage: reuses Reader.vue, locked down so a trial can only be
          played through once started, and isolated from the main /read page's
          localStorage progress and the site's aggregate word-count stats -->
-    <div v-else-if="stage === Stage.READING" class="mx-auto max-w-4xl p-5">
-        <Header pageName="Lab" />
-
+    <div v-else-if="stage === Stage.READING" class="mx-auto max-w-4xl px-5 pt-16 pb-5">
         <p class="mb-4 mt-2 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
             Passage {{ currentTrialIndex + 1 }} of {{ trialOrder.length }}
         </p>
@@ -250,24 +245,22 @@ async function finalizeRun() {
 
     <!-- comprehension quiz — one question at a time, so time-to-answer can
          be measured per question rather than only for the quiz as a whole -->
-    <div v-else-if="stage === Stage.QUIZ" class="mx-auto max-w-2xl p-5">
-        <Header pageName="Lab" />
-
+    <div v-else-if="stage === Stage.QUIZ" class="mx-auto max-w-2xl px-5 pt-16 pb-5">
         <p class="mb-2 mt-2 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
             Passage {{ currentTrialIndex + 1 }} of {{ trialOrder.length }} — Question
             {{ currentQuestionIndex + 1 }} of {{ currentQuizQuestions.length }}
         </p>
 
-        <div class="mt-6 rounded-2xl border border-border bg-card card-shadow p-6">
+        <div class="mt-6 rounded-2xl border border-border bg-card p-6">
             <p class="mb-5 text-lg font-semibold !text-ink">{{ currentQuestion.question }}</p>
             <div class="flex flex-col gap-2">
                 <label
                     v-for="(option, oi) in currentQuestion.options"
                     :key="oi"
-                    class="flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition-colors hover:bg-terracotta/5"
-                    :class="selectedOption === oi ? 'border-terracotta bg-terracotta/10' : 'border-border'"
+                    class="flex cursor-pointer items-center gap-3 rounded-xl border px-4 py-3 transition-colors hover:bg-ink/5"
+                    :class="selectedOption === oi ? 'border-ink bg-ink/10' : 'border-border'"
                 >
-                    <input type="radio" class="radio accent-terracotta" name="quiz-option" :value="oi" v-model="selectedOption" />
+                    <input type="radio" class="radio accent-ink" name="quiz-option" :value="oi" v-model="selectedOption" />
                     <span class="!text-ink">{{ option }}</span>
                 </label>
             </div>
@@ -284,10 +277,8 @@ async function finalizeRun() {
 
     <!-- saving the run — a distinct screen (not folded into DONE) so a
          failed write shows a retry instead of silently losing the data -->
-    <div v-else-if="stage === Stage.SAVING" class="mx-auto max-w-xl p-5 text-center">
-        <Header pageName="Lab" />
-
-        <div class="mt-16 rounded-3xl border border-border bg-card card-shadow p-10">
+    <div v-else-if="stage === Stage.SAVING" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
             <p v-if="isSaving" class="!text-ink-light">Saving your results…</p>
             <template v-else>
                 <p class="mb-4 text-error">{{ saveError }}</p>
@@ -297,14 +288,13 @@ async function finalizeRun() {
     </div>
 
     <!-- end screen — no results shown -->
-    <div v-else-if="stage === Stage.DONE" class="mx-auto max-w-xl p-5 text-center">
-        <Header pageName="Lab" />
-
-        <div class="mt-16 rounded-3xl border border-border bg-card card-shadow p-10">
+    <div v-else-if="stage === Stage.DONE" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
             <h2 class="mb-3 text-3xl font-bold !text-ink">Thanks, you're done!</h2>
             <p class="!text-ink-light">Your responses have been recorded. You can close this window now.</p>
         </div>
     </div>
+
 </template>
 
 <style scoped></style>

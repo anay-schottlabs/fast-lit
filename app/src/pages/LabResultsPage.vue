@@ -2,7 +2,6 @@
 import { ref, computed, onMounted } from 'vue';
 import { db } from '@/firebase/index.js';
 import { collection, getDocs } from 'firebase/firestore';
-import Header from '../components/Header.vue';
 
 const runs = ref([]);
 const isLoading = ref(true);
@@ -170,8 +169,8 @@ function downloadCsv() {
 </script>
 
 <template>
-    <div class="mx-auto max-w-6xl p-5">
-        <Header pageName="Lab Results" />
+    <div class="mx-auto max-w-6xl p-5 pt-16">
+        <h1 class="font-display text-3xl font-bold text-ink">Lab Results</h1>
 
         <div class="mt-6 flex items-center justify-between">
             <p class="text-sm !text-ink-light">
@@ -187,7 +186,7 @@ function downloadCsv() {
 
         <template v-else>
             <!-- average comprehension per speed bucket -->
-            <div class="mt-6 rounded-2xl border border-border bg-card card-shadow p-5">
+            <div class="mt-6 rounded-2xl border border-border bg-card p-5">
                 <h2 class="mb-3 text-lg font-semibold !text-ink">Average Accuracy by Speed</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">
@@ -213,7 +212,7 @@ function downloadCsv() {
             </div>
 
             <!-- raw trial records -->
-            <div class="mt-6 rounded-2xl border border-border bg-card card-shadow p-5">
+            <div class="mt-6 rounded-2xl border border-border bg-card p-5">
                 <h2 class="mb-3 text-lg font-semibold !text-ink">All Trials</h2>
                 <div class="overflow-x-auto">
                     <table class="w-full text-left text-sm">

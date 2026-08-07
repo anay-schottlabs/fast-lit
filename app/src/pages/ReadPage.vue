@@ -1,7 +1,6 @@
 <script setup>
 import { ref, watch, useTemplateRef } from 'vue';
 import { Readability } from '@mozilla/readability';
-import Header from '../components/Header.vue';
 import Reader from '../components/Reader.vue';
 import { ReadScripts } from '@/assets/textScripts.js';
 
@@ -167,10 +166,9 @@ const settingsModal = ref(false);
 </script>
 
 <template>
-    <!-- no ambient glow on this page (unlike Home/Feedback) — it's meant for
-         focused reading, and the glow was a bit distracting -->
-    <Header pageName="Read" />
-
+    <!-- no separate page-title header — the sidebar already shows which
+         page you're on, and this page's own content (gear icon, reading
+         stage) is self-explanatory. -->
     <!-- main page content -->
     <div class="mx-auto max-w-4xl p-5">
         <div class="mb-5">
@@ -236,7 +234,7 @@ const settingsModal = ref(false);
         class="modal"
         :class="{ 'modal-open': settingsModal }"
     >
-        <div class="modal-box bg-cream h-7/8 flex flex-col overflow-hidden rounded-3xl border border-border card-shadow">
+        <div class="modal-box bg-bg h-7/8 flex flex-col overflow-hidden rounded-3xl border border-border">
             <!-- Header: close button + title share one relative row, so their
                  alignment is structural rather than two independently
                  absolutely-positioned elements coincidentally lining up.
@@ -297,7 +295,7 @@ const settingsModal = ref(false);
                 <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">Paste Text</p>
                 <div class="p-1">
                     <textarea
-                        class="textarea h-[300px] w-full rounded-2xl border border-border bg-card transition-colors focus:border-terracotta/60 focus:outline-none"
+                        class="textarea h-[300px] w-full rounded-2xl border border-border bg-card transition-colors focus:border-ink/40 focus:outline-none"
                         placeholder="Paste some text to start reading..."
                         v-model="formText"
                     ></textarea>
@@ -315,7 +313,7 @@ const settingsModal = ref(false);
                     <!-- play/pause button -->
                     <li class="list-row">
                         <div class="w-20">
-                            <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">space</kbd>
+                            <kbd class="kbd kbd-xl rounded-lg bg-bg !text-ink border border-border shadow-sm">space</kbd>
                         </div>
                         <div class="list-col-grow flex items-center">
                             <div class="!text-ink">Play / Pause</div>
@@ -325,7 +323,7 @@ const settingsModal = ref(false);
                     <!-- reset button -->
                     <li class="list-row">
                         <div class="w-20">
-                            <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">r</kbd>
+                            <kbd class="kbd kbd-xl rounded-lg bg-bg !text-ink border border-border shadow-sm">r</kbd>
                         </div>
                         <div class="list-col-grow flex items-center">
                             <div class="!text-ink">Restart Player</div>
@@ -336,8 +334,8 @@ const settingsModal = ref(false);
                     <li class="list-row">
                         <div class="w-20">
                             <span class="inline-flex gap-2">
-                                <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">◀︎</kbd>
-                                <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">▶︎</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-bg !text-ink border border-border shadow-sm">◀︎</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-bg !text-ink border border-border shadow-sm">▶︎</kbd>
                             </span>
                         </div>
                         <div class="list-col-grow flex items-center">
@@ -349,8 +347,8 @@ const settingsModal = ref(false);
                     <li class="list-row">
                         <div class="w-20">
                             <span class="inline-flex gap-2">
-                                <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">▲</kbd>
-                                <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">▼</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-bg !text-ink border border-border shadow-sm">▲</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-bg !text-ink border border-border shadow-sm">▼</kbd>
                             </span>
                         </div>
                         <div class="list-col-grow flex items-center">

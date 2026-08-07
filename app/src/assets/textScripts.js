@@ -3,24 +3,18 @@ function text(stringList) {
 }
 
 export class HomeScripts {
-    static heroBadge = "Rapid Serial Visual Presentation";
-    static heroTitle = "Unlock your potential.";
+    static heroTitle = "Your cozy corner for stories, at your own pace.";
     static heroContent = text([
-        "Read faster, stay focused, and absorb more.",
-        "Orbit uses RSVP and a focal point system to help you concentrate and cut out distractions.",
-        "No ads—just a clean, efficient reading experience."
+        "Orbit shows you one word at a time, at a pace you set —",
+        "with big text, big buttons, and nothing else fighting for your attention."
     ]);
     static heroButton = "Start Reading";
-
-    // words cycled through by the live preview widget in the hero section
-    static demoText = "Read at the speed of thought, and get through text faster than you ever have.";
-    static demoWords = HomeScripts.demoText.split(" ");
-    static demoWpm = 380;
+    static heroSecondaryButton = "Take the Reading Survey";
 
     static steps = [
         {
             title: "Paste or Grab",
-            description: "Paste any text, or use the Fast Lit Grabber browser extension to pull in an article from the web."
+            description: "Paste any text, or use the Orbit Grabber browser extension to pull in an article from the web."
         },
         {
             title: "Set Your Pace",
@@ -28,7 +22,7 @@ export class HomeScripts {
         },
         {
             title: "Read & Focus",
-            description: "Follow the red focal point as words stream by, cutting out eye movement and distraction."
+            description: "Follow the focal point as words stream by, cutting out eye movement and distraction."
         }
     ];
 
@@ -41,13 +35,13 @@ export class ReadScripts {
         "Welcome to Orbit.",
         "This application uses Rapid Serial Visual Presentation, or RSVP,",
         "to display words one at a time and help you focus on the content instead of moving your eyes across a page.",
-        "Each word is centered around a red focal point letter,",
+        "Each word is centered around a focal point letter,",
         "allowing your gaze to remain fixed while your peripheral vision processes the rest of the word.",
         "This reduces unnecessary eye movement and creates a smoother reading experience.",
 
         "To get started, press the play button and follow the words as they appear.",
         "If the speed feels too fast or too slow, open the Settings menu in the top-right corner",
-        "to adjust your words per minute, paste your own text, import content using the Fast Lit Grabber extension,",
+        "to adjust your words per minute, paste your own text, import content using the Orbit Grabber extension,",
         "or view the available keyboard shortcuts.",
         "Press the spacebar to play or pause at any time.",
         "Press R to reset the reader to the beginning.",
@@ -80,7 +74,7 @@ export class ReadScripts {
         "The consistent pace encourages active attention",
         "and helps train you to remain focused on the content in front of you.",
 
-        "Orbit also includes the Fast Lit Grabber browser extension,",
+        "Orbit also includes the Orbit Grabber browser extension,",
         "which allows you to import articles directly from the web.",
         "Instead of copying and pasting text manually,",
         "simply open an article, activate the extension,",
@@ -104,9 +98,9 @@ export class ReadScripts {
 export class ExtensionScripts {
     static storeUrl = "https://chromewebstore.google.com/detail/fast-lit-grabber/kmlpobbeoknaajpbfpnogchfpifaobfl";
     static heroBadge = "Chrome Extension";
-    static heroTitle = "Fast Lit Grabber";
+    static heroTitle = "Orbit Grabber";
     static heroContent = text([
-        "Fast Lit Grabber pulls the readable text out of any article and sends it straight into Orbit —",
+        "Orbit Grabber pulls the readable text out of any article and sends it straight into Orbit —",
         "no copying, no pasting, no cleanup.",
         "Open an article, click the extension, and start reading at speed in seconds."
     ]);
@@ -115,7 +109,7 @@ export class ExtensionScripts {
     static features = [
         {
             title: "One-Click Import",
-            description: "Click the Fast Lit Grabber icon on any article and its content lands directly in Orbit's reader, ready to go."
+            description: "Click the Orbit Grabber icon on any article and its content lands directly in Orbit's reader, ready to go."
         },
         {
             title: "Clean Article Extraction",
@@ -131,7 +125,7 @@ export class ExtensionScripts {
     static steps = [
         {
             title: "Install the Extension",
-            description: "Add Fast Lit Grabber to Chrome from the Chrome Web Store. It takes a few seconds and doesn't require an account."
+            description: "Add Orbit Grabber to Chrome from the Chrome Web Store. It takes a few seconds and doesn't require an account."
         },
         {
             title: "Open an Article",
@@ -139,7 +133,7 @@ export class ExtensionScripts {
         },
         {
             title: "Click the Grabber Icon",
-            description: "Click the Fast Lit Grabber icon in your browser toolbar to extract the page's readable text."
+            description: "Click the Orbit Grabber icon in your browser toolbar to extract the page's readable text."
         },
         {
             title: "Read Instantly",
@@ -149,8 +143,8 @@ export class ExtensionScripts {
 
     static faq = [
         {
-            question: "Is Fast Lit Grabber free?",
-            answer: "Yes. Fast Lit Grabber is completely free, with no account, subscription, or hidden costs."
+            question: "Is Orbit Grabber free?",
+            answer: "Yes. Orbit Grabber is completely free, with no account, subscription, or hidden costs."
         },
         {
             question: "What happens to the page content?",
@@ -162,13 +156,13 @@ export class ExtensionScripts {
         },
         {
             question: "Is it available for browsers other than Chrome?",
-            answer: "Fast Lit Grabber currently supports Chrome and other Chromium-based browsers (like Edge and Brave) through the Chrome Web Store."
+            answer: "Orbit Grabber currently supports Chrome and other Chromium-based browsers (like Edge and Brave) through the Chrome Web Store."
         }
     ];
 
     static privacyTitle = "Your Privacy Comes First";
     static privacyContent = text([
-        "Fast Lit Grabber only reads a page's content when you explicitly click the extension icon — it never runs in the background,",
+        "Orbit Grabber only reads a page's content when you explicitly click the extension icon — it never runs in the background,",
         "never tracks your browsing, and never collects personal information or login credentials."
     ]);
     static privacyLinkText = "Read the full Privacy Policy";
@@ -189,10 +183,10 @@ export class FeedbackScripts {
 }
 
 export class PrivacyScripts {
-    static title = "Privacy Policy for Fast Lit Grabber";
+    static title = "Privacy Policy for Orbit Grabber";
     static lastUpdated = "Last Updated: July 2026";
     static intro = text([
-        "Fast Lit Grabber is designed to help users quickly send article text from webpages to the Orbit reading application.",
+        "Orbit Grabber is designed to help users quickly send article text from webpages to the Orbit reading application.",
         "We respect your privacy and are committed to collecting as little information as possible."
     ]);
     static sections = [
@@ -200,7 +194,7 @@ export class PrivacyScripts {
             heading: "Information We Access",
             paragraphs: [
                 text([
-                    "When you use the extension, Fast Lit Grabber temporarily accesses the content of the webpage you choose.",
+                    "When you use the extension, Orbit Grabber temporarily accesses the content of the webpage you choose.",
                     "This content is used solely to extract readable article text and send it to the Orbit web application",
                     "so you can read it using Orbit's interface."
                 ]),
@@ -209,7 +203,7 @@ export class PrivacyScripts {
         },
         {
             heading: "Information We Collect",
-            paragraphs: ["Fast Lit Grabber does not collect or store:"],
+            paragraphs: ["Orbit Grabber does not collect or store:"],
             list: [
                 "Personal information",
                 "Names or email addresses",
@@ -702,6 +696,46 @@ export class ChangelogScripts {
                 "Deployed updated Firestore security rules replacing labSessions/labTrials with a single labRuns collection (create-only, immutable), matching the Lab page's reworked data model.",
                 "Removed the old dark-navy theme entirely now that every page has moved to Orbit's palette — the legacy color tokens, .btn-red, and the site-wide color:white rule they depended on are all gone.",
                 "Restyled scrollbars site-wide to actually be visible — a normal-width, themed thumb and track (both Firefox's scrollbar-color and WebKit's ::-webkit-scrollbar are covered) instead of the invisible default, applied everywhere scrolling can happen: the page itself, the settings modal, and the Lab results tables."
+            ]
+        ),
+        new this.Entry(
+            "August 7, 2026",
+            "1.10.0",
+            [
+                text([
+                    "Replaced yesterday's cream/terracotta theme with a new one built from an actual design handoff:",
+                    "warm beige (#F2EFE9 page, white cards) with plain ink text and zero accent color anywhere — every",
+                    "interactive element (buttons, active nav state, numbered badges) fills with solid ink instead.",
+                    "Headings now use Baloo 2, body and UI text uses Quicksand, replacing Nunito everywhere."
+                ]),
+                text([
+                    "Built out a real light/dark theme system: every color is a CSS custom property with a light",
+                    "value and a [data-theme=\"dark\"] override, switched via a new useTheme composable's themeMode",
+                    "ref. No visible toggle yet — flipping the ref (or the data-theme attribute by hand) re-themes",
+                    "the whole site immediately, including every page below."
+                ]),
+                text([
+                    "Rebuilt the sidebar to sit flush against the left edge with a simple right border, instead of",
+                    "the floating inset card from yesterday's redesign — matches the design handoff exactly, and",
+                    "picked up Privacy as a proper sidebar entry instead of being footer/extension-page-only. Fixed",
+                    "a real bug in the process: the sidebar's collapse checkbox defaulted to unchecked, so it",
+                    "rendered at its narrow icon-rail width on page load regardless of screen size."
+                ]),
+                text([
+                    "Added a site footer (logo, nav links, copyright) matching the handoff, with a minimal variant",
+                    "(no nav links) for the Read and Lab pages. Removed the old per-page Header component entirely —",
+                    "no page shows a repeated logo/wordmark bar anymore, since the sidebar already establishes",
+                    "which page you're on; each page's own heading does the rest."
+                ]),
+                text([
+                    "Rebuilt the home page to match the handoff layout exactly: a centered hero with a breathing",
+                    "orbit mascot (ring, dot, ambient glow, two sparkles) in place of yesterday's live RSVP preview",
+                    "widget, new stat/step icons, and the same three-section flow (stats, how it works, closing CTA)",
+                    "restyled to the new palette."
+                ]),
+                "Restyled Read, Extension, Feedback, Changelog, Privacy, and Lab/Lab Results to the new palette and fonts — same layouts and functionality throughout, Privacy and Changelog text left byte-for-byte unchanged.",
+                "Renamed \"Fast Lit Grabber\" to \"Orbit Grabber\" in the site's own copy (Home, Extension, Privacy) — the actual shipped Chrome extension keeps its real name; only how the website talks about it changed.",
+                "Removed the Changelog page site-wide — deleted the page, its /changelog route, and the sidebar and footer links to it. The version history itself still lives on here, in the app's data, for internal tracking; there's just no public page displaying it anymore."
             ]
         )
     ]

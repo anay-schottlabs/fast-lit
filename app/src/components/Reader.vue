@@ -452,7 +452,7 @@ window.addEventListener('keydown', (event) => {
         ink center word against muted ink-light before/after text, no
         fixation ticks).
     -->
-    <div class="relative my-8 rounded-3xl border border-border bg-card card-shadow px-6 py-16">
+    <div class="relative my-8 rounded-3xl border border-border bg-card px-6 py-16">
         <template v-if="hasContent">
             <div class="text-5xl font-bold text-center flex sm:text-6xl lg:text-7xl">
                 <!-- Shows the part of the word before the highlighted letter, right-aligned within its flex space -->
@@ -541,7 +541,7 @@ window.addEventListener('keydown', (event) => {
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
-                class="mx-auto fill-cream"
+                class="mx-auto fill-invert"
             >
                 <path
                     d="M10,8
@@ -570,7 +570,7 @@ window.addEventListener('keydown', (event) => {
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
-                class="mx-auto fill-cream"
+                class="mx-auto fill-invert"
             >
                 <g>
                     <!-- Give each bar a rounded radius of 0.5 to match visual style of stop button (proportional: stop uses rx=8 for 48x48 box, so rx=0.5 for 2x6 bar) -->
@@ -595,7 +595,7 @@ window.addEventListener('keydown', (event) => {
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
-                class="mx-auto fill-cream"
+                class="mx-auto fill-invert"
             >
                 <!-- Rounded square with same r as play (roughly 8 for 2rem box) -->
                 <rect

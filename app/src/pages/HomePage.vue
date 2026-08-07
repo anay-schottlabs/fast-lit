@@ -1,8 +1,6 @@
 <script setup>
-import Header from '../components/Header.vue';
-import { useRouter } from 'vue-router';
 import { HomeScripts } from '@/assets/textScripts.js';
-import { ref, computed, onMounted, onUnmounted } from 'vue';
+import { ref, computed, onMounted } from 'vue';
 import { db } from '@/firebase/index.js';
 import { collection, getDocs } from "firebase/firestore";
 
@@ -20,70 +18,6 @@ onMounted(async () => {
     statsLoading.value = false;
 });
 
-const router = useRouter();
-
-function navigateTo(path) {
-    router.push(path);
-}
-
-// live preview widget: cycles through HomeScripts.demoWords to show the
-// RSVP focal-point effect right in the hero, the same way Reader.vue does
-// for real reading sessions.
-const demoIndex = ref(0);
-
-const demoWord = computed(() => HomeScripts.demoWords[demoIndex.value]);
-const demoBefore = computed(() => demoWord.value.slice(0, Math.floor(demoWord.value.length / 2)));
-const demoRedLetter = computed(() => demoWord.value[Math.floor(demoWord.value.length / 2)]);
-const demoAfter = computed(() => demoWord.value.slice(Math.floor(demoWord.value.length / 2) + 1));
-
-// same punctuation-pause technique as Reader.vue, restricted to the two marks
-// that actually appear in HomeScripts.demoText: commas get one extra tick,
-// periods get three, before the demo advances to the next word.
-const DemoDelayState = Object.freeze({
-    NONE: "none",
-    SHORT_PAUSE: "shortPause",
-    MEDIUM_PAUSE: "mediumPause",
-    LONG_PAUSE: "longPause"
-});
-
-const demoDelayState = ref(DemoDelayState.NONE);
-
-let demoInterval;
-
-onMounted(() => {
-    const intervalMs = Math.floor(60000 / HomeScripts.demoWpm);
-    demoInterval = setInterval(() => {
-        if (demoDelayState.value == DemoDelayState.LONG_PAUSE) {
-            demoDelayState.value = DemoDelayState.MEDIUM_PAUSE;
-            return;
-        }
-        else if (demoDelayState.value == DemoDelayState.MEDIUM_PAUSE) {
-            demoDelayState.value = DemoDelayState.SHORT_PAUSE;
-            return;
-        }
-        else if (demoDelayState.value == DemoDelayState.SHORT_PAUSE) {
-            demoDelayState.value = DemoDelayState.NONE;
-            demoIndex.value = (demoIndex.value + 1) % HomeScripts.demoWords.length;
-            return;
-        }
-
-        const lastChar = demoWord.value[demoWord.value.length - 1];
-        if (lastChar == ".") {
-            demoDelayState.value = DemoDelayState.LONG_PAUSE;
-        }
-        else if (lastChar == ",") {
-            demoDelayState.value = DemoDelayState.SHORT_PAUSE;
-        }
-        else {
-            demoIndex.value = (demoIndex.value + 1) % HomeScripts.demoWords.length;
-        }
-    }, intervalMs);
-});
-
-onUnmounted(() => {
-    clearInterval(demoInterval);
-});
-
 // stat cards shown below the hero, backed by the same totalWordsRead math as before
 const statCards = computed(() => [
     {
@@ -91,13 +25,13 @@ const statCards = computed(() => [
         value: `${(totalWordsRead.value / 1000).toFixed(1)}k`,
         // same three-bar "text" mark as the sidebar's Read icon, so this
         // card visually ties back to the Read nav item
-        icon: "M4 7h16M4 12h16M4 17h10"
+        icon: "M4 6h16M4 12h16M4 18h10"
     },
     {
         label: "Books Finished",
         // an average book is around 100,000 words; rounded down to the nearest book
         value: Math.floor(totalWordsRead.value / 100000),
-        icon: "M12 6V4m0 2a2 2 0 100 4m0-4a2 2 0 110 4m-6 8a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4m6 6v10m6-2a2 2 0 100-4m0 4a2 2 0 110-4m0 4v2m0-6V4"
+        icon: "M4 4.5A2.5 2.5 0 016.5 2H20v17H6.5A2.5 2.5 0 004 21.5v-17zM4 19.5A2.5 2.5 0 016.5 17H20"
     },
     {
         label: "Hours Saved",
@@ -105,143 +39,99 @@ const statCards = computed(() => [
         // so users read 2x faster; divide words by wpm to get minutes, then by 2 for
         // time saved, then by 60 to convert minutes saved to hours saved
         value: Math.floor(totalWordsRead.value / 500 / 2 / 60),
-        // a bolt for speed/efficiency gained
-        icon: "M13 3 4 14h6l-1 7 9-11h-6z"
+        // circle drawn as two semicircle arcs (standard technique for a
+        // single-path icon), plus the clock hands — same visual result as
+        // the handoff's separate <circle r="9"/> + hands path.
+        icon: "M3 12A9 9 0 1 0 21 12A9 9 0 1 0 3 12M12 7v5l4 2"
     }
 ]);
 </script>
 
 <template>
     <div>
-        <!--
-            App.vue wraps <router-view> in a p-4 box, which reserves 16px above this
-            page that this wrapper can't paint into on its own — so -mt-4 cancels that
-            reserved space (a standard negative-margin "full bleed inside a padded
-            layout" trick) and pt-4 adds the same amount back as internal padding,
-            keeping the header's on-screen position unchanged.
-        -->
-        <div class="relative -mt-4 overflow-hidden pt-4">
-            <!-- page header -->
-            <Header pageName="" />
-
-            <!-- hero -->
-            <div class="mx-auto grid max-w-6xl gap-16 px-4 pb-20 pt-16 lg:grid-cols-2 lg:items-center">
-                <!-- copy + CTA -->
-                <div class="text-center lg:text-left">
-                    <span class="inline-block rounded-full border border-terracotta/30 bg-terracotta/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest !text-ink">
-                        {{ HomeScripts.heroBadge }}
-                    </span>
-
-                    <h1 class="mt-5 text-6xl font-bold !text-ink whitespace-normal lg:text-7xl">
-                        {{ HomeScripts.heroTitle }}
-                    </h1>
-                    <p class="py-6 text-lg !text-ink-light">
-                        {{ HomeScripts.heroContent }}
-                    </p>
-                    <button
-                        class="btn-primary !w-full max-w-64"
-                        @click="navigateTo('/read')"
-                    >
-                        <span class="w-full flex items-center justify-center gap-2 ms-2">
-                            {{ HomeScripts.heroButton }}
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                fill="none"
-                                viewBox="0 0 24 24"
-                                width="28"
-                                height="28"
-                                class="stroke-cream"
-                            >
-                                <path
-                                    d="M5 12h14M13 6l6 6-6 6"
-                                    stroke-width="2.2"
-                                    stroke-linecap="round"
-                                    stroke-linejoin="round"
-                                    fill="none"
-                                />
-                            </svg>
-                        </span>
-                    </button>
-                </div>
-
-                <!-- live RSVP preview -->
-                <div class="rounded-3xl border border-border bg-card card-shadow p-10">
-                    <p class="text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
-                        Live Preview
-                    </p>
-                    <div class="my-8 flex h-16 items-center justify-center text-5xl font-bold">
-                        <span class="flex-1 text-right !text-ink">{{ demoBefore }}</span>
-                        <span class="text-terracotta">{{ demoRedLetter }}</span>
-                        <span class="flex-1 text-left !text-ink">{{ demoAfter }}</span>
-                    </div>
-                    <p class="text-center text-sm !text-ink-light">
-                        ~{{ HomeScripts.demoWpm }} words per minute
-                    </p>
+        <!-- hero -->
+        <section class="mx-auto flex max-w-[900px] flex-col items-center gap-7 px-8 pb-16 pt-[140px] text-center">
+            <!-- mascot: a ring around a dot, with an ambient glow and two small sparkles -->
+            <div class="relative flex h-[140px] w-[140px] flex-none items-center justify-center">
+                <div class="absolute h-[196px] w-[196px] rounded-full bg-ink opacity-[.06] blur-[26px]"></div>
+                <div class="absolute right-[4px] top-[2px] h-[9px] w-[9px] rounded-full bg-ink opacity-45"></div>
+                <div class="absolute bottom-[8px] left-[-4px] h-[7px] w-[7px] rounded-full bg-ink opacity-30"></div>
+                <div class="flex h-24 w-24 items-center justify-center rounded-full border-[7px] border-ink/35">
+                    <div class="h-[46px] w-[46px] rounded-full bg-ink"></div>
                 </div>
             </div>
-        </div>
+
+            <h1 class="max-w-[720px] font-display text-[56px] font-bold leading-[1.1] text-ink">
+                {{ HomeScripts.heroTitle }}
+            </h1>
+            <p class="max-w-[560px] text-[20px] leading-[1.6] text-ink-light">
+                {{ HomeScripts.heroContent }}
+            </p>
+
+            <div class="mt-2 flex flex-wrap justify-center gap-4">
+                <router-link
+                    to="/read"
+                    class="min-w-[220px] rounded-full bg-ink px-9 py-[18px] text-center text-[19px] font-bold text-invert focus-ring"
+                >{{ HomeScripts.heroButton }}</router-link>
+                <router-link
+                    to="/lab"
+                    class="box-border min-w-[180px] rounded-full border-2 border-ink/35 px-[34px] py-4 text-center text-[19px] font-bold text-ink focus-ring"
+                >{{ HomeScripts.heroSecondaryButton }}</router-link>
+            </div>
+        </section>
 
         <!-- stats -->
-        <div class="mx-auto mb-24 grid max-w-5xl gap-6 px-4 sm:grid-cols-3">
-            <div
-                class="rounded-2xl border border-border bg-card card-shadow p-6 text-center"
-                v-for="stat in statCards"
-                :key="stat.label"
-            >
-                <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-terracotta/15">
-                    <svg
-                        xmlns="http://www.w3.org/2000/svg"
-                        fill="none"
-                        viewBox="0 0 24 24"
-                        class="h-6 w-6 stroke-current text-terracotta"
-                    >
-                        <path
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            stroke-width="2.5"
-                            :d="stat.icon"
-                        ></path>
-                    </svg>
+        <section class="mx-auto max-w-[1180px] px-8 pb-24">
+            <div class="grid gap-6" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
+                <div
+                    class="flex flex-col items-center gap-3.5 rounded-[20px] bg-card p-8 text-center"
+                    v-for="stat in statCards"
+                    :key="stat.label"
+                >
+                    <div class="flex h-[52px] w-[52px] items-center justify-center rounded-full bg-bg">
+                        <svg width="19" height="19" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="text-ink">
+                            <path :d="stat.icon"></path>
+                        </svg>
+                    </div>
+                    <span class="font-display text-[40px] font-bold text-ink">
+                        <span v-if="statsLoading" class="inline-block h-9 w-16 animate-pulse rounded-lg bg-bg" aria-hidden="true"></span>
+                        <span v-else>{{ stat.value }}</span>
+                    </span>
+                    <span class="text-[15px] font-semibold text-ink-light">{{ stat.label }}</span>
                 </div>
-                <div class="text-4xl font-bold !text-ink">
-                    <span v-if="statsLoading" class="inline-block h-9 w-16 animate-pulse rounded-lg bg-border" aria-hidden="true"></span>
-                    <span v-else>{{ stat.value }}</span>
-                </div>
-                <div class="mt-1 text-sm !text-ink-light">{{ stat.label }}</div>
             </div>
-        </div>
+        </section>
 
         <!-- how it works -->
-        <div class="mx-auto mb-24 max-w-5xl px-4">
-            <h2 class="mb-10 text-center text-3xl font-bold !text-ink">How It Works</h2>
-            <div class="grid gap-6 sm:grid-cols-3">
+        <section class="mx-auto max-w-[1180px] px-8 pb-24">
+            <h2 class="mb-12 text-center font-display text-[34px] font-bold text-ink">How It Works</h2>
+            <div class="grid gap-6" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
                 <div
-                    class="rounded-2xl border border-border bg-card card-shadow p-6"
+                    class="flex flex-col gap-3.5 rounded-[20px] bg-card p-7"
                     v-for="(step, idx) in HomeScripts.steps"
                     :key="step.title"
                 >
-                    <span class="mb-4 flex h-8 w-8 items-center justify-center rounded-full bg-terracotta text-sm font-bold !text-cream">
+                    <div class="flex h-8 w-8 flex-none items-center justify-center rounded-full bg-ink font-display text-[15px] font-bold text-invert">
                         {{ idx + 1 }}
-                    </span>
-                    <h3 class="mb-2 text-lg font-semibold !text-ink">{{ step.title }}</h3>
-                    <p class="text-sm !text-ink-light">{{ step.description }}</p>
+                    </div>
+                    <h3 class="text-lg font-bold text-ink">{{ step.title }}</h3>
+                    <p class="text-[15px] leading-[1.5] text-ink-light">{{ step.description }}</p>
                 </div>
             </div>
-        </div>
+        </section>
 
         <!-- closing call to action -->
-        <div class="mx-auto mb-24 max-w-3xl px-4 text-center">
-            <div class="rounded-3xl border border-border bg-card card-shadow px-6 py-12">
-                <h2 class="mb-3 text-3xl font-bold !text-ink">{{ HomeScripts.ctaTitle }}</h2>
-                <p class="mb-6 !text-ink-light">{{ HomeScripts.ctaContent }}</p>
-                <button
-                    class="btn-primary !w-full max-w-64"
-                    @click="navigateTo('/read')"
-                >
-                    {{ HomeScripts.heroButton }}
-                </button>
+        <section class="mx-auto max-w-[1180px] px-8 pb-24">
+            <div class="flex flex-col items-center gap-4 rounded-[28px] bg-card px-8 py-14 text-center">
+                <h2 class="font-display text-[30px] font-bold text-ink">{{ HomeScripts.ctaTitle }}</h2>
+                <p class="text-base text-ink-light">{{ HomeScripts.ctaContent }}</p>
+                <router-link
+                    to="/read"
+                    class="mt-2 rounded-full bg-ink px-10 py-[18px] text-[19px] font-bold text-invert focus-ring"
+                >{{ HomeScripts.heroButton }}</router-link>
             </div>
-        </div>
+        </section>
+
     </div>
 </template>
 

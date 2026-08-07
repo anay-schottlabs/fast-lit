@@ -1,15 +1,12 @@
 <script setup>
-import Header from '../components/Header.vue';
 import { PrivacyScripts } from '@/assets/textScripts.js';
 </script>
 
 <template>
     <div>
-        <Header pageName="Privacy Policy" />
-
-        <div class="mx-auto max-w-3xl px-4 pb-16 pt-10">
-            <div class="rounded-3xl border border-border bg-card card-shadow p-10">
-                <span class="inline-block rounded-full border border-terracotta/30 bg-terracotta/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest !text-ink">
+        <div class="mx-auto max-w-3xl px-4 pb-16 pt-16">
+            <div class="rounded-3xl border border-border bg-card p-10">
+                <span class="inline-block rounded-full border border-ink/30 bg-ink/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest !text-ink">
                     {{ PrivacyScripts.lastUpdated }}
                 </span>
                 <h1 class="mt-4 text-3xl font-bold !text-ink sm:text-4xl">{{ PrivacyScripts.title }}</h1>
@@ -21,7 +18,7 @@ import { PrivacyScripts } from '@/assets/textScripts.js';
                     class="mt-8 border-t border-border pt-8"
                 >
                     <div class="mb-4 flex items-center gap-3">
-                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-terracotta text-sm font-bold !text-cream">
+                        <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-ink text-sm font-bold !text-invert">
                             {{ idx + 1 }}
                         </span>
                         <h2 class="text-xl font-semibold !text-ink">{{ section.heading }}</h2>
@@ -41,7 +38,7 @@ import { PrivacyScripts } from '@/assets/textScripts.js';
                             :key="item"
                             class="flex items-start gap-3 !text-ink-light"
                         >
-                            <span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-terracotta"></span>
+                            <span class="mt-2.5 h-1.5 w-1.5 shrink-0 rounded-full bg-ink"></span>
                             <span>{{ item }}</span>
                         </li>
                     </ul>
@@ -56,8 +53,8 @@ import { PrivacyScripts } from '@/assets/textScripts.js';
                 </div>
             </div>
 
-            <p class="mt-8 text-center text-sm !text-ink-light">&copy; 2026 Orbit</p>
         </div>
+
     </div>
 </template>
 
