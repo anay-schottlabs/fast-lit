@@ -248,6 +248,20 @@ const DelayState = Object.freeze({
 
 const delayState = ref(DelayState.NONE);
 
+// Any closing bracket or quote mark (straight or curly, single or double)
+// that can trail real sentence/clause-ending punctuation — see tick()'s use
+// of this to look past them for the punctuation that actually matters.
+const CLOSING_WRAPPER_CHARS = new Set([")", "]", "}", "\"", "'", "“", "”", "‘", "’"]);
+
+// Common title abbreviations — these end in a period but never mark a
+// sentence end, so tick() skips the long pause for them. Not exhaustive by
+// design; covers the common cases without trying to catch every possible
+// abbreviation.
+const TITLE_ABBREVIATIONS = new Set([
+    "mr.", "mrs.", "ms.", "dr.", "prof.", "jr.", "sr.", "st.", "mt.",
+    "rev.", "gov.", "sen.", "gen.", "capt.", "lt.", "col.", "messrs."
+]);
+
 // Shared by both "ran out of words" branches in tick() below, so natural
 // completion is only defined in one place and always emits "finished".
 function finishPlayback() {
@@ -284,52 +298,31 @@ function tick() {
         return;
     }
     else if (delayState.value == DelayState.NONE) {
-        const lastChar = word.value[word.value.length - 1];
+        // Trailing closing brackets/quotes don't carry pause information
+        // themselves — the sentence/clause-ending punctuation they wrap
+        // always sits just before them, e.g. the period in `"Stop."` or the
+        // comma in `(wait,)`. Peel off any number of them (straight and
+        // curly quotes, any bracket type) to find the punctuation mark that
+        // actually determines the pause. (This replaces a previous version
+        // that only ever checked the single last character against a list
+        // mixing 1- and 2-character entries — the 2-character ones,
+        // covering exactly this wrapped-punctuation case, could never
+        // match a single character and were dead code.)
+        let coreWord = word.value;
+        while (coreWord.length > 1 && CLOSING_WRAPPER_CHARS.has(coreWord[coreWord.length - 1])) {
+            coreWord = coreWord.slice(0, -1);
+        }
+        const lastChar = coreWord[coreWord.length - 1];
 
-        const shortPauseChars = [
-            // single short-pause punctuation
-            ",",      // comma
-            "—",      // em dash
-            ";",      // semicolon
-            ":",      // colon
+        // Title abbreviations end in a period but aren't sentence ends —
+        // "Mr. Smith" shouldn't pause the way an actual sentence boundary
+        // would.
+        const isTitleAbbreviation = TITLE_ABBREVIATIONS.has(coreWord.toLowerCase());
 
-            // punctuation followed by closing parenthesis
-            ",)",     // comma before closing parenthesis
-            ";)",     // semicolon before closing parenthesis
-            ":)",     // colon before closing parenthesis
+        const shortPauseChars = [",", "—", ";", ":"];
+        const longPauseChars = [".", "!", "?"];
 
-            // punctuation followed by single or double quote
-            ",'",     // comma followed by single quote
-            ",\"",    // comma followed by double quote
-            "—'",     // em dash followed by single quote
-            "—\"",    // em dash followed by double quote
-            ";'",     // semicolon followed by single quote
-            ";\"",    // semicolon followed by double quote
-            ":'",     // colon followed by single quote
-            ":\"",    // colon followed by double quote
-        ];
-        const longPauseChars = [
-            // single long-pause punctuation
-            ".",      // period
-            "!",      // exclamation mark
-            "?",      // question mark
-
-            // punctuation followed by closing parenthesis
-            ".)",     // period before closing parenthesis
-            "!)",     // exclamation mark before closing parenthesis
-            "?)",     // question mark before closing parenthesis
-
-            // punctuation followed by single or double quote
-            ".'",     // period followed by single quote
-            ".\"",    // period followed by double quote
-            "!'",     // exclamation mark followed by single quote
-            "!\"",    // exclamation mark followed by double quote
-            "?'",     // question mark followed by single quote
-            "?\"",    // question mark followed by double quote
-        ];
-
-
-        if (longPauseChars.includes(lastChar)) {
+        if (!isTitleAbbreviation && longPauseChars.includes(lastChar)) {
             // Sentence end — start a long pause without advancing yet.
             delayState.value = DelayState.LONG_PAUSE;
             return;
