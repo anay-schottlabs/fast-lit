@@ -648,7 +648,8 @@ export class ChangelogScripts {
                     "The reader component can now run in an isolated mode (no localStorage progress persistence,",
                     "no aggregate word-count stats tracking, and playback controls hidden until a passage finishes)",
                     "so it can be reused for Lab trials without affecting normal reading progress or site-wide stats."
-                ])
+                ]),
+                "Added a Lab entry to the sidebar, directly under Extension, using a simple flask icon matching the rest of the icon set."
             ]
         )
     ]

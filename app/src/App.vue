@@ -172,6 +172,33 @@ function navItemClass(path) {
                         </button>
                     </li>
 
+                    <!-- button to navigate to the lab page -->
+                    <li>
+                        <button
+                            :class="navItemClass('/lab')"
+                            @click="navigateTo('/lab')"
+                            data-tip="Lab"
+                        >
+                            <!-- Lab icon: a simple flask -->
+                            <svg
+                                xmlns="http://www.w3.org/2000/svg"
+                                viewBox="0 0 24 24"
+                                fill="none"
+                                stroke="currentColor"
+                                stroke-width="2.5"
+                                stroke-linecap="round"
+                                stroke-linejoin="round"
+                                class="shrink-0"
+                                :style="{ width: svgSize, height: svgSize }"
+                            >
+                                <path d="M9 3h6" />
+                                <path d="M10 3v6l-5.5 9a1.5 1.5 0 0 0 1.3 2.25h12.4a1.5 1.5 0 0 0 1.3-2.25L14 9V3" />
+                                <path d="M7.5 15h9" />
+                            </svg>
+                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Lab</span>
+                        </button>
+                    </li>
+
                     <!-- button to navigate to the feedback page -->
                     <li>
                         <button

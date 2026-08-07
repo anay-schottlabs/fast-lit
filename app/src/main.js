@@ -19,9 +19,9 @@ const router = createRouter({
         { path: '/changelog', component: ChangelogPage },
         { path: '/feedback', component: FeedbackPage },
         { path: '/privacy', component: PrivacyPolicyPage },
-        // Research pilot study — deliberately not in the sidebar nav (like
-        // Fast Lit Write was before it got promoted), reachable by direct URL only.
         { path: '/lab', component: LabPage },
+        // Admin-only results view — deliberately not in the sidebar nav,
+        // reachable by direct URL only.
         { path: '/lab/results', component: LabResultsPage }
     ],
 });
