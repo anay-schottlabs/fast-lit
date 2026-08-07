@@ -684,7 +684,8 @@ export class ChangelogScripts {
                     "ink vs. muted-ink contrast instead of a colored focal letter. Everywhere else in the settings",
                     "modal (borders, cards, kbd chips, the Update button) picks up the standard new palette."
                 ]),
-                "Restyled the Extension and Feedback pages to the new palette, including the old glow-wrapper technique both used purely to support the removed decorative glow — simplified away now that it's gone."
+                "Restyled the Extension and Feedback pages to the new palette, including the old glow-wrapper technique both used purely to support the removed decorative glow — simplified away now that it's gone.",
+                "Restyled the Changelog and Privacy Policy pages to the new palette — version pills, numbered badges, and section dividers now use terracotta/border tokens instead of red/white."
             ]
         )
     ]
