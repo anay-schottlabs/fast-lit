@@ -2,8 +2,8 @@
   "_meta": {
     "source": "ACT official free online practice test (Reading section), retrieved from the PSI-hosted ACT sample exam (na-nirvana.apec.psiexams.com), 2026-08-06.",
     "note": "correctIndex is null for every question until the answer key PDF is supplied. Once supplied, fill in correctIndex (0=A, 1=B, 2=C, 3=D) for each question.",
-    "totalQuestions": 36,
-    "totalPassages": 4,
+    "totalQuestions": 72,
+    "totalPassages": 8,
     "timeLimitMinutes": 40
   },
   "passages": [
@@ -454,6 +454,473 @@
             "B": "literally; scientists no longer believed crocodiles once lived in a band of tropics.",
             "C": "figuratively; scientists amended the narrative of the natural history of crocodiles.",
             "D": "figuratively; scientists believed their findings would have broader implications on archaeology."
+          },
+          "correctIndex": null
+        }
+      ]
+    },
+    {
+      "id": "act5",
+      "type": "LITERARY NARRATIVE",
+      "paired": true,
+      "title": "Passage A and B: Brooklyn Was Mine",
+      "attribution": "Passage A is from the essay \"A Windstorm in Downtown Brooklyn\" by Robert Sullivan, and Passage B is from the essay \"Down the Manhole\" by Elizabeth Gaffney, both from the collection Brooklyn Was Mine, edited by Chris Knutsen and Valerie Steiker (©2008 by Chris Knutsen and Valerie Steiker).",
+      "passageA": {
+        "author": "Robert Sullivan",
+        "text": "The Hebrew word for wind is also the Hebrew word for spirit, ruah, and when I look at the wind I look at something immeasurable, spiritlike, a climactic feature of a soul or souls. Try as I may, I still can't predict the wind in downtown Brooklyn, nor can I even imagine how the wind blew when Walt Whitman stepped out on the corner of Cranberry Street that is no longer there, or how it will feel when downtown Brooklyn is redeveloped, or \"utilized.\" I can feel it though. Especially I can feel the vortex, which draws me, calls to me. When it is windy elsewhere in New York or the world and I am far from the vortex, I think of it, imagine the swirl. Often I walk my daughter, who is eleven, through the vortex on her way back and forth to school, even though it's a little out of our way—after years of forced wind-watching, her older brother walks alone now, noticing, I hope, the wind on his own. On Saturday mornings, if we go to the farmer's market, we buy doughnuts and cider and sit on the benches in Columbus Park at the steps of Borough Hall, and wait and see what the wind will blow up. We face the Court-Montague Building and a London plane tree whose branches are notable among Brooklyn trees for their lack of plastic shopping bags. The wind rips the bags away.\n\nSix years ago, I was with my son, who was ten at the time, and we were on our way to his school when I saw an entire stack of newspapers go up into the air, a trashy celebration! We were on Court Street, just about to the corner of Montague, when we passed a newsstand. The man selling the papers was doing a pretty good job holding down copies of the Times and the Post considering he had the not-so-good idea of setting up a newsstand inside the vortex, but he was having trouble with the Daily News, which eventually escaped, almost the whole stack, and was then whipped quickly and frantically into the vortex. In a second, the corner of Court and Montague had headlines all over it, the pages doing flip-flops, and then floating out into the street. In another second the sheets of paper began flying up, up, up. My son and I stepped back from the building and waited and watched as, at last, one sheet slowly climbed all forty-two stories of the Court-Montague Building. (A couple of days later, the newsstand relocated two blocks away.)"
+      },
+      "passageB": {
+        "author": "Elizabeth Gaffney",
+        "text": "My parents, as artists, were eager to have their children out discovering beauty in the pedestrian, complexity in the mundane, and they understood child psychology pretty well. Looking for these things underfoot, where few expected to find anything of value, was just the right kind of fun and worked better than yet another trip to the MoMA. We didn't have to behave. We were allowed, nay required, to touch. My parents believed that embedding beautiful designs in the asphalt and the sidewalks was a quintessentially democratic, political act. When we went out, we considered not just manhole covers but fire hydrants, alarm boxes, street and traffic lights, signage. They were interested in urban renewal and preservation, and so the ideas of street furniture and the livability of the street were important to them. We rated what we saw, and talked about why we did or didn't like it. To me, the very idea of street furniture was thrilling—it conjured images of nestling in the cushions of imaginary street-corner sofas and jumping on nonexistent double beds. My mother in particular was also a history buff, and so the connection of the manhole covers to Brooklyn's past was important. Most of them were old; we tried to figure out exactly how old from the names on them and the wear they had undergone. Some were rubbed so smooth there was nothing to make a rubbing of, and my mind boggled to think of the forces that could scrape such heavy metal down to nothing. When my mother explained that the metal wheels of horse-drawn vehicles wore the street down harder than modern rubber tires filled with air, I was catapulted into a new understanding of a previous era. The past had never seemed very believable to me, until then. People might have gone around riding horses and wearing bonnets somewhere out West, say where Little House on the Prairie had transpired, but not on the streets I inhabited. But thanks to manhole covers and several stretches of street still paved with Belgian blocks, not asphalt—also pointed out by my mother—I could suddenly fathom that Brooklyn had been something different once too. History had happened here."
+      },
+      "questions": [
+        {
+          "number": 37,
+          "question": "In the context of Passage A, the event described in the highlighted paragraph most nearly serves to:",
+          "highlightedText": "Six years ago, I was with my son, who was ten at the time, and we were on our way to his school when I saw an entire stack of newspapers go up into the air, a trashy celebration!",
+          "options": {
+            "A": "provide an anecdote that illustrates the power of the wind in Brooklyn.",
+            "B": "describe the newspaper seller's amusement as the papers were tossed about by the wind.",
+            "C": "recount an experience that left the narrator wary of the wind in Brooklyn.",
+            "D": "suggest that there are areas of Brooklyn that are intolerable because of the wind."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 38,
+          "question": "Which of the following statements best captures how the narrator of Passage A feels about the way his children might perceive the Brooklyn wind?",
+          "options": {
+            "A": "He suspects the wind annoys them and assumes they take measures to avoid it.",
+            "B": "He hopes they share his interest in the wind and seek it out themselves.",
+            "C": "He feels they don't appreciate the wind or other facets of nature as much as they should.",
+            "D": "He hopes they notice how calm Brooklyn can be when the wind is not blowing."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 39,
+          "question": "According to the narrator of Passage A, the branches of the London plane tree near the Court-Montague Building are notable for:",
+          "options": {
+            "A": "their exceptional length and graceful shape.",
+            "B": "the fact that they don't have plastic shopping bags clinging to them.",
+            "C": "the sound they make when the wind whips through them.",
+            "D": "their ability to provide shade for the nearby farmer's market."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 40,
+          "question": "According to the narrator of Passage B, some manhole covers she encountered as a child were rubbed smooth partly because of:",
+          "options": {
+            "A": "the metal-wheeled vehicles of Brooklyn's past.",
+            "B": "urban renewal projects over many decades.",
+            "C": "road resurfacing methods that were unduly destructive.",
+            "D": "centuries of foot traffic at Brooklyn's intersections."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 41,
+          "question": "It can reasonably be inferred from Passage B that one result of the excursions the narrator took around Brooklyn with her mother was the narrator's:",
+          "options": {
+            "A": "lifelong commitment to urban renewal and preservation.",
+            "B": "increased appreciation for the history of other American cities.",
+            "C": "fuller notion of what her city was like during different eras.",
+            "D": "decision to expose her own children to art museums."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 42,
+          "question": "Both passages are told from the point of view of narrators who:",
+          "options": {
+            "A": "grew up learning about Brooklyn from their parents.",
+            "B": "try to imagine how Brooklyn might be perceived by tourists.",
+            "C": "illustrate their relationship with Brooklyn through family experiences.",
+            "D": "were raised in Brooklyn but have since gone on to live in other cities."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 43,
+          "question": "The tone of both passages can best be described as a combination of:",
+          "options": {
+            "A": "humor and relief.",
+            "B": "doubt and hesitancy.",
+            "C": "introspection and regret.",
+            "D": "wonder and nostalgia."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 44,
+          "question": "Which of the following quotations from Passage B is most closely related to the themes in Passage A?",
+          "options": {
+            "A": "\"My parents, as artists, were eager to have their children out discovering beauty in the pedestrian, complexity in the mundane\" (highlighted text).",
+            "B": "\"We didn't have to behave\" (highlighted text).",
+            "C": "\"My parents believed that embedding beautiful designs in the asphalt and the sidewalks was a quintessentially democratic, political act\" (highlighted text).",
+            "D": "\"To me, the very idea of street furniture was thrilling\" (highlighted text)."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 45,
+          "question": "The reference to Cranberry Street in Passage A and the reference to streets paved with Belgian blocks in Passage B both serve to:",
+          "options": {
+            "A": "evoke historical details in order to provide a better understanding of Brooklyn.",
+            "B": "argue that history tends to be more appealing to adults than to children.",
+            "C": "illustrate how difficult it is to unearth details about Brooklyn's past.",
+            "D": "suggest that living in Brooklyn was more rewarding in certain historical eras than it is now."
+          },
+          "correctIndex": null
+        }
+      ]
+    },
+    {
+      "id": "act6",
+      "type": "INFORMATIONAL",
+      "title": "Welcome to Subirdia",
+      "attribution": "This passage is from the book Welcome to Subirdia: Sharing Our Neighborhoods with Wrens, Robins, Woodpeckers, and Other Wildlife by John M. Marzluff (©2014 by John M. Marzluff, reproduced with permission of Yale University Press).",
+      "text": "Do not covet your neighbor's lawn. Having a \"perfect\" lawn is an original sin of most Americans. Our love of lawn is rooted in our history as a former British colony, and perhaps even in our evolution on short-grass savannahs, where ancestral hominids found safety from predators. I mowed lawns for a living as a kid. So did my brothers and most of our friends. When we weren't cutting them, we played or relaxed on them. Frederick Law Olmsted, the father of suburbia, espoused the value of lawns as giving his neighborhoods a \"sense of ampleness, greenness, and community.\" Many suburbanites foster lawns to boost the value of their homes, as safe havens for their kids, or as firebreaks. Some see lawns as art, as proof of our domination over nature, or as a way to gain prestige among their neighbors. Whatever the reason, most ecologists agree that the ubiquity of the lawn has outstripped its benefits. Domination of suburbia by lawn constrains the diversity of birds that could be supported. Robins, starlings, crows, wagtails, oystercatchers, and a few other birds forage in lawns, but to my knowledge, not a single species of bird, mammal, reptile, or amphibian reproduces and carries out its other life functions in the modern lawn.\n\nIn 2005, 2 percent of the coterminous United States, some forty million acres of land, was lawn. Nearly every bit was composed of only a few nonnative grass species. These invaders are regularly mowed to a low, even height and kept continuously green and free of weeds and pests. To maintain this sea of grass Americans annually spend $30 billion. They use eight hundred million gallons of gas, seven billion gallons of water, three million tons of nitrogen fertilizer, and thirty thousand tons of pesticide. The use of pesticides alone is ten times greater than used by the average farmer and includes chemicals that disrupt normal hormone function and reproduction, are suspected to cause cancer, and are banned in other countries. Simply filling up gas-powered lawnmowers is an ecological disaster of the highest order; seventeen million gallons of gas are spilled annually.\n\nConcern about lawns has sparked a great deal of debate, creative thought, and neighbor-to-neighbor strife. In 1991, a savvy group of graduate students and faculty from Yale University's School of Forestry and Environmental Studies joined their colleagues in the School of Art and Architecture to consider how Americans could redesign their lawns. The resulting book details the history of lawns and charts a plan for those who wish to follow the first commandment. Lawn owners can increase bird use of their turf by reducing its extent, bordering it with shrubs, shading it with trees, mowing it with hand- or electric-powered machines, and skipping the fertilizers and pesticides. Doing this produces what the students and faculty refer to as a \"Freedom Lawn.\" The plant composition of such lawns diversifies into a rich mix of grasses, forbs, and flowers pollinated and grazed by native, beneficial insects, which in turn are eaten by birds and other animals.\n\nThe less often a lawn is mowed, the more likely it is to be used by an array of animals. A less-disturbed lawn will attract goldfinches to ripe dandelion seeds, provide nest sites under tussocks for juncos and sparrows, and harbor frogs, turtles, and small mammals such as moles and voles.\n\nThose who adopt Freedom Lawns buck a multinational industry heavily invested in producing seed, sod, fertilizer, pesticide, irrigation and lawn equipment, and service for those twenty-six million American homes that contract out their lawn care. But the pressure to conform is often more immediate. Neighbors who tolerate shaggy lawns are often thought of as laggards, negligent of their civic duty. As Michael Pollan, author of The Omnivore's Dilemma, notes: \"That subtle yet unmistakable frontier, where the crew-cut lawn rubs up against a shaggy one, is a scar on the face of suburbia—an intolerable hint of trouble in paradise.\"",
+      "questions": [
+        {
+          "number": 46,
+          "question": "The highlighted paragraph marks a shift in the passage from:",
+          "highlightedText": "Concern about lawns has sparked a great deal of debate, creative thought, and neighbor-to-neighbor strife. In 1991, a savvy group of graduate students and faculty from Yale University's School of Forestry and Environmental Studies joined their colleagues in the School of Art and Architecture to consider how Americans could redesign their lawns.",
+          "options": {
+            "A": "an argument that condemns the modern lawn to a counterargument that focuses on its benefits.",
+            "B": "an explanation of the drawbacks of the modern lawn to a description of a more environmentally friendly alternative to it.",
+            "C": "a history of the popularity of lawns to a description of typical features of the modern lawn.",
+            "D": "an overview of a debate between homeowners and environmentalists about the purpose of lawns to a plea for homeowners to stop mowing."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 47,
+          "question": "Based on the passage, who would most fully endorse the claim that lawns are particularly valuable for creating wide-open areas of green space that foster a feeling of community?",
+          "options": {
+            "A": "The Yale graduate students and faculty mentioned in the passage",
+            "B": "The passage author",
+            "C": "Olmsted",
+            "D": "Pollan"
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 48,
+          "question": "What reason does the passage author give to bolster his claim that \"domination of suburbia by lawn constrains the diversity of birds that could be supported\" (highlighted text)?",
+          "options": {
+            "A": "Robins, starlings, crows, wagtails, and oystercatchers make use of lawns.",
+            "B": "The ubiquity of the lawn has outstripped its benefits.",
+            "C": "Birds don't carry out any life functions in the modern lawn other than foraging.",
+            "D": "Some people see lawns as a way to gain prestige."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 49,
+          "question": "The passage most strongly suggests that the gradual diversification of plant composition in a Freedom Lawn leads to:",
+          "options": {
+            "A": "native, beneficial insects being drawn to the lawn.",
+            "B": "native plants spreading to areas several miles away from the lawn.",
+            "C": "birds enjoying the nest sites that humans have constructed within the lawn.",
+            "D": "one or two plants becoming dominant in the lawn."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 50,
+          "question": "The passage author most strongly suggests that American homeowners who grow shaggy lawns likely feel the most immediate pressure from which of the following circumstances?",
+          "options": {
+            "A": "The awareness that their actions might lead to corporate losses",
+            "B": "The wasted expense of the lawn equipment they already own",
+            "C": "The need to cancel their lawn care service",
+            "D": "The disapproval of their neighbors"
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 51,
+          "question": "The main point of the highlighted paragraph is that:",
+          "highlightedText": "Those who adopt Freedom Lawns buck a multinational industry heavily invested in producing seed, sod, fertilizer, pesticide, irrigation and lawn equipment, and service for those twenty-six million American homes that contract out their lawn care.",
+          "options": {
+            "A": "adopting a Freedom Lawn can arguably be a bold political and social act.",
+            "B": "the biggest benefit of adopting a Freedom Lawn is being able to buck a multinational industry.",
+            "C": "a neighborhood takes on a carefree feel when homeowners adopt a Freedom Lawn.",
+            "D": "it isn't logical to reject civic duty simply for the sake of adopting a Freedom Lawn."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 52,
+          "question": "The passage author includes the quotation by Pollan (highlighted text) mainly to:",
+          "options": {
+            "A": "explain why some neighbors gladly accept other neighbors' shaggy lawns.",
+            "B": "cautiously suggest that suburbanites often refuse to perform their civic duties.",
+            "C": "slightly mock the suburban ideals that have led to the proliferation of the modern lawn.",
+            "D": "illustrate how appealing a shaggy lawn looks next to a perfectly mowed lawn."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 53,
+          "question": "What evidence, if accurate, would best support the passage author's claim that \"our love of lawn is rooted in our history as a former British colony\" (highlighted text)?",
+          "options": {
+            "A": "Kentucky bluegrass, native to several countries, is a common species of grass for lawns in the United States.",
+            "B": "For generations in Britain, a trimmed lawn was a popular status symbol, showing that a homeowner could afford to own land that was not farmed.",
+            "C": "Many of the first lawns in Britain were sculpted to include low mounds where people could sit, though these makeshift benches were rarely used.",
+            "D": "Front lawns became popular in the United States in the 1930s, when lawn maintenance became easier."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 54,
+          "question": "Which of the following lists captures features of a Freedom Lawn as it is described in the passage?",
+          "options": {
+            "A": "Formed of native and nonnative grasses, shaded by trees, large in size",
+            "B": "Treated with pesticides, bordered by trees, limited in size",
+            "C": "Unshaded, bordered by short grasses, mowed with a hand-powered mower",
+            "D": "Bordered by shrubs, unfertilized, shaded by trees"
+          },
+          "correctIndex": null
+        }
+      ]
+    },
+    {
+      "id": "act7",
+      "type": "NATURAL SCIENCE",
+      "title": "Spiders: Web of Intrigue",
+      "attribution": "This passage is adapted from the article \"Spiders: Web of Intrigue\" by Katherine Bourzac (©2015 by Springer Nature). The graphic is adapted from the article \"Spider Silk–Inspired Artificial Fibers\" by Jiatian Li et al. (©2021 The Authors, Wiley-VCG GmbH).",
+      "text": "A Madagascan bark spider releases a silk dragline into the air. The wind carries the thin threads to the other side of a river, where they land on foliage on the opposite bank 25 metres away. The bark spider (Caerostris darwini) then stretches the bridgeline to establish tension, reinforces it, and draws on a palette of other silks, stretchier or stickier as needed, to fashion a web to capture the bugs flying over the water.\n\nC. darwini's bridging silk is the world's toughest known biomaterial—it is even tougher than steel fibre. But C. darwini's versatility in producing different kinds of silk is not unique. Many spiders can spin several silks: stiff, structural strands to stabilize their webs; gooey, stretchy spirals to capture flying insects; adhesive pads to anchor their homes in place; and extraordinarily robust draglines from which to hang.\n\nThe remarkable mechanical properties of these natural fibres have attracted the attention of materials scientists. Researchers are looking to arachnids and other silk makers for ideas about how to make new structural materials for bridges and vehicles, dirt-resistant adhesives for climbing robots and sturdy polymers for biomedical devices. Many silks bring together properties that are not readily present in man-made materials—the extreme toughness and elasticity seen in spider threads is one example. Silk proteins can be moulded like plastic or perform optical functions like silicon. Yet because they're organic, biological materials, silks are environmentally friendly and biocompatible. Silk proteins can be fashioned into films that can be implanted in the body, releasing drugs as they dissolve. This combination of features is unavailable in polyester or collagen or anything else, says David Kaplan, an early proponent of high-tech biomedical silk at Tufts University in Medford, Massachusetts. \"There's clearly a need for new biomaterials,\" he says. For Kaplan and others, silk is the best way to meet that need.\n\nSilk evolved independently in many invertebrates, including spiders, honeybees and silkworms. Individual spiders can make as many as six different kinds of silk proteins (and two glue proteins), each of which has evolved over the creatures' 400 million years of natural history. Each spider species uses its own variations of these proteins to make many different types of thread.\n\n\"We think that a primordial spider had one kind of silk, and then there were multiple events when the gene duplicated and evolved,\" says Cheryl Hayashi, a spider specialist at the University of California, Riverside. The species that are more closely related to these ancestors, such as tarantulas and trapdoor spiders, make silks of simple designs—messy tangles to trap walking insects, for example, using fewer types of silk. Other spiders evolved to make more complex spiralling orb webs, in which different regions are composed of different kinds of silk—some optimized for capturing prey, others for structural support of large web designs.\n\nThis evolutionary bounty has happy implications for engineers looking to put spider silk into human service. If a design calls for a fibre with a particular ratio of strength to stretchiness, \"it's probably already been invented\" by one of the tens of thousands of types of spider, says Hayashi.\n\nMost research has centred on taking advantage of the toughness of spider silk—in materials science, toughness is a measure of how much energy it takes to break something. Materials such as spider silk are both strong and elastic. A large insect that flies into a spiderweb at top speed stretches the superfine fibres in the web but does not break them.\n\nThe toughest silks are found in spider draglines, which researchers are studying intensely. Spiders use draglines to dangle safely, to make the frames of their webs, and for situations in which resistance to breakage is paramount. In a scene from the 2004 movie Spider-Man 2, the eponymous superhero stops a runaway New York City subway train with his webbing, which is not too far of a stretch from reality.",
+      "graphic": {
+        "title": "Mechanical Properties of Natural and Synthetic Fibers",
+        "columns": ["Material", "Strength (GPa)", "Elasticity (%)", "Toughness (MJ/m3)"],
+        "rows": [
+          ["Bark spider MA silk*", "1.6", "52", "354"],
+          ["Silver garden spider flag silk†", "0.095", "465", "75"],
+          ["Domestic silkworm silk", "0.6", "18", "70"],
+          ["Nylon fiber", "0.95", "18", "80"],
+          ["Kevlar 49 fiber", "3.6", "2.7", "50"],
+          ["Carbon fiber", "4", "1.3", "25"],
+          ["High-tensile steel fiber", "1.5", "0.8", "6"]
+        ],
+        "notes": [
+          "*MA silk: non-sticky; used to make draglines and bridgelines and to anchor webs",
+          "†flag silk: sticky; used to capture prey in webs"
+        ]
+      },
+      "questions": [
+        {
+          "number": 55,
+          "question": "In the context of the passage, the main function of the highlighted paragraph is to:",
+          "highlightedText": "A Madagascan bark spider releases a silk dragline into the air. The wind carries the thin threads to the other side of a river, where they land on foliage on the opposite bank 25 metres away.",
+          "options": {
+            "A": "provide an overview of the internal process that enables spiders to produce different types of silk.",
+            "B": "illustrate the strength and versatility of spider silks by describing how one particular spider uses its silks to create a web.",
+            "C": "introduce the idea that spiders are resourceful by describing the obstacles they encounter when producing silks for their webs.",
+            "D": "point out that the properties of silks made by spiders are similar to those of silks made by other animals."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 56,
+          "question": "According to the passage, how does the bark spider establish tension in its bridgeline?",
+          "options": {
+            "A": "It drops the bridgeline into water.",
+            "B": "It reinforces the bridgeline with silk.",
+            "C": "It adds dirt to the bridgeline.",
+            "D": "It stretches the bridgeline."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 57,
+          "question": "In the context of the passage, the highlighted statement can best be described as:",
+          "highlightedText": "C. darwini's bridging silk is the world's toughest known biomaterial—it is even tougher than steel fibre.",
+          "options": {
+            "A": "a claim asserted by several researchers but contradicted by the passage author.",
+            "B": "a fact the passage author supports by citing the variety of silks other spiders can produce.",
+            "C": "a reasoned judgment based on the passage author's understanding of how spiders produce silks.",
+            "D": "an opinion the passage author presents but offers no support for."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 58,
+          "question": "According to the passage, how many different kinds of silk proteins can an individual spider make?",
+          "options": {
+            "A": "No more than two",
+            "B": "As many as six",
+            "C": "More than twenty-five",
+            "D": "About four hundred"
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 59,
+          "question": "It can reasonably be inferred from the passage that the author uses the highlighted word \"stretch\" mainly to:",
+          "highlightedText": "which is not too far of a stretch from reality",
+          "options": {
+            "A": "reinforce an idea in the passage with a humorous play on words.",
+            "B": "emphasize the elaborate nature of some spiderwebs.",
+            "C": "suggest the passage's representation of spiderwebs may be slightly exaggerated.",
+            "D": "criticize the movie's lack of authenticity."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 60,
+          "question": "Based on the highlighted text and the table, which of the following statements is accurate?",
+          "options": {
+            "A": "High-tensile steel fiber requires much less energy to break than the bark spider's silk does.",
+            "B": "Only the silver garden spider's flag silk requires more energy to break than the domestic silkworm's silk does.",
+            "C": "Synthetic fibers like Kevlar 49 require much more energy to break than natural fibers like silk do.",
+            "D": "Nylon fiber requires the same amount of energy to break as carbon fiber does."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 61,
+          "question": "Based on the passage and the table, does the information in the table support the passage's claim about how the bark spider's silk compares to steel fiber?",
+          "options": {
+            "A": "Yes, because while the table indicates the bark spider's silk is not as strong as steel fiber, the bark spider's silk is slightly tougher.",
+            "B": "Yes, because the table indicates the toughness of the bark spider's silk far exceeds the toughness of steel fiber.",
+            "C": "No, because the table indicates the toughness of steel fiber is approximately the same as the toughness of the bark spider's silk.",
+            "D": "No, because the table indicates steel fiber is tougher than the bark spider's silk."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 62,
+          "question": "Based on the table, which of the following pairs of materials are most different in terms of elasticity?",
+          "options": {
+            "A": "Silver garden spider flag silk and high-tensile steel fiber",
+            "B": "Silver garden spider flag silk and Kevlar 49 fiber",
+            "C": "Domestic silkworm silk and nylon fiber",
+            "D": "Kevlar 49 fiber and carbon fiber"
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 63,
+          "question": "According to the table, compared to the silver garden spider's flag silk, the domestic silkworm's silk has:",
+          "options": {
+            "A": "less strength and less elasticity.",
+            "B": "greater toughness and greater strength.",
+            "C": "greater strength but less toughness.",
+            "D": "less strength but greater elasticity."
+          },
+          "correctIndex": null
+        }
+      ]
+    },
+    {
+      "id": "act8",
+      "type": "INFORMATIONAL",
+      "title": "Native American Film outside the Margins of Filmmaking",
+      "attribution": "This passage is from the article \"Native American Film outside the Margins of Filmmaking\" by Beverly R. Singer, reproduced from Great Plains Quarterly with permission from the University of Nebraska Press (©2014 by University of Nebraska Press).",
+      "text": "To manifest oneself as a filmmaker evokes such traditional professional titles as lawyer, doctor, engineer, writer, teacher, and plumber, where established institutional access is built on hierarchy and where acceptance into the profession opens opportunities for employment. One of those doors of access to filmmaking was opened to Native Americans in an exchange that took place at the Sundance Film Festival in 1997. Along with other Native filmmakers, including actor and producer Gary Farmer (Cayuga), I was invited that year to the festival to screen our productions. While there, we were invited to a consultation with the Sundance Institute executive staff to discuss how to enhance and improve the production of Native-made films to make them competitive with any film in the program. Robert Redford, founder of the Sundance Institute and Sundance Film Festival, was not present at that meeting, but we were told he was aware of it. When asked how the Sundance Institute could help improve the participation of Native American films at the Sundance Festival, we found the conversation wavering from helping to fund filmmakers, to the need for professional training and support for distribution of films.\n\nOf most interest to me during the meeting was the discussion of the quality of films produced by Native American filmmakers. In evidence was a demonstration of the power held by the Sundance Festival to promote films that fit specific aesthetic preferences and expectations by festival audiences comprised of film critics, entrepreneurs, and Hollywood \"types.\" To that end, Native American films had not yet achieved that appeal, but executive staff members thought it was possible. Hearing the familiar phrase \"We really do want Native American participation,\" I instinctively sensed that little progress would be made toward \"improving\" Native filmmaking efforts if we did not become part of the system that made decisions. Maybe it was the timing, the place, or a release of the spirit of true collaboration that led me to say, \"If we are to be taken seriously and respected, we need to be at the table helping to make decisions at the Sundance Institute's headquarters where you plan programs and decide policy.\" I suggested that the Sundance Institute hire a Native American as a key staff member to help identify and promote Native filmmaking, someone who could work from the inside and be at the table where decisions were made. The first Native American staff member, Heather Rae (Cherokee), was hired in that capacity by the Sundance Institute, which led to her own successful film production work.\n\nProgress on behalf of Native filmmaking by the Sundance Institute through its production labs provided initial support for the production of Smoke Signals (1998), as noted by Joanna Hearne in her critical study of Smoke Signals: Native Cinema Rising. Hearne endorses Smoke Signals as a major event:\n\nThe film can be seen as a landmark \"first\" in American film history—although it is important to remember the long history of Native filmmaking that came before Smoke Signals—and it can also be seen as a self-positioned first introduction to Native perspectives and Native filmmaking for many of its viewers. . . . As an intervention, Smoke Signals challenges widely accepted misconceptions about Native Americans. Its \"firsts\" can be seen in different ways as inaugurating a new generation of Native film production; as an important but also problematic industry marketing category; as part of a critical paradigm based on sovereignty; and as a strategic creation of politicized space for Indigenous identity in the public mediascape. (xv–xvi).\n\nHearne's extensive review and close readings of the film's production and major players, including the film's scriptwriter, Sherman Alexie, and film director, Chris Eyre, revives the energy surrounding the theatrical release of Smoke Signals. I endorse Hearne's willingness to take up the study years after the film's release, but I have to ask, \"What is the second act for Native cinema?\" Hearne's full attention to Smoke Signals is a combination of personal stories about the scripting and directorial decision-making processes and the actors' contributions; moreover, her critical discussion carefully articulates what cultural elements, including pop and Native culture, produced the film's crossover appeal to audiences on multiple levels.\n\nAlthough the film's glow has receded somewhat, the direction of Native American filmmaking has led to measurable success and growth internationally.",
+      "questions": [
+        {
+          "number": 64,
+          "question": "It can reasonably be inferred that the passage author viewed the Sundance executives' claim in the highlighted text as:",
+          "highlightedText": "We really do want Native American participation",
+          "options": {
+            "A": "a signal that the meeting would be productive.",
+            "B": "a long-overdue promise that would result in more support for Native films.",
+            "C": "evidence that the executives favored Native films over conventional \"Hollywood\" films.",
+            "D": "an assurance that, while well-meaning, felt hollow."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 65,
+          "question": "The passage author indicates that in order to become more active participants in the Sundance Festival, Native filmmakers were most in need of:",
+          "options": {
+            "A": "greater funding for the production of big-budget Native films.",
+            "B": "a decision-making voice within the Sundance Institute.",
+            "C": "training in the Sundance Institute's film promotional practices.",
+            "D": "an opportunity to screen Native films internationally."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 66,
+          "question": "Which of the following statements best summarizes the excerpt from Hearne in the highlighted text?",
+          "highlightedText": "The film can be seen as a landmark \"first\" in American film history—although it is important to remember the long history of Native filmmaking that came before Smoke Signals—and it can also be seen as a self-positioned first introduction to Native perspectives and Native filmmaking for many of its viewers.",
+          "options": {
+            "A": "Smoke Signals grapples with themes of Native identity and was created to reach younger generations of Native Americans.",
+            "B": "Native films like Smoke Signals are important because they are marketed in the mainstream film industry.",
+            "C": "Smoke Signals is one film in a long line of Native films but was revolutionary in its presentation of Native Americans and advancement of Native filmmaking.",
+            "D": "Those who view Smoke Signals as a landmark Native film in American film history often forget Native films' long history and impact on American cinema."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 67,
+          "question": "Based on the passage, the passage author would most likely agree that Hearne's review of Smoke Signals:",
+          "options": {
+            "A": "helped promote the film during its first release.",
+            "B": "tried to cover too many aspects of the film.",
+            "C": "came too late to be meaningful.",
+            "D": "is both thorough and insightful."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 68,
+          "question": "According to the passage, in their 1997 meeting with Native filmmakers, Sundance executives were primarily interested in making Native films:",
+          "options": {
+            "A": "competitive with other films promoted by the Sundance Institute.",
+            "B": "more artistically inventive than films featured at other festivals.",
+            "C": "an integral part of the Sundance Institute's initiative to reinvent its brand.",
+            "D": "adaptable to various formats to allow for easy distribution."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 69,
+          "question": "The passage author describes the conversation between Native filmmakers and Sundance executives as \"wavering\" (highlighted text) primarily to make clear that, up to that point, the meeting had:",
+          "options": {
+            "A": "been poorly managed and was behind schedule.",
+            "B": "inspired deliberation and debate among the filmmakers.",
+            "C": "become awkward due to the executives' reluctance to include more Native films in the festival.",
+            "D": "meandered in topic and somewhat lacked focus."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 70,
+          "question": "As it is used in the passage, the highlighted phrase \"held by\" most nearly means:",
+          "highlightedText": "the power held by the Sundance Festival",
+          "options": {
+            "A": "wielded by.",
+            "B": "within reach of.",
+            "C": "perceived of.",
+            "D": "supported by."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 71,
+          "question": "It can reasonably be inferred from the passage that the Sundance Institute's decision to hire someone like Rae was the result of a suggestion from:",
+          "options": {
+            "A": "Farmer.",
+            "B": "Alexie.",
+            "C": "the passage author.",
+            "D": "a Sundance executive."
+          },
+          "correctIndex": null
+        },
+        {
+          "number": 72,
+          "question": "In the context of the passage, the main purpose of the highlighted paragraph is to:",
+          "highlightedText": "Although the film's glow has receded somewhat, the direction of Native American filmmaking has led to measurable success and growth internationally.",
+          "options": {
+            "A": "revisit the success Smoke Signals experienced at its release.",
+            "B": "note the success within Native American filmmaking since the release of Smoke Signals.",
+            "C": "illustrate the measurable growth of international films similar to Smoke Signals.",
+            "D": "highlight the powerful role the Sundance Festival played in producing Smoke Signals."
           },
           "correctIndex": null
         }
