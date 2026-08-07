@@ -721,6 +721,47 @@ async function finalizeRun() {
                     </div>
                 </div>
             </div>
+
+            <!-- secondary breakdown — smaller and less prominent than the
+                 accuracy comparison above, which is the headline number -->
+            <div v-if="finalComparison" class="mt-4 rounded-2xl border border-border bg-bg p-5 text-left">
+                <p class="mb-3 text-xs font-semibold uppercase tracking-widest !text-ink-light">More stats</p>
+                <div class="flex flex-col gap-2.5 text-sm">
+                    <div class="flex items-baseline justify-between gap-4">
+                        <span class="!text-ink-light">Efficiency (Regular)</span>
+                        <span class="font-mono !text-ink">{{ finalComparison.timed.meanEfficiency.toFixed(2) }}%/s</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                        <span class="!text-ink-light">Efficiency (RSVP)</span>
+                        <span class="font-mono !text-ink">{{ finalComparison.rsvp.meanEfficiency.toFixed(2) }}%/s</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                        <span class="!text-ink-light">Avg. time per question (Regular)</span>
+                        <span class="font-mono !text-ink">{{ (finalComparison.timed.meanTimeToAnswerMs / 1000).toFixed(1) }}s</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                        <span class="!text-ink-light">Avg. time per question (RSVP)</span>
+                        <span class="font-mono !text-ink">{{ (finalComparison.rsvp.meanTimeToAnswerMs / 1000).toFixed(1) }}s</span>
+                    </div>
+                    <div class="flex items-baseline justify-between gap-4">
+                        <span class="!text-ink-light">Regular trials finished before time ran out</span>
+                        <span class="font-mono !text-ink">{{ finalComparison.timed.completionRatePct.toFixed(0) }}%</span>
+                    </div>
+                    <div class="border-t border-border pt-2.5">
+                        <p class="mb-2 !text-ink-light">Accuracy by speed</p>
+                        <div
+                            v-for="b in finalComparison.bySpeed"
+                            :key="b.wpm"
+                            class="flex items-baseline justify-between gap-4"
+                        >
+                            <span class="!text-ink-light">{{ b.wpm }} wpm</span>
+                            <span class="font-mono !text-ink">
+                                Regular {{ b.timedAccuracyPct.toFixed(0) }}% · RSVP {{ b.rsvpAccuracyPct.toFixed(0) }}%
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     </div>
