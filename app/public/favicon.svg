@@ -1,19 +1,11 @@
 <?xml version="1.0" encoding="UTF-8"?>
-<!-- Orbit's mark: a ring around a dot, matching the logo mark in the sidebar
-     and footer (App.vue / Footer.vue). Ink-colored, not the old coral
-     accent — the site's palette is fully monochrome now, no accent color
-     anywhere else, so the favicon shouldn't have one either. Dark-mode
-     aware via prefers-color-scheme so it still reads against a dark
-     browser tab bar. -->
+<!-- Orbit's mark: a light-gray ring around a dark-gray core, exactly
+     matching the mascot on the home page (HomePage.vue's ring-around-a-dot
+     motif: border-ink/35 ring, solid bg-ink core). Cream rounded-square
+     background so it reads as a proper app icon and stands out clearly
+     against any browser tab bar. -->
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 100 100" width="100" height="100">
-  <style>
-    .ink-stroke { stroke: #2B2926; }
-    .ink-fill { fill: #2B2926; }
-    @media (prefers-color-scheme: dark) {
-      .ink-stroke { stroke: #F2EFE8; }
-      .ink-fill { fill: #F2EFE8; }
-    }
-  </style>
-  <circle cx="50" cy="50" r="34" fill="none" class="ink-stroke" stroke-width="7" opacity="0.35" />
-  <circle cx="50" cy="50" r="16" class="ink-fill" />
+  <rect x="0" y="0" width="100" height="100" rx="22" fill="#F2EFE9" />
+  <circle cx="50" cy="50" r="30" fill="none" stroke="#2B2926" stroke-opacity="0.35" stroke-width="7" />
+  <circle cx="50" cy="50" r="14" fill="#2B2926" />
 </svg>
