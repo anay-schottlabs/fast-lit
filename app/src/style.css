@@ -46,19 +46,37 @@ body {
     color: var(--color-ink);
 }
 
-/* Orbit's pill-shaped buttons — solid ink fill with inverted text
+/* Orbit's rounded-square buttons — solid ink fill with inverted text
    (primary), or an ink-at-35%-opacity outline with full-ink text
-   (secondary). Both from the handoff exactly; no accent color at all. */
+   (secondary). No accent color at all. */
 .btn-primary {
-    @apply btn bg-ink !text-invert border-0 disabled:opacity-50 hover:opacity-85 rounded-full;
+    @apply btn bg-ink !text-invert border-0 disabled:opacity-50 hover:opacity-85 rounded-2xl;
 }
 
 .btn-secondary {
-    @apply btn bg-transparent border-2 border-ink/35 !text-ink disabled:opacity-50 hover:bg-ink/5 rounded-full;
+    @apply btn bg-transparent border-2 border-ink/35 !text-ink disabled:opacity-50 hover:bg-ink/5 rounded-2xl;
 }
 
 .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
+}
+
+/* daisyUI's tooltip defaults to its own theme's --color-neutral /
+   --color-neutral-content, which we never define (this site doesn't use
+   daisyUI's theming system) — left alone, that falls back to daisyUI's
+   own bundled default theme colors, which don't track our light/dark
+   palette and can end up low-contrast or mismatched in dark mode.
+   Pointing --tt-bg (used for both the bubble and its little tail) and
+   the text color at our own tokens keeps the tooltip themed exactly like
+   everything else on the site. Unlayered, so it beats daisyUI's own
+   layered tooltip.css rules regardless of specificity. */
+.tooltip {
+    --tt-bg: var(--color-ink);
+}
+
+.tooltip[data-tip]::before,
+.tooltip > .tooltip-content {
+    color: var(--color-invert);
 }
 
 /* daisyUI ships its own default theme colors, which know nothing about

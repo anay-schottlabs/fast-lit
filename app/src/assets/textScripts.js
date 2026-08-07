@@ -749,7 +749,15 @@ export class ChangelogScripts {
                     "space on short pages (Feedback, the Lab start/done screens) instead of sitting at its natural",
                     "height right at the bottom of the viewport."
                 ]),
-                "Fixed the reader's speed number (both the live reading stage and the settings modal) still rendering in the old monospace code font instead of Baloo 2 like every other big number on the site."
+                "Fixed the reader's speed number (both the live reading stage and the settings modal) still rendering in the old monospace code font instead of Baloo 2 like every other big number on the site.",
+                "Changed every real button on the site (primary/secondary CTAs, the reader's play/pause/end controls, the sidebar's Start Reading button) from fully-rounded pills to rounded squares. Left decorative circles alone — the logo/mascot marks, icon housings, and numbered badges aren't buttons.",
+                text([
+                    "Fixed two sidebar tooltip bugs: they were getting clipped by the rail's own edge (overflow-y-auto",
+                    "on the sidebar was forcing overflow-x to clip too, cutting off anything that popped out past its",
+                    "88px width) and were using daisyUI's default tooltip colors, which don't track this site's palette",
+                    "and looked off in dark mode. Tooltips now render outside the rail correctly and use the same",
+                    "ink-fill/inverted-text treatment as everything else."
+                ])
             ]
         )
     ]

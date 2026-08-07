@@ -71,11 +71,11 @@ const statCards = computed(() => [
             <div class="mt-2 flex flex-wrap justify-center gap-4">
                 <router-link
                     to="/read"
-                    class="min-w-[220px] rounded-full bg-ink px-9 py-[18px] text-center text-[19px] font-bold text-invert focus-ring"
+                    class="min-w-[220px] rounded-2xl bg-ink px-9 py-[18px] text-center text-[19px] font-bold text-invert focus-ring"
                 >{{ HomeScripts.heroButton }}</router-link>
                 <router-link
                     to="/lab"
-                    class="box-border min-w-[180px] rounded-full border-2 border-ink/35 px-[34px] py-4 text-center text-[19px] font-bold text-ink focus-ring"
+                    class="box-border min-w-[180px] rounded-2xl border-2 border-ink/35 px-[34px] py-4 text-center text-[19px] font-bold text-ink focus-ring"
                 >{{ HomeScripts.heroSecondaryButton }}</router-link>
             </div>
         </section>
@@ -127,7 +127,7 @@ const statCards = computed(() => [
                 <p class="text-base text-ink-light">{{ HomeScripts.ctaContent }}</p>
                 <router-link
                     to="/read"
-                    class="mt-2 rounded-full bg-ink px-10 py-[18px] text-[19px] font-bold text-invert focus-ring"
+                    class="mt-2 rounded-2xl bg-ink px-10 py-[18px] text-[19px] font-bold text-invert focus-ring"
                 >{{ HomeScripts.heroButton }}</router-link>
             </div>
         </section>

@@ -44,7 +44,14 @@ const footerVariant = computed(() => {
 
 <template>
     <div class="flex">
-        <aside class="sticky top-0 box-border flex h-screen w-[88px] shrink-0 flex-col items-center gap-1 overflow-y-auto border-r border-border bg-bg px-3 py-8">
+        <!-- No overflow-y-auto here: daisyUI's tooltip pops out via
+             tooltip-right, positioned outside this rail's own narrow
+             width — an overflow-y value other than visible forces
+             overflow-x to clip too (per the CSS spec, you can't have one
+             axis auto/hidden and the other visible), which was cutting
+             the tooltips off. Content fits within a normal viewport
+             height without needing to scroll anyway. -->
+        <aside class="sticky top-0 box-border flex h-screen w-[88px] shrink-0 flex-col items-center gap-1 border-r border-border bg-bg px-3 py-8">
             <!-- logo mark -->
             <router-link
                 to="/"
@@ -111,7 +118,7 @@ const footerVariant = computed(() => {
             <!-- pinned "Start Reading" CTA -->
             <router-link
                 to="/read"
-                class="tooltip tooltip-right mt-auto flex h-12 w-12 items-center justify-center rounded-full bg-ink text-invert focus-ring"
+                class="tooltip tooltip-right mt-auto flex h-12 w-12 items-center justify-center rounded-2xl bg-ink text-invert focus-ring"
                 data-tip="Start Reading"
             >
                 <svg width="18" height="18" viewBox="0 0 24 24" class="shrink-0 fill-invert">

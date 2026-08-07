@@ -528,7 +528,7 @@ window.addEventListener('keydown', (event) => {
              used everywhere else on the site), matching the iOS app's own
              read screen, which stays fully monochrome. -->
         <button
-            class="bg-ink rounded-full !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
+            class="bg-ink rounded-2xl !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
             @click="start"
             id="playButton"
             v-if="playState != PlayState.PLAYING"
@@ -558,7 +558,7 @@ window.addEventListener('keydown', (event) => {
         <!-- pause button — hidden under lockControls, so a started trial can
              only run to completion -->
         <button
-            class="bg-ink rounded-full !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
+            class="bg-ink rounded-2xl !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
             @click="pause"
             id="pauseButton"
             v-if="playState == PlayState.PLAYING && !lockControls"
@@ -584,7 +584,7 @@ window.addEventListener('keydown', (event) => {
              lockControls, so a trial can't be aborted/reset mid-playback -->
         <button
             v-if="!lockControls"
-            class="bg-ink rounded-full !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
+            class="bg-ink rounded-2xl !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
             @click="end"
             id="endButton"
         >
