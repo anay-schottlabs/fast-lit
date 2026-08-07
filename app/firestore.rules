@@ -1,0 +1,41 @@
+rules_version = '2';
+
+// Firestore Security Rules for the fast-lit Firebase project (the main web
+// app — not fast-lit-ios). Not deployed automatically — apply this via the
+// Firebase Console (Firestore Database > Rules) or
+// `firebase deploy --only firestore:rules --project fast-lit` with the
+// Firebase CLI. The web app has no auth system at all, so every rule below
+// is intentionally open to any caller — the only protection is restricting
+// *which* collections/fields are writable, not *who* can write them.
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Site-wide aggregate word-count stat shown on the home page (see
+    // Reader.vue's updateTotalWordsRead / HomePage.vue's onMounted fetch).
+    // Anonymous and aggregate by design (see the Privacy Policy page), so
+    // there's nothing here worth gating behind auth — just restricted to
+    // the one field the client actually touches, on docs that already
+    // exist (the client never creates or deletes a stats doc itself).
+    match /stats/{statsId} {
+      allow get, list: if true;
+      allow update: if request.resource.data.diff(resource.data).affectedKeys().hasOnly(['totalWordsRead']);
+      allow create, delete: if false;
+    }
+
+    // One doc per completed /lab run (see LabPage.vue's finalizeRun) — all
+    // three trials of a run, plus run-level totals. No participant/session
+    // identity is collected at all, so there's nothing to key separate
+    // writes on; the whole run is written once, atomically, at the end.
+    // Readable/listable so /lab/results can pull every record; immutable
+    // once written, since these are research data and shouldn't be
+    // editable from the client after the fact.
+    match /labRuns/{runId} {
+      allow get, list: if true;
+      allow create: if request.resource.data.keys().hasOnly([
+        'trials', 'runStartedAt', 'runEndedAt', 'totalElapsedMs',
+        'totalReadingMs', 'totalQuizMs', 'overallAccuracyPct', 'userAgent', 'createdAt'
+      ]);
+      allow update, delete: if false;
+    }
+  }
+}

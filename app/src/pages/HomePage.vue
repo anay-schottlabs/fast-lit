@@ -114,21 +114,13 @@ const statCards = computed(() => [
 <template>
     <div>
         <!--
-            header + hero share this wrapper so the decorative glow bleeds behind both.
             App.vue wraps <router-view> in a p-4 box, which reserves 16px above this
             page that this wrapper can't paint into on its own — so -mt-4 cancels that
             reserved space (a standard negative-margin "full bleed inside a padded
             layout" trick) and pt-4 adds the same amount back as internal padding,
-            keeping the header's on-screen position unchanged while letting the glow's
-            background extend all the way up behind it.
+            keeping the header's on-screen position unchanged.
         -->
         <div class="relative -mt-4 overflow-hidden pt-4">
-            <!-- decorative glow -->
-            <div
-                class="pointer-events-none absolute -top-10 left-1/2 -z-10 h-[34rem] w-[34rem] -translate-x-1/2 rounded-full bg-red/25 blur-3xl"
-                aria-hidden="true"
-            ></div>
-
             <!-- page header -->
             <Header pageName="" />
 
@@ -136,32 +128,32 @@ const statCards = computed(() => [
             <div class="mx-auto grid max-w-6xl gap-16 px-4 pb-20 pt-16 lg:grid-cols-2 lg:items-center">
                 <!-- copy + CTA -->
                 <div class="text-center lg:text-left">
-                    <span class="inline-block rounded-full border border-red/40 bg-red/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest text-red-light">
+                    <span class="inline-block rounded-full border border-terracotta/30 bg-terracotta/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest !text-ink">
                         {{ HomeScripts.heroBadge }}
                     </span>
 
-                    <h1 class="mt-5 text-6xl font-bold !text-red whitespace-normal lg:text-7xl">
+                    <h1 class="mt-5 text-6xl font-bold !text-ink whitespace-normal lg:text-7xl">
                         {{ HomeScripts.heroTitle }}
                     </h1>
-                    <p class="py-6 text-lg text-white/80">
+                    <p class="py-6 text-lg !text-ink-light">
                         {{ HomeScripts.heroContent }}
                     </p>
                     <button
-                        class="btn-red !w-full max-w-64"
+                        class="btn-primary !w-full max-w-64"
                         @click="navigateTo('/read')"
                     >
                         <span class="w-full flex items-center justify-center gap-2 ms-2">
                             {{ HomeScripts.heroButton }}
                             <svg
                                 xmlns="http://www.w3.org/2000/svg"
-                                fill="white"
+                                fill="none"
                                 viewBox="0 0 24 24"
                                 width="28"
                                 height="28"
+                                class="stroke-cream"
                             >
                                 <path
                                     d="M5 12h14M13 6l6 6-6 6"
-                                    stroke="white"
                                     stroke-width="2.2"
                                     stroke-linecap="round"
                                     stroke-linejoin="round"
@@ -173,16 +165,16 @@ const statCards = computed(() => [
                 </div>
 
                 <!-- live RSVP preview -->
-                <div class="rounded-3xl border border-white/10 bg-white/5 p-10 shadow-2xl shadow-black/40">
-                    <p class="text-center text-xs font-semibold uppercase tracking-widest text-white/50">
+                <div class="rounded-3xl border border-border bg-card card-shadow p-10">
+                    <p class="text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
                         Live Preview
                     </p>
                     <div class="my-8 flex h-16 items-center justify-center text-5xl font-bold">
-                        <span class="flex-1 text-right">{{ demoBefore }}</span>
-                        <span class="text-red">{{ demoRedLetter }}</span>
-                        <span class="flex-1 text-left">{{ demoAfter }}</span>
+                        <span class="flex-1 text-right !text-ink">{{ demoBefore }}</span>
+                        <span class="text-terracotta">{{ demoRedLetter }}</span>
+                        <span class="flex-1 text-left !text-ink">{{ demoAfter }}</span>
                     </div>
-                    <p class="text-center text-sm text-white/50">
+                    <p class="text-center text-sm !text-ink-light">
                         ~{{ HomeScripts.demoWpm }} words per minute
                     </p>
                 </div>
@@ -192,16 +184,16 @@ const statCards = computed(() => [
         <!-- stats -->
         <div class="mx-auto mb-24 grid max-w-5xl gap-6 px-4 sm:grid-cols-3">
             <div
-                class="rounded-2xl border border-white/10 bg-white/5 p-6 text-center shadow-2xl shadow-black/40"
+                class="rounded-2xl border border-border bg-card card-shadow p-6 text-center"
                 v-for="stat in statCards"
                 :key="stat.label"
             >
-                <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-red/15">
+                <div class="mx-auto mb-3 flex h-12 w-12 items-center justify-center rounded-full bg-terracotta/15">
                     <svg
                         xmlns="http://www.w3.org/2000/svg"
                         fill="none"
                         viewBox="0 0 24 24"
-                        class="h-6 w-6 stroke-current text-red"
+                        class="h-6 w-6 stroke-current text-terracotta"
                     >
                         <path
                             stroke-linecap="round"
@@ -211,39 +203,39 @@ const statCards = computed(() => [
                         ></path>
                     </svg>
                 </div>
-                <div class="text-4xl font-bold">
-                    <span v-if="statsLoading" class="inline-block h-9 w-16 animate-pulse rounded-lg bg-white/10" aria-hidden="true"></span>
+                <div class="text-4xl font-bold !text-ink">
+                    <span v-if="statsLoading" class="inline-block h-9 w-16 animate-pulse rounded-lg bg-border" aria-hidden="true"></span>
                     <span v-else>{{ stat.value }}</span>
                 </div>
-                <div class="mt-1 text-sm text-white/55">{{ stat.label }}</div>
+                <div class="mt-1 text-sm !text-ink-light">{{ stat.label }}</div>
             </div>
         </div>
 
         <!-- how it works -->
         <div class="mx-auto mb-24 max-w-5xl px-4">
-            <h2 class="mb-10 text-center text-3xl font-bold">How It Works</h2>
+            <h2 class="mb-10 text-center text-3xl font-bold !text-ink">How It Works</h2>
             <div class="grid gap-6 sm:grid-cols-3">
                 <div
-                    class="rounded-2xl border border-white/10 bg-white/5 p-6 shadow-2xl shadow-black/40"
+                    class="rounded-2xl border border-border bg-card card-shadow p-6"
                     v-for="(step, idx) in HomeScripts.steps"
                     :key="step.title"
                 >
-                    <span class="mb-4 flex h-8 w-8 items-center justify-center rounded-full bg-red text-sm font-bold">
+                    <span class="mb-4 flex h-8 w-8 items-center justify-center rounded-full bg-terracotta text-sm font-bold !text-cream">
                         {{ idx + 1 }}
                     </span>
-                    <h3 class="mb-2 text-lg font-semibold">{{ step.title }}</h3>
-                    <p class="text-sm text-white/70">{{ step.description }}</p>
+                    <h3 class="mb-2 text-lg font-semibold !text-ink">{{ step.title }}</h3>
+                    <p class="text-sm !text-ink-light">{{ step.description }}</p>
                 </div>
             </div>
         </div>
 
         <!-- closing call to action -->
         <div class="mx-auto mb-24 max-w-3xl px-4 text-center">
-            <div class="rounded-3xl border border-white/10 bg-white/5 px-6 py-12 shadow-2xl shadow-black/40">
-                <h2 class="mb-3 text-3xl font-bold">{{ HomeScripts.ctaTitle }}</h2>
-                <p class="mb-6 text-white/70">{{ HomeScripts.ctaContent }}</p>
+            <div class="rounded-3xl border border-border bg-card card-shadow px-6 py-12">
+                <h2 class="mb-3 text-3xl font-bold !text-ink">{{ HomeScripts.ctaTitle }}</h2>
+                <p class="mb-6 !text-ink-light">{{ HomeScripts.ctaContent }}</p>
                 <button
-                    class="btn-red !w-full max-w-64"
+                    class="btn-primary !w-full max-w-64"
                     @click="navigateTo('/read')"
                 >
                     {{ HomeScripts.heroButton }}

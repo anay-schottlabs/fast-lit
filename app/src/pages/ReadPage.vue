@@ -175,7 +175,7 @@ const settingsModal = ref(false);
     <div class="mx-auto max-w-4xl p-5">
         <div class="mb-5">
             <button
-                class="btn btn-circle btn-ghost absolute top-5 right-5 transition-colors hover:bg-white/10"
+                class="btn btn-circle btn-ghost absolute top-5 right-5 transition-colors hover:bg-ink/5"
                 @click="openSettings"
             >
                 <!-- svg for a gear icon for the settings button -->
@@ -189,7 +189,7 @@ const settingsModal = ref(false);
                     width="32px"
                     height="32px"
                     viewBox="0 0 122.88 122.878"
-                    fill="white"
+                    class="fill-ink"
                 >
                     <g>
                         <path
@@ -236,16 +236,16 @@ const settingsModal = ref(false);
         class="modal"
         :class="{ 'modal-open': settingsModal }"
     >
-        <div class="modal-box bg-deepblue h-7/8 flex flex-col overflow-hidden rounded-3xl border border-white/10 shadow-2xl shadow-black/40">
+        <div class="modal-box bg-cream h-7/8 flex flex-col overflow-hidden rounded-3xl border border-border card-shadow">
             <!-- Header: close button + title share one relative row, so their
                  alignment is structural rather than two independently
                  absolutely-positioned elements coincidentally lining up.
                  The border-b also gives the title the same disciplined
                  "section" treatment as Speed/Paste Text/Keyboard Shortcuts
                  below, instead of floating above them as a bare heading. -->
-            <div class="relative flex items-center justify-center border-b border-white/10 pb-4">
+            <div class="relative flex items-center justify-center border-b border-border pb-4">
                 <button
-                    class="btn btn-circle btn-ghost absolute left-0 top-1/2 -translate-y-1/2 transition-colors hover:bg-white/10 focus-ring"
+                    class="btn btn-circle btn-ghost absolute left-0 top-1/2 -translate-y-1/2 transition-colors hover:bg-ink/5 focus-ring"
                     @click="updateSettings"
                 >
                     <svg
@@ -258,7 +258,7 @@ const settingsModal = ref(false);
                         width="16px"
                         height="16px"
                         viewBox="0 0 122.878 122.88"
-                        fill="white"
+                        class="fill-ink"
                     >
                         <g>
                             <path
@@ -271,41 +271,41 @@ const settingsModal = ref(false);
                     </svg>
                 </button>
 
-                <span class="text-2xl font-bold !text-red">Settings</span>
+                <span class="text-2xl font-bold !text-ink">Settings</span>
             </div>
 
             <!-- settings menu -->
             <div class="flex-1 overflow-y-auto px-1">
                 <!-- section to choose words per minute of reader -->
-                <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest text-white/50">Speed</p>
-                <div class="rounded-2xl border border-white/10 bg-white/5 p-5">
+                <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">Speed</p>
+                <div class="rounded-2xl border border-border bg-card p-5">
                     <input
                         type="range"
-                        class="range w-full focus-ring"
+                        class="range range-speed w-full focus-ring"
                         :min="minWpm"
                         :max="maxWpm"
                         :step="wpmStep"
                         v-model="formWpm"
                     >
                     <p class="mt-4 text-center">
-                        <span class="font-mono text-3xl font-bold !text-red">{{ formWpm }}</span>
-                        <span class="text-sm text-white/60"> words per minute</span>
+                        <span class="font-mono text-3xl font-bold text-ink">{{ formWpm }}</span>
+                        <span class="text-sm text-ink-light"> words per minute</span>
                     </p>
                 </div>
 
                 <!-- section to manually paste text in -->
-                <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest text-white/50">Paste Text</p>
+                <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">Paste Text</p>
                 <div class="p-1">
                     <textarea
-                        class="textarea h-[300px] w-full rounded-2xl border border-white/10 bg-white/5 transition-colors focus:border-red/60 focus:outline-none"
+                        class="textarea h-[300px] w-full rounded-2xl border border-border bg-card transition-colors focus:border-terracotta/60 focus:outline-none"
                         placeholder="Paste some text to start reading..."
                         v-model="formText"
                     ></textarea>
                 </div>
 
                 <!-- keyboard shortcuts display -->
-                <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest text-white/50">Keyboard Shortcuts</p>
-                <ul class="list overflow-hidden rounded-2xl border border-white/10 bg-white/5">
+                <p class="mb-3 mt-10 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">Keyboard Shortcuts</p>
+                <ul class="list overflow-hidden rounded-2xl border border-border bg-card">
                     <!-- Each row's key column is a fixed w-20, so rows self-align
                          without needing an invisible spacer kbd (list-row is an
                          independent grid per <li>, so column widths don't sync
@@ -315,20 +315,20 @@ const settingsModal = ref(false);
                     <!-- play/pause button -->
                     <li class="list-row">
                         <div class="w-20">
-                            <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">space</kbd>
+                            <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">space</kbd>
                         </div>
                         <div class="list-col-grow flex items-center">
-                            <div>Play / Pause</div>
+                            <div class="!text-ink">Play / Pause</div>
                         </div>
                     </li>
 
                     <!-- reset button -->
                     <li class="list-row">
                         <div class="w-20">
-                            <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">r</kbd>
+                            <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">r</kbd>
                         </div>
                         <div class="list-col-grow flex items-center">
-                            <div>Restart Player</div>
+                            <div class="!text-ink">Restart Player</div>
                         </div>
                     </li>
 
@@ -336,12 +336,12 @@ const settingsModal = ref(false);
                     <li class="list-row">
                         <div class="w-20">
                             <span class="inline-flex gap-2">
-                                <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">◀︎</kbd>
-                                <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">▶︎</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">◀︎</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">▶︎</kbd>
                             </span>
                         </div>
                         <div class="list-col-grow flex items-center">
-                            <div>Previous / Next Word</div>
+                            <div class="!text-ink">Previous / Next Word</div>
                         </div>
                     </li>
 
@@ -349,12 +349,12 @@ const settingsModal = ref(false);
                     <li class="list-row">
                         <div class="w-20">
                             <span class="inline-flex gap-2">
-                                <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">▲</kbd>
-                                <kbd class="kbd kbd-xl rounded-lg bg-white text-gray-800 border border-gray-300 shadow">▼</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">▲</kbd>
+                                <kbd class="kbd kbd-xl rounded-lg bg-cream !text-ink border border-border shadow-sm">▼</kbd>
                             </span>
                         </div>
                         <div class="list-col-grow flex items-center">
-                            <div>Increase / Decrease Speed</div>
+                            <div class="!text-ink">Increase / Decrease Speed</div>
                         </div>
                     </li>
                 </ul>
@@ -363,9 +363,9 @@ const settingsModal = ref(false);
             <!-- button to update changes to settings, separated from the
                  scrollable content above so it reads as a pinned footer
                  action rather than floating below the fold -->
-            <div class="mt-5 border-t border-white/10 pt-5">
+            <div class="mt-5 border-t border-border pt-5">
                 <button
-                    class="mx-1 !w-full btn-red"
+                    class="mx-1 !w-full btn-primary"
                     @click="updateSettings"
                     :disabled="formText.trim().length == 0"
                 >Update</button>
@@ -378,5 +378,11 @@ const settingsModal = ref(false);
 /* prevents textarea from being rescaled */
 textarea {
     resize: none;
+}
+
+/* Same accent-free treatment as the reading stage itself (Reader.vue) —
+   this slider adjusts the exact same Speed value shown there. */
+.range-speed {
+    accent-color: var(--color-ink);
 }
 </style>

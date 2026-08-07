@@ -2,31 +2,98 @@
 @plugin "daisyui";
 
 @theme {
-    --color-deepblue: #120A3D;
-    --color-red: #E43247;
-    /* Lightened red for small/non-bold text on --color-deepblue: the base
-       --color-red only computes to ~4.3:1 contrast there, under WCAG AA's
-       4.5:1 for normal text (it's fine at large/bold sizes, e.g. big WPM
-       numbers and headings, which is what it's used for elsewhere). Use
-       this instead of --color-red for small red text specifically. */
-    --color-red-light: #FF5C74;
+    /* Orbit's palette — matches the iOS app's Theme.swift / ReadColor
+       design system exactly (warm cream background, off-white card
+       surface, dark brown ink text, terracotta accent). Light-only, no
+       dark variant: this site intentionally ships with no theme switcher. */
+    --color-cream: #FBF3E7;
+    --color-card: #FFFBF3;
+    --color-ink: #3D3226;
+    --color-ink-light: #8A7A68;
+    --color-terracotta: #E8794F;
+    --color-border: #EADFCB;
+    --color-error: #C1543F;
+
+    /* Nunito: the web's closest widely-available match to the iOS app's
+       SF Rounded — same warm, friendly, rounded-terminal feel, since true
+       SF Rounded isn't reliably available across browsers. */
+    --font-sans: "Nunito", ui-rounded, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
 }
 
 html {
-    background-color: var(--color-deepblue);
+    background-color: var(--color-cream);
+    /* Firefox: a normal-width, themed scrollbar instead of the invisible
+       default. Inherited, so it also reaches scrollable descendants like
+       the settings modal's body and the Lab results tables without
+       needing its own rule on each one. */
+    scrollbar-width: auto;
+    scrollbar-color: var(--color-ink-light) var(--color-cream);
 }
 
-h1, div, p, button {
-    color: white;
+/* WebKit browsers (Chrome/Safari/Edge) don't support scrollbar-color, and
+   ::-webkit-scrollbar isn't inherited the way scrollbar-color is — so this
+   targets every element rather than just html, covering the page itself
+   plus any inner scroll container (settings modal, Lab results tables).
+   Sized and colored to read as a normal, clearly visible scrollbar rather
+   than a hidden overlay one, while still fitting the rounded, soft-edged
+   look used everywhere else in the design. */
+*::-webkit-scrollbar {
+    width: 12px;
+    height: 12px;
 }
 
-.btn-red {
-    @apply btn bg-red disabled:opacity-50 hover:opacity-80 rounded-2xl;
+*::-webkit-scrollbar-track {
+    background: var(--color-cream);
 }
 
-/* Shared focus-visible ring for interactive elements outside daisyUI's
-   .btn family (which already ships its own focus ring) — sidebar nav,
-   playback controls, the header logo, etc. */
+*::-webkit-scrollbar-thumb {
+    background-color: var(--color-ink-light);
+    border-radius: 8px;
+    border: 3px solid var(--color-cream);
+}
+
+*::-webkit-scrollbar-thumb:hover {
+    background-color: var(--color-ink);
+}
+
+body {
+    font-family: var(--font-sans);
+    color: var(--color-ink);
+}
+
+/* Orbit's pill-shaped buttons — filled/outlined, matching the iOS app's
+   Capsule() PrimaryButtonStyle/SecondaryButtonStyle exactly. */
+.btn-primary {
+    @apply btn bg-terracotta !text-cream border-0 disabled:opacity-50 hover:opacity-85 rounded-full;
+}
+
+.btn-secondary {
+    @apply btn bg-transparent border-2 border-terracotta !text-terracotta disabled:opacity-50 hover:bg-terracotta/10 rounded-full;
+}
+
+/* A soft, warm-tinted shadow — matching the iOS app's own subtle drop
+   shadows (e.g. its bottom bar's "0 4px 16px rgba(61,50,38,.08)") —
+   instead of the heavy black shadow the old dark theme used. Applied to
+   every card in the new design. */
+.card-shadow {
+    box-shadow: 0 4px 16px rgba(61, 50, 38, 0.08);
+}
+
 .focus-ring {
-    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-red-light focus-visible:ring-offset-deepblue;
+    @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-terracotta focus-visible:ring-offset-cream;
+}
+
+/* daisyUI ships its own default theme colors, which know nothing about
+   Orbit's palette — rather than fight daisyUI's separate theming system
+   for what is otherwise a one-color site, the couple of daisyUI
+   components actually used (the reader's speed slider, the paste-text
+   box) are retinted directly here instead. */
+.range {
+    accent-color: var(--color-terracotta);
+}
+
+.textarea {
+    background-color: var(--color-card);
+    border-color: var(--color-border);
+    color: var(--color-ink);
 }
