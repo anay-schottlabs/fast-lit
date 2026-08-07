@@ -246,6 +246,18 @@ onUnmounted(() => clearInterval(timedIntervalId));
 
 const timedTimeDisplay = computed(() => formatSeconds(timedSecondsRemaining.value));
 
+// Share of the time limit elapsed so far, for the progress bar next to the
+// countdown — recomputed from currentTrial each time rather than stored,
+// so it can't drift out of sync with the countdown itself.
+const timedProgressPct = computed(() => {
+    if (!currentTrial.value || currentTrial.value.mode !== 'timed') {
+        return 0;
+    }
+    const total = computeTimedSeconds(currentTrial.value);
+    const remaining = Math.max(0, timedSecondsRemaining.value);
+    return total > 0 ? Math.min(100, ((total - remaining) / total) * 100) : 0;
+});
+
 // Preview of a timed trial's time limit, shown on its TRIAL_INTRO screen
 // before the countdown actually starts.
 const upcomingTimedDisplay = computed(() => {
@@ -593,13 +605,23 @@ async function finalizeRun() {
     </div>
 
     <!-- timed, normal-reading main trial -->
-    <div v-else-if="stage === Stage.TIMED" class="mx-auto max-w-2xl px-5 pt-16 pb-5">
-        <p class="mb-2 mt-2 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
-            Trial {{ currentTrialIndex + 1 }} of {{ trials.length }}
-        </p>
-        <p class="mb-6 text-center text-3xl font-bold !text-ink">{{ timedTimeDisplay }}</p>
+    <div v-else-if="stage === Stage.TIMED" class="mx-auto max-w-2xl px-5 pb-5">
+        <!-- sticky so the time remaining (and how much of it is gone) stays
+             visible no matter how far into the passage you've scrolled -->
+        <div class="sticky top-0 z-10 bg-bg pb-4 pt-16">
+            <p class="mb-2 mt-2 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
+                Trial {{ currentTrialIndex + 1 }} of {{ trials.length }}
+            </p>
+            <p class="mb-3 text-center text-3xl font-bold !text-ink">{{ timedTimeDisplay }}</p>
+            <div class="h-2 w-full overflow-hidden rounded-full bg-ink/10">
+                <div
+                    class="h-full rounded-full bg-ink transition-[width] duration-300 ease-linear"
+                    :style="{ width: timedProgressPct + '%' }"
+                ></div>
+            </div>
+        </div>
 
-        <div class="rounded-2xl border border-border bg-card p-6 !text-ink leading-relaxed">
+        <div class="mt-2 rounded-2xl border border-border bg-card p-6 !text-ink leading-relaxed">
             <p
                 v-for="(para, i) in splitParagraphs(currentTrial.passage.text)"
                 :key="i"
