@@ -779,7 +779,8 @@ export class ChangelogScripts {
                 "Removed daisyUI's default button shadow (an inset highlight plus a soft drop shadow, meant for its own theme) from every button on the site — it read as a stray, out-of-place shadow against this site's flat design.",
                 "Vertically centered the read page's content within the available space below the sidebar/above the footer, instead of it hugging the top with a large gap underneath on most screens.",
                 "Scaled the home page's hero buttons down to the same btn-primary/btn-secondary sizing used everywhere else on the site (Extension, Feedback, ...) — the literal padding/font-size from the design handoff was noticeably larger than that and read as inconsistent with the rest of the site.",
-                "Sized the reader's five controls (previous, play/pause, end, next) down from 56px to 48px squares, with their icons scaled down to match — the uniform size from unifying their styling still felt a little large."
+                "Sized the reader's five controls (previous, play/pause, end, next) down from 56px to 48px squares, with their icons scaled down to match — the uniform size from unifying their styling still felt a little large.",
+                "Shrunk the end button's rounded-square icon to actually match the play button's triangle in size — same rendered box, but the square's own shape was filling noticeably more of it than the triangle filled its."
             ]
         )
     ]

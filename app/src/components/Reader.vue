@@ -617,13 +617,18 @@ window.addEventListener('keydown', (event) => {
                 focusable="false"
                 class="mx-auto fill-invert"
             >
-                <!-- Rounded square with same r as play (roughly 8 for 2rem box) -->
+                <!-- Sized to visually match the play button's triangle:
+                     despite rendering at the same CSS width/height, a
+                     48-unit square in this 64-unit viewBox (75% fill) read
+                     noticeably larger than the triangle's ~30-unit spread
+                     in its own 48-unit viewBox (~63% fill). Shrunk to 40
+                     units (~63% fill) to match. -->
                 <rect
-                    x="8"
-                    y="8"
-                    width="48"
-                    height="48"
-                    rx="8"
+                    x="12"
+                    y="12"
+                    width="40"
+                    height="40"
+                    rx="7"
                 />
             </svg>
         </button>
