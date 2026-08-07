@@ -4,7 +4,7 @@ import { db } from '@/firebase/index.js';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import Header from '../components/Header.vue';
 import Reader from '../components/Reader.vue';
-import { trials as trialConfig, passages, quizzes } from '@/assets/labData.js';
+import { wpmLevels, trialsPerSpeed, passages, quizzes } from '@/assets/labData.js';
 
 // enum for the screens a run moves through, in order (SAVING sits between
 // the last trial's last question and DONE, since the Firestore write can
@@ -42,8 +42,21 @@ const completedTrials = ref([]);
 
 let runStartTime = null;
 
+// Builds this run's trial list: trialsPerSpeed trials at each wpm level,
+// with the passage for each trial slot chosen at random (without repeats)
+// from the full pool — so which essays a participant sees, and at which
+// speed, both vary per run rather than being fixed in the data file.
+function buildTrialConfig() {
+    const speedSlots = wpmLevels.flatMap((wpm) => Array(trialsPerSpeed).fill(wpm));
+    const chosenPassages = shuffle(passages).slice(0, speedSlots.length);
+    return chosenPassages.map((passage, index) => ({
+        passageId: passage.id,
+        wpm: speedSlots[index]
+    }));
+}
+
 function beginRun() {
-    trialOrder.value = shuffle(trialConfig).map((trial, index) => ({
+    trialOrder.value = shuffle(buildTrialConfig()).map((trial, index) => ({
         ...trial,
         position: index
     }));
@@ -214,8 +227,8 @@ async function finalizeRun() {
         <div class="mt-16 rounded-3xl border border-border bg-card card-shadow p-10">
             <h2 class="mb-3 text-2xl font-bold !text-ink">Reading Study</h2>
             <p class="mb-8 !text-ink-light">
-                You'll read three short passages at different speeds. After each one, answer a few quick
-                comprehension questions. It takes about five minutes.
+                You'll read six short passages at different speeds. After each one, answer a few quick
+                comprehension questions. It takes about ten minutes.
             </p>
             <button class="btn-primary w-full" @click="beginRun">Begin</button>
         </div>
