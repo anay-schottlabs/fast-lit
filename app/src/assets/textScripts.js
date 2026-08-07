@@ -675,6 +675,14 @@ export class ChangelogScripts {
                     "redesign — terracotta is used for fills (buttons, badges, icon circles, progress) and never as",
                     "plain heading or body text, matching how the iOS app itself only ever uses its accent color",
                     "that way."
+                ]),
+                text([
+                    "Restyled the read page and reader, keeping the exact same layout (reading stage, progress bar,",
+                    "transport controls, settings modal) and only changing colors. The reading stage itself — word",
+                    "display, play/pause/end buttons, and both speed sliders — stays completely accent-free, matching",
+                    "how the iOS app's own read screen deliberately drops its terracotta accent there and leans on",
+                    "ink vs. muted-ink contrast instead of a colored focal letter. Everywhere else in the settings",
+                    "modal (borders, cards, kbd chips, the Update button) picks up the standard new palette."
                 ])
             ]
         )

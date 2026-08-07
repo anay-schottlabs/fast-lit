@@ -434,39 +434,44 @@ window.addEventListener('keydown', (event) => {
 
 <template>
     <!-- display words per minute -->
-    <p class="mt-5 text-center text-xs font-semibold uppercase tracking-widest text-white/50">
+    <p class="mt-5 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
         Speed
     </p>
     <p class="mb-2 text-center">
-        <span class="font-mono text-3xl font-bold !text-red">{{ wpm }}</span>
-        <span class="text-sm text-white/60"> words per minute</span>
+        <span class="font-mono text-3xl font-bold text-ink">{{ wpm }}</span>
+        <span class="text-sm text-ink-light"> words per minute</span>
     </p>
 
-    <!-- main word reader display, framed as a distinct "reading stage" -->
-    <div class="relative my-8 rounded-3xl border border-white/10 bg-white/5 px-6 py-16 shadow-2xl shadow-black/40">
+    <!--
+        Main word reader display, framed as a distinct "reading stage". Kept
+        fully monochrome (ink/ink-light only, no terracotta) to match the
+        iOS app's own read screen, which deliberately drops its one accent
+        color here — see ContentView.swift's wordDisplay: "in this app's
+        monochrome palette there's no separate hue to lean on... the
+        focal letter stand[s] out through color contrast alone" (full
+        ink center word against muted ink-light before/after text, no
+        fixation ticks).
+    -->
+    <div class="relative my-8 rounded-3xl border border-border bg-card card-shadow px-6 py-16">
         <template v-if="hasContent">
-            <!-- focal-point guide ticks, reinforcing the red-letter alignment above/below the word -->
-            <div class="absolute left-1/2 top-6 h-3 w-0.5 -translate-x-1/2 rounded-full bg-red/50" aria-hidden="true"></div>
-            <div class="absolute bottom-6 left-1/2 h-3 w-0.5 -translate-x-1/2 rounded-full bg-red/50" aria-hidden="true"></div>
-
             <div class="text-5xl font-bold text-center flex sm:text-6xl lg:text-7xl">
                 <!-- Shows the part of the word before the highlighted letter, right-aligned within its flex space -->
-                <span class="flex-1 text-right">
+                <span class="flex-1 text-right text-ink-light">
                     {{ beforeRedLetter }}
                 </span>
-                <!-- Displays the single red-highlighted letter for optimal reading focus -->
-                <span class="text-red">
+                <!-- Displays the single focal letter — full-strength ink, same weight as before/after, standing out through lightness contrast rather than a separate accent color -->
+                <span class="text-ink">
                     {{ redLetter }}
                 </span>
                 <!-- Shows the part of the word after the highlighted letter, left-aligned within its flex space -->
-                <span class="flex-1 text-left">
+                <span class="flex-1 text-left text-ink-light">
                     {{ afterRedLetter }}
                 </span>
             </div>
         </template>
         <!-- empty-text state: parse() on blank input still produces one empty
              "word", which would otherwise render this stage completely blank -->
-        <p v-else class="text-center text-lg text-white/50">
+        <p v-else class="text-center text-lg !text-ink-light">
             Add some text in Settings to get started.
         </p>
     </div>
@@ -487,10 +492,14 @@ window.addEventListener('keydown', (event) => {
 
     <!-- reader controls section -->
     <div class="flex gap-5 justify-center items-center" :class="{ 'mt-10': lockControls }">
-        <!-- button to move to previous word — hidden under lockControls -->
+        <!-- button to move to previous word — hidden under lockControls.
+             A subtle ink-tinted tile (matching the iOS app's own
+             "inactiveTileBackground" treatment for its Back/Forward
+             buttons), not a filled accent button — this whole reading
+             stage stays accent-free. -->
         <button
             v-if="!lockControls"
-            class="btn btn-square !text-red bg-white rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 opacity-100 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
+            class="btn btn-square !text-ink bg-ink/5 rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 opacity-100 hover:bg-ink/10 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
             :disabled="wordIndex == 0 || playState == PlayState.PLAYING"
             @click="wordIndex--"
             id="previousButton"
@@ -503,20 +512,11 @@ window.addEventListener('keydown', (event) => {
                 aria-hidden="true"
                 focusable="false"
             >
-                <!-- Larger rounded square background, matching others, radius = 8 -->
-                <rect
-                    x="6"
-                    y="6"
-                    width="52"
-                    height="52"
-                    rx="9"
-                    fill="#fff"
-                />
                 <!-- Larger, thicker left arrow (flip of original) -->
                 <polyline
                     points="34,18 20,32 34,46"
                     fill="none"
-                    stroke="#E43247"
+                    stroke="#3D3226"
                     stroke-width="10"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -524,14 +524,16 @@ window.addEventListener('keydown', (event) => {
             </svg>
         </button>
 
-        <!-- play button -->
+        <!-- play button — filled with plain ink (not the terracotta accent
+             used everywhere else on the site), matching the iOS app's own
+             read screen, which stays fully monochrome. -->
         <button
-            class="btn-red !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
+            class="bg-ink rounded-full !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
             @click="start"
             id="playButton"
             v-if="playState != PlayState.PLAYING"
         >
-  
+
             <svg
                 viewBox="0 0 48 48"
                 width="2rem"
@@ -539,6 +541,7 @@ window.addEventListener('keydown', (event) => {
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
+                class="mx-auto fill-cream"
             >
                 <path
                     d="M10,8
@@ -548,7 +551,6 @@ window.addEventListener('keydown', (event) => {
                        L38,24
                        Q40,23 38,22
                        Z"
-                    fill="#fff"
                 />
             </svg>
         </button>
@@ -556,7 +558,7 @@ window.addEventListener('keydown', (event) => {
         <!-- pause button — hidden under lockControls, so a started trial can
              only run to completion -->
         <button
-            class="btn-red !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
+            class="bg-ink rounded-full !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
             @click="pause"
             id="pauseButton"
             v-if="playState == PlayState.PLAYING && !lockControls"
@@ -568,11 +570,12 @@ window.addEventListener('keydown', (event) => {
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
+                class="mx-auto fill-cream"
             >
                 <g>
                     <!-- Give each bar a rounded radius of 0.5 to match visual style of stop button (proportional: stop uses rx=8 for 48x48 box, so rx=0.5 for 2x6 bar) -->
-                    <rect x="1" y="1" width="2" height="6" rx="0.5" fill="#fff" />
-                    <rect x="5" y="1" width="2" height="6" rx="0.5" fill="#fff" />
+                    <rect x="1" y="1" width="2" height="6" rx="0.5" />
+                    <rect x="5" y="1" width="2" height="6" rx="0.5" />
                 </g>
             </svg>
         </button>
@@ -581,7 +584,7 @@ window.addEventListener('keydown', (event) => {
              lockControls, so a trial can't be aborted/reset mid-playback -->
         <button
             v-if="!lockControls"
-            class="btn-red !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
+            class="bg-ink rounded-full !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
             @click="end"
             id="endButton"
         >
@@ -592,15 +595,15 @@ window.addEventListener('keydown', (event) => {
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
+                class="mx-auto fill-cream"
             >
-                <!-- Rounded square with same r as play (roughly 8 for 2rem button) -->
+                <!-- Rounded square with same r as play (roughly 8 for 2rem box) -->
                 <rect
                     x="8"
                     y="8"
                     width="48"
                     height="48"
                     rx="8"
-                    fill="#fff"
                 />
             </svg>
         </button>
@@ -608,7 +611,7 @@ window.addEventListener('keydown', (event) => {
         <!-- button to move to next word — hidden under lockControls -->
         <button
             v-if="!lockControls"
-            class="btn btn-square !text-red bg-white rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
+            class="btn btn-square !text-ink bg-ink/5 rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 hover:bg-ink/10 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
             :disabled="wordIndex == wordList.length - 1 || playState == PlayState.PLAYING"
             @click="wordIndex++"
             id="nextButton"
@@ -621,20 +624,11 @@ window.addEventListener('keydown', (event) => {
                 aria-hidden="true"
                 focusable="false"
             >
-                <!-- Larger rounded square background, matching others, radius = 8 -->
-                <rect
-                    x="6"
-                    y="6"
-                    width="52"
-                    height="52"
-                    rx="9"
-                    fill="#fff"
-                />
                 <!-- Larger, thicker right arrow -->
                 <polyline
                     points="30,18 44,32 30,46"
                     fill="none"
-                    stroke="#E43247"
+                    stroke="#3D3226"
                     stroke-width="10"
                     stroke-linecap="round"
                     stroke-linejoin="round"
@@ -644,4 +638,11 @@ window.addEventListener('keydown', (event) => {
     </div>
 </template>
 
-<style scoped></style>
+<style scoped>
+/* Overrides style.css's global .range accent-color (terracotta) — this
+   whole reading stage deliberately stays accent-free, matching the iOS
+   app's own monochrome read screen. */
+.range {
+    accent-color: var(--color-ink);
+}
+</style>
