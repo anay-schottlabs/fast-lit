@@ -1,273 +1,130 @@
 <script setup>
-import { useRoute, useRouter } from 'vue-router';
-import { ChangelogScripts } from './assets/textScripts';
-
-const changelog = ChangelogScripts.changelog;
-const newestEntry = changelog[changelog.length - 1];
-const currentVersion = newestEntry.version;
-
-// Use one consistent SVG size for all main nav icons. The collapse toggle
-// intentionally uses a smaller size — it's a secondary control, not a nav
-// destination, and shouldn't compete with Home/Read/Feedback/Changelog.
-const svgSize = '2rem';
-const toggleSvgSize = '1.375rem';
+import { computed } from 'vue';
+import { useRoute } from 'vue-router';
+import { useTheme } from './composables/useTheme.js';
+import Footer from './components/Footer.vue';
 
 const route = useRoute();
-const router = useRouter();
+const { themeMode } = useTheme();
 
-function navigateTo(path) {
-    router.push(path);
+function toggleTheme() {
+    themeMode.value = themeMode.value === 'light' ? 'dark' : 'light';
 }
 
-// Shared by every sidebar nav item (and the collapse toggle) so button
-// height/padding/spacing is identical whether the sidebar is expanded or
-// collapsed to an icon rail — only the container width changes, never the
-// button's own box model. is-drawer-close:tooltip wires the button into
-// daisyUI's tooltip off the sidebar checkbox's state; it only renders once
-// paired with a data-tip attribute below.
-const navBaseClass = "is-drawer-close:tooltip is-drawer-close:tooltip-right is-drawer-close:justify-center flex w-full items-center gap-3 rounded-xl px-3 py-3 transition-colors duration-150 focus-ring cursor-pointer";
-
-// Active page gets a soft terracotta pill background; everything else is a
-// muted ink that darkens on hover. Icons carry no color classes of their own
-// — they inherit through currentColor from whichever of these wins, so the
-// icon and label always recolor together. Forced !important because
-// style.css's unlayered "button { color: white }" rule otherwise beats
-// these (layered) utility classes regardless of specificity.
+// Shared by every sidebar nav item — a fixed-size icon tile with a tooltip
+// for its label, since the sidebar is a permanent icon rail now (no
+// expand/collapse). Active page gets a soft ink-tinted pill background;
+// everything else is a muted ink-light that turns full ink on hover.
 function navItemClass(path) {
     const isActive = route.path === path;
     return [
-        navBaseClass,
+        "tooltip tooltip-right flex h-12 w-12 items-center justify-center rounded-2xl transition-colors duration-150 focus-ring",
         isActive
-            ? "bg-terracotta/10 !text-terracotta"
-            : "!text-ink-light hover:bg-terracotta/5 hover:!text-ink",
+            ? "bg-ink/10 text-ink"
+            : "text-ink-light hover:bg-ink/5 hover:text-ink",
     ];
 }
+
+// Footer differs by page: full nav links on most pages, just logo +
+// copyright on focused-task pages (Read, Lab), and none at all on the
+// admin-only Lab Results view. Computed centrally here (rather than each
+// page importing and placing its own <Footer>) so every page gets the
+// exact same footer treatment — same DOM, same non-growing sticky
+// placement — instead of drifting apart one page at a time.
+const footerVariant = computed(() => {
+    if (route.path === '/lab/results') {
+        return 'none';
+    }
+    if (route.path === '/read' || route.path === '/lab') {
+        return 'minimal';
+    }
+    return 'full';
+});
 </script>
 
 <template>
-    <div class="drawer lg:drawer-open">
-        <input id="sidebar-drawer-toggle" type="checkbox" class="drawer-toggle" />
-        <div class="drawer-content">
-            <!-- Page content here -->
-            <div class="p-4">
-                <router-view></router-view>
-            </div>
-        </div>
-
-        <div
-            class="min-h-screen drawer-side is-drawer-close:w-[5.5rem] is-drawer-open:w-[17rem]"
-        ></div>
-
-        <div class="drawer-side is-drawer-close:overflow-visible fixed top-4 bottom-4 left-4 !h-auto">
-            <div
-                class="flex min-h-full flex-col rounded-2xl border border-border bg-card card-shadow is-drawer-close:w-18 is-drawer-open:w-64 transition-[width] duration-200 ease-out"
+    <div class="flex">
+        <aside class="sticky top-0 box-border flex h-screen w-[88px] shrink-0 flex-col items-center gap-1 overflow-y-auto border-r border-border bg-bg px-3 py-8">
+            <!-- logo mark -->
+            <router-link
+                to="/"
+                class="tooltip tooltip-right mb-6 flex items-center justify-center rounded-xl p-2 focus-ring"
+                data-tip="Orbit"
             >
-                <!-- Sidebar content here -->
-                <!-- Collapse/expand control — deliberately kept OUTSIDE the
-                     nav <ul> below (its own row, plus a divider) so it reads
-                     as menu chrome rather than another destination in the
-                     list, even though it shares the nav items' hover/focus
-                     language. -->
-                <div class="w-full px-2 pt-3 pb-2">
-                    <label
-                        for="sidebar-drawer-toggle"
-                        class="is-drawer-close:tooltip is-drawer-close:tooltip-right is-drawer-close:justify-center flex w-full cursor-pointer items-center gap-3 rounded-xl px-3 py-2 !text-ink-light/60 transition-colors duration-150 hover:bg-terracotta/5 hover:!text-ink-light focus-ring"
-                        data-tip="Toggle sidebar"
-                    >
-                        <svg
-                            xmlns="http://www.w3.org/2000/svg"
-                            viewBox="0 0 24 24"
-                            :style="{ width: toggleSvgSize, height: toggleSvgSize }"
-                            fill="none"
-                            stroke="currentColor"
-                            stroke-width="2.5"
-                            stroke-linecap="round"
-                            stroke-linejoin="round"
-                            class="shrink-0 is-drawer-open:rotate-180 transition-transform duration-200"
-                        >
-                            <polyline points="9 6 15 12 9 18" />
-                        </svg>
-                        <span class="is-drawer-close:hidden whitespace-nowrap text-sm">Collapse</span>
-                    </label>
+                <div class="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-[3px] border-ink/35">
+                    <div class="h-[9px] w-[9px] rounded-full bg-ink"></div>
                 </div>
-                <div class="mx-4 border-t border-border"></div>
+            </router-link>
 
-                <ul class="flex w-full grow flex-col gap-1 px-2 pt-2 pb-3">
-                    <!-- button to navigate to the home page -->
-                    <li>
-                        <button
-                            :class="navItemClass('/')"
-                            @click="navigateTo('/')"
-                            data-tip="Home"
-                        >
-                            <!-- Home icon -->
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                stroke-linejoin="round"
-                                stroke-linecap="round"
-                                stroke-width="2.5"
-                                fill="none"
-                                stroke="currentColor"
-                                class="shrink-0"
-                                :style="{ width: svgSize, height: svgSize }"
-                            >
-                                <path d="M3 11l9-7 9 7" />
-                                <path d="M5 9.5V19a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9.5" />
-                            </svg>
-                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Home</span>
-                        </button>
-                    </li>
+            <!-- theme toggle -->
+            <button
+                type="button"
+                @click="toggleTheme"
+                class="tooltip tooltip-right mb-2 flex h-12 w-12 items-center justify-center rounded-2xl text-ink-light transition-colors duration-150 hover:bg-ink/5 hover:text-ink focus-ring"
+                data-tip="Swap theme"
+            >
+                <!-- sun: shown in light mode (click to go dark) -->
+                <svg v-if="themeMode === 'light'" width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                    <circle cx="12" cy="12" r="5" />
+                    <path d="M12 1v2M12 21v2M4.22 4.22l1.42 1.42M18.36 18.36l1.42 1.42M1 12h2M21 12h2M4.22 19.78l1.42-1.42M18.36 5.64l1.42-1.42" />
+                </svg>
+                <!-- moon: shown in dark mode (click to go light) -->
+                <svg v-else width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                    <path d="M21 12.79A9 9 0 1111.21 3 7 7 0 0021 12.79z" />
+                </svg>
+            </button>
+            <div class="mb-2 w-8 border-t border-border"></div>
 
-                    <!-- button to navigate to the read page -->
-                    <li>
-                        <button
-                            :class="navItemClass('/read')"
-                            @click="navigateTo('/read')"
-                            data-tip="Read"
-                        >
-                            <!-- Read icon -->
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="shrink-0"
-                                :style="{ width: svgSize, height: svgSize }"
-                            >
-                                <path d="M4 7h16" />
-                                <path d="M4 12h16" />
-                                <path d="M4 17h10" />
-                            </svg>
-                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Read</span>
-                        </button>
-                    </li>
+            <nav class="flex w-full flex-col items-center gap-1">
+                <router-link to="/" :class="navItemClass('/')" data-tip="Home">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                        <path d="M3 11l9-7 9 7" /><path d="M5 10v9a1 1 0 001 1h4v-6h4v6h4a1 1 0 001-1v-9" />
+                    </svg>
+                </router-link>
+                <router-link to="/read" :class="navItemClass('/read')" data-tip="Read">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" class="shrink-0">
+                        <path d="M2 6h20" /><path d="M2 12h20" /><path d="M2 18h14" />
+                    </svg>
+                </router-link>
+                <router-link to="/extension" :class="navItemClass('/extension')" data-tip="Extension">
+                    <svg width="19" height="21" viewBox="0 0 22 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                        <rect x="2" y="4" width="18" height="18" rx="3" /><path d="M8 2h6a1 1 0 011 1v2H7V3a1 1 0 011-1z" />
+                    </svg>
+                </router-link>
+                <router-link to="/lab" :class="navItemClass('/lab')" data-tip="Lab">
+                    <svg width="19" height="21" viewBox="0 0 20 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                        <path d="M9 3h6" /><path d="M10 3v6l-6 10a2 2 0 002 3h12a2 2 0 002-3l-6-10V3" /><path d="M7.5 14h9" />
+                    </svg>
+                </router-link>
+                <router-link to="/feedback" :class="navItemClass('/feedback')" data-tip="Feedback">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                        <path d="M14 9V5a3 3 0 00-3-3l-4 9v11h11.28a2 2 0 002-1.7l1.38-9a2 2 0 00-2-2.3H14z" /><path d="M7 22H4a2 2 0 01-2-2v-7a2 2 0 012-2h3" />
+                    </svg>
+                </router-link>
+                <router-link to="/privacy" :class="navItemClass('/privacy')" data-tip="Privacy">
+                    <svg width="21" height="21" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" class="shrink-0">
+                        <rect x="5" y="11" width="14" height="9" rx="2" /><path d="M8 11V7a4 4 0 018 0v4" />
+                    </svg>
+                </router-link>
+            </nav>
 
-                    <!-- button to navigate to the extension page -->
-                    <li>
-                        <button
-                            :class="navItemClass('/extension')"
-                            @click="navigateTo('/extension')"
-                            data-tip="Extension"
-                        >
-                            <!-- Extension icon -->
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="shrink-0"
-                                :style="{ width: svgSize, height: svgSize }"
-                            >
-                                <rect x="5" y="7" width="12" height="12" rx="2" />
-                                <circle cx="14" cy="7" r="3" />
-                            </svg>
-                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Extension</span>
-                        </button>
-                    </li>
+            <!-- pinned "Start Reading" CTA -->
+            <router-link
+                to="/read"
+                class="tooltip tooltip-right mt-auto flex h-12 w-12 items-center justify-center rounded-full bg-ink text-invert focus-ring"
+                data-tip="Start Reading"
+            >
+                <svg width="18" height="18" viewBox="0 0 24 24" class="shrink-0 fill-invert">
+                    <path d="M8 5v14l11-7z" />
+                </svg>
+            </router-link>
+        </aside>
 
-                    <!-- button to navigate to the lab page -->
-                    <li>
-                        <button
-                            :class="navItemClass('/lab')"
-                            @click="navigateTo('/lab')"
-                            data-tip="Lab"
-                        >
-                            <!-- Lab icon: a simple flask -->
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="shrink-0"
-                                :style="{ width: svgSize, height: svgSize }"
-                            >
-                                <path d="M9 3h6" />
-                                <path d="M10 3v6l-5.5 9a1.5 1.5 0 0 0 1.3 2.25h12.4a1.5 1.5 0 0 0 1.3-2.25L14 9V3" />
-                                <path d="M7.5 15h9" />
-                            </svg>
-                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Lab</span>
-                        </button>
-                    </li>
-
-                    <!-- button to navigate to the feedback page -->
-                    <li>
-                        <button
-                            :class="navItemClass('/feedback')"
-                            @click="navigateTo('/feedback')"
-                            data-tip="Feedback"
-                        >
-                            <!-- Feedback icon -->
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                fill="none"
-                                stroke="currentColor"
-                                stroke-width="2.5"
-                                stroke-linecap="round"
-                                stroke-linejoin="round"
-                                class="shrink-0"
-                                :style="{ width: svgSize, height: svgSize }"
-                            >
-                                <path d="M4 12h3v9H4a1 1 0 0 1-1-1v-7a1 1 0 0 1 1-1Z" />
-                                <path d="M7 12l3-8a3 3 0 0 1 3 3v4h5.5a2 2 0 0 1 2 2.4l-1.2 6.6a2 2 0 0 1-2 1.6H7" />
-                            </svg>
-                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Feedback</span>
-                        </button>
-                    </li>
-
-                    <!-- button to navigate to the changelog page -->
-                    <li>
-                        <button
-                            :class="navItemClass('/changelog')"
-                            @click="navigateTo('/changelog')"
-                            data-tip="Changelog"
-                        >
-                            <!-- Changelog icon -->
-                            <svg
-                                xmlns="http://www.w3.org/2000/svg"
-                                viewBox="0 0 24 24"
-                                stroke-linejoin="round"
-                                stroke-linecap="round"
-                                stroke-width="2.5"
-                                fill="none"
-                                stroke="currentColor"
-                                :style="{ width: svgSize, height: svgSize }"
-                                class="shrink-0"
-                            >
-                                <circle cx="12" cy="12" r="8" />
-                                <path d="M12 8v4l3 2" />
-                            </svg>
-                            <span class="is-drawer-close:hidden whitespace-nowrap text-xl">Changelog</span>
-                        </button>
-                    </li>
-                </ul>
-
-                <!-- current version, linked to changelog page — pinned to
-                     the bottom of the sidebar via mt-auto rather than
-                     position:fixed, so it stays part of normal flex flow
-                     and can never overlap nav items on short viewports.
-                     Hidden (not just its text) while collapsed, since the
-                     button alone had no icon and rendered as a tiny blank
-                     hit target. -->
-                <div class="is-drawer-close:hidden mt-auto w-full px-2 pb-3">
-                    <button
-                        :class="[navBaseClass, 'justify-center border border-terracotta/30 bg-terracotta/10 hover:bg-terracotta/20 !text-terracotta']"
-                        @click="navigateTo('/changelog')"
-                    >
-                        <span class="font-mono text-lg font-bold">v{{ currentVersion }}</span>
-                    </button>
-                </div>
-            </div>
+        <div class="flex min-h-screen min-w-0 flex-1 flex-col">
+            <main class="flex-1">
+                <router-view></router-view>
+            </main>
+            <Footer v-if="footerVariant !== 'none'" :minimal="footerVariant === 'minimal'" />
         </div>
     </div>
 </template>

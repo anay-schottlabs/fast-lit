@@ -735,7 +735,21 @@ export class ChangelogScripts {
                 ]),
                 "Restyled Read, Extension, Feedback, Changelog, Privacy, and Lab/Lab Results to the new palette and fonts — same layouts and functionality throughout, Privacy and Changelog text left byte-for-byte unchanged.",
                 "Renamed \"Fast Lit Grabber\" to \"Orbit Grabber\" in the site's own copy (Home, Extension, Privacy) — the actual shipped Chrome extension keeps its real name; only how the website talks about it changed.",
-                "Removed the Changelog page site-wide — deleted the page, its /changelog route, and the sidebar and footer links to it. The version history itself still lives on here, in the app's data, for internal tracking; there's just no public page displaying it anymore."
+                "Removed the Changelog page site-wide — deleted the page, its /changelog route, and the sidebar and footer links to it. The version history itself still lives on here, in the app's data, for internal tracking; there's just no public page displaying it anymore.",
+                text([
+                    "Simplified the sidebar to a permanent icon rail — dropped the expand/collapse mechanic entirely",
+                    "in favor of tooltips that appear next to each icon on hover, matching what the collapsed state",
+                    "already looked like. Added a real theme toggle in its place: a sun (light) or moon (dark) button",
+                    "that actually switches themeMode now, instead of that switch only being reachable through code."
+                ]),
+                text([
+                    "Moved the site footer out of each individual page and into one shared spot rendered by the app",
+                    "shell itself, so every page gets the exact same footer — same size, same placement — instead of",
+                    "each page's own copy potentially drifting apart. Also fixed it stretching to fill the leftover",
+                    "space on short pages (Feedback, the Lab start/done screens) instead of sitting at its natural",
+                    "height right at the bottom of the viewport."
+                ]),
+                "Fixed the reader's speed number (both the live reading stage and the settings modal) still rendering in the old monospace code font instead of Baloo 2 like every other big number on the site."
             ]
         )
     ]

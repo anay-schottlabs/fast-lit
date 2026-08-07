@@ -286,7 +286,7 @@ const settingsModal = ref(false);
                         v-model="formWpm"
                     >
                     <p class="mt-4 text-center">
-                        <span class="font-mono text-3xl font-bold text-ink">{{ formWpm }}</span>
+                        <span class="font-display text-3xl font-bold text-ink">{{ formWpm }}</span>
                         <span class="text-sm text-ink-light"> words per minute</span>
                     </p>
                 </div>

@@ -438,7 +438,7 @@ window.addEventListener('keydown', (event) => {
         Speed
     </p>
     <p class="mb-2 text-center">
-        <span class="font-mono text-3xl font-bold text-ink">{{ wpm }}</span>
+        <span class="font-display text-3xl font-bold text-ink">{{ wpm }}</span>
         <span class="text-sm text-ink-light"> words per minute</span>
     </p>
 
