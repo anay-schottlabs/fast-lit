@@ -63,10 +63,7 @@ function onPracticeRegularContinue() {
 const DEMO_QUESTION = {
     question: 'Questions will pop up like this after each passage.',
     options: {
-        A: 'Pick an answer...',
-        B: '...then click Next',
-        C: 'Placeholder option C',
-        D: 'Placeholder option D'
+        A: 'Pick this answer'
     }
 };
 const demoSelectedOption = ref(null);
