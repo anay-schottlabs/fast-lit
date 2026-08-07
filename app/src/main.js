@@ -7,6 +7,8 @@ import ExtensionPage from './pages/ExtensionPage.vue';
 import ChangelogPage from './pages/ChangelogPage.vue';
 import FeedbackPage from './pages/FeedbackPage.vue';
 import PrivacyPolicyPage from './pages/PrivacyPolicyPage.vue';
+import LabPage from './pages/LabPage.vue';
+import LabResultsPage from './pages/LabResultsPage.vue';
 
 const router = createRouter({
     history: createWebHistory(),
@@ -16,7 +18,11 @@ const router = createRouter({
         { path: '/extension', component: ExtensionPage },
         { path: '/changelog', component: ChangelogPage },
         { path: '/feedback', component: FeedbackPage },
-        { path: '/privacy', component: PrivacyPolicyPage }
+        { path: '/privacy', component: PrivacyPolicyPage },
+        // Research pilot study — deliberately not in the sidebar nav (like
+        // Fast Lit Write was before it got promoted), reachable by direct URL only.
+        { path: '/lab', component: LabPage },
+        { path: '/lab/results', component: LabResultsPage }
     ],
 });
 

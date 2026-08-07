@@ -37,6 +37,9 @@ const READ_PROGRESS_STORAGE_KEY = "fastlit:readProgress";
 let hasRestoredProgress = false;
 
 function loadSavedWordIndex() {
+    if (!props.persistProgress) {
+        return 0;
+    }
     try {
         return Number(localStorage.getItem(READ_PROGRESS_STORAGE_KEY));
     } catch {
@@ -45,7 +48,7 @@ function loadSavedWordIndex() {
 }
 
 function saveWordIndex(value) {
-    if (!hasRestoredProgress) {
+    if (!hasRestoredProgress || !props.persistProgress) {
         return;
     }
     try {
@@ -87,8 +90,13 @@ async function updateTotalWordsRead() {
     }
 }
 
-// get stats from firestore
+// get stats from firestore — skipped entirely when trackStats is false (the
+// Lab page's research trials), since there's no reason to read the global
+// stats doc if we're never going to write to it.
 onMounted(async () => {
+    if (!props.trackStats) {
+        return;
+    }
     const querySnapshot = await getDocs(collection(db, "stats"));
     querySnapshot.forEach((doc) => {
         docId = doc.id;
@@ -98,19 +106,47 @@ onMounted(async () => {
 
 const route = useRoute();
 
-// values passed down from ReadPage.vue
+// values passed down from ReadPage.vue (or LabPage.vue, for research trials)
 const props = defineProps({
     text: String,
     wpm: Number,
     settingsModal: Boolean,
     minWpm: Number,
     maxWpm: Number,
-    wpmStep: Number
+    wpmStep: Number,
+    // Whether to persist/restore reading progress via localStorage. ReadPage
+    // relies on this to resume where a user left off; LabPage sets this to
+    // false so research trials always start at word 0 and never clobber the
+    // user's own in-progress reading on /read (they share one storage key).
+    persistProgress: {
+        type: Boolean,
+        default: true
+    },
+    // Whether to fetch/update the global Firestore "stats" doc on read
+    // completion. LabPage sets this to false — pilot-study reading isn't
+    // real app usage and shouldn't count toward the site's aggregate stats.
+    trackStats: {
+        type: Boolean,
+        default: true
+    },
+    // Hides pause/prev/next/scrub/end controls so a trial can only be played
+    // through start-to-finish once started, never paused or rewound. Used by
+    // LabPage so a trial's recorded elapsed time actually reflects continuous
+    // reading, not something a participant paused partway through.
+    lockControls: {
+        type: Boolean,
+        default: false
+    }
 });
 
-// events sent by Reader.vue to its parent (ReadPage.vue)
+// events sent by Reader.vue to its parent (ReadPage.vue or LabPage.vue)
 const emit = defineEmits([
-    "setWpm"
+    "setWpm",
+    // Fired the moment playback starts (start() is called).
+    "started",
+    // Fired only when playback runs to the natural end of the word list —
+    // not when the user manually hits the end/reset button.
+    "finished"
 ]);
 
 const word = computed(() => {
@@ -212,6 +248,14 @@ const DelayState = Object.freeze({
 
 const delayState = ref(DelayState.NONE);
 
+// Shared by both "ran out of words" branches in tick() below, so natural
+// completion is only defined in one place and always emits "finished".
+function finishPlayback() {
+    clearInterval(readerLoop);
+    playState.value = PlayState.STOPPED;
+    emit("finished");
+}
+
 // A single tick of the reader loop, extracted out of start() so it can be
 // reused when restarting the interval after a mid-playback WPM change (see
 // the interval watcher below) without duplicating this logic.
@@ -233,8 +277,7 @@ function tick() {
         // Pause finished — resume normal reading and move to the next word.
         delayState.value = DelayState.NONE;
         if (wordIndex.value >= wordList.value.length - 1) {
-            clearInterval(readerLoop);
-            playState.value = PlayState.STOPPED;
+            finishPlayback();
             return;
         }
         wordIndex.value++;
@@ -299,8 +342,7 @@ function tick() {
 
         // No trailing punctuation — advance immediately, or stop at the last word.
         if (wordIndex.value >= wordList.value.length - 1) {
-            clearInterval(readerLoop);
-            playState.value = PlayState.STOPPED;
+            finishPlayback();
             return;
         }
         wordIndex.value++;
@@ -310,6 +352,7 @@ function tick() {
 function start() {
     playState.value = PlayState.PLAYING;
     readerLoop = setInterval(tick, interval.value);
+    emit("started");
 }
 
 // setInterval captures its delay once, so changing wpm mid-playback (e.g. via
@@ -337,7 +380,9 @@ function end() {
     clearInterval(readerLoop);
     wordIndex.value = 0;
     delayState.value = DelayState.NONE;
-    updateTotalWordsRead();
+    if (props.trackStats) {
+        updateTotalWordsRead();
+    }
 }
 
 // event listener for keyboard shortcuts
@@ -426,8 +471,11 @@ window.addEventListener('keydown', (event) => {
         </p>
     </div>
 
-    <!-- progress bar for visual representation of reading progress -->
+    <!-- progress bar for visual representation of reading progress — hidden
+         under lockControls so a research trial can't be scrubbed forward or
+         back, which would invalidate the recorded elapsed time. -->
     <input
+        v-if="!lockControls"
         type="range"
         min="0"
         :max="wordList.length - 1"
@@ -438,9 +486,10 @@ window.addEventListener('keydown', (event) => {
     />
 
     <!-- reader controls section -->
-    <div class="flex gap-5 justify-center items-center">
-        <!-- button to move to previous word -->
+    <div class="flex gap-5 justify-center items-center" :class="{ 'mt-10': lockControls }">
+        <!-- button to move to previous word — hidden under lockControls -->
         <button
+            v-if="!lockControls"
             class="btn btn-square !text-red bg-white rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 opacity-100 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
             :disabled="wordIndex == 0 || playState == PlayState.PLAYING"
             @click="wordIndex--"
@@ -504,12 +553,13 @@ window.addEventListener('keydown', (event) => {
             </svg>
         </button>
 
-        <!-- pause button -->
+        <!-- pause button — hidden under lockControls, so a started trial can
+             only run to completion -->
         <button
             class="btn-red !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
             @click="pause"
             id="pauseButton"
-            v-if="playState == PlayState.PLAYING"
+            v-if="playState == PlayState.PLAYING && !lockControls"
         >
             <svg
                 viewBox="0 0 8 8"
@@ -527,8 +577,10 @@ window.addEventListener('keydown', (event) => {
             </svg>
         </button>
 
-        <!-- stop/reset button (referred to as "end button") -->
+        <!-- stop/reset button (referred to as "end button") — hidden under
+             lockControls, so a trial can't be aborted/reset mid-playback -->
         <button
+            v-if="!lockControls"
             class="btn-red !h-14 !w-14 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 focus-ring"
             @click="end"
             id="endButton"
@@ -553,8 +605,9 @@ window.addEventListener('keydown', (event) => {
             </svg>
         </button>
 
-        <!-- button to move to next word -->
+        <!-- button to move to next word — hidden under lockControls -->
         <button
+            v-if="!lockControls"
             class="btn btn-square !text-red bg-white rounded-2xl w-14 h-14 shrink-0 transition-all duration-200 hover:opacity-80 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
             :disabled="wordIndex == wordList.length - 1 || playState == PlayState.PLAYING"
             @click="wordIndex++"

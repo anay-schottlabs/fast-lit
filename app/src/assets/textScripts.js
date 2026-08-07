@@ -628,6 +628,28 @@ export class ChangelogScripts {
                     "always showing the same placeholder regardless of what was picked."
                 ])
             ]
+        ),
+        new this.Entry(
+            "August 6, 2026",
+            "1.9.0",
+            [
+                text([
+                    "Added a research-only Lab page (/lab, not linked from the sidebar) for running comprehension",
+                    "pilot studies: participants enter an ID, get a randomized sequence of reading-speed trials",
+                    "using the existing RSVP reader locked down to play straight through, then answer a short",
+                    "comprehension quiz after each passage. Trial timing, quiz answers, and scores are recorded",
+                    "to Firebase per trial."
+                ]),
+                text([
+                    "Added a matching /lab/results admin view that pulls every recorded trial from Firebase into",
+                    "a sortable table, shows average comprehension by reading speed, and can export everything as CSV."
+                ]),
+                text([
+                    "The reader component can now run in an isolated mode (no localStorage progress persistence,",
+                    "no aggregate word-count stats tracking, and playback controls hidden until a passage finishes)",
+                    "so it can be reused for Lab trials without affecting normal reading progress or site-wide stats."
+                ])
+            ]
         )
     ]
 }
