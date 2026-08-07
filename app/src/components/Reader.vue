@@ -504,15 +504,15 @@ window.addEventListener('keydown', (event) => {
              exactly instead. -->
         <button
             v-if="!lockControls"
-            class="!text-ink bg-ink/5 rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-all duration-200 hover:bg-ink/10 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
+            class="!text-ink bg-ink/5 rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-all duration-200 cursor-pointer hover:bg-ink/10 disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
             :disabled="wordIndex == 0 || playState == PlayState.PLAYING"
             @click="wordIndex--"
             id="previousButton"
         >
             <svg
                 viewBox="0 0 64 64"
-                width="2.25rem"
-                height="2.25rem"
+                width="1.375rem"
+                height="1.375rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
@@ -540,7 +540,7 @@ window.addEventListener('keydown', (event) => {
              used everywhere else on the site), matching the iOS app's own
              read screen, which stays fully monochrome. -->
         <button
-            class="bg-ink rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
+            class="bg-ink rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-transform duration-200 cursor-pointer hover:opacity-85 focus-ring"
             @click="start"
             id="playButton"
             v-if="playState != PlayState.PLAYING"
@@ -548,8 +548,8 @@ window.addEventListener('keydown', (event) => {
 
             <svg
                 viewBox="0 0 48 48"
-                width="1.75rem"
-                height="1.75rem"
+                width="1.375rem"
+                height="1.375rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
@@ -578,15 +578,15 @@ window.addEventListener('keydown', (event) => {
         <!-- pause button — hidden under lockControls, so a started trial can
              only run to completion -->
         <button
-            class="bg-ink rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
+            class="bg-ink rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-transform duration-200 cursor-pointer hover:opacity-85 focus-ring"
             @click="pause"
             id="pauseButton"
             v-if="playState == PlayState.PLAYING && !lockControls"
         >
             <svg
                 viewBox="0 0 8 8"
-                width="1.75rem"
-                height="1.75rem"
+                width="1.375rem"
+                height="1.375rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
@@ -604,14 +604,14 @@ window.addEventListener('keydown', (event) => {
              lockControls, so a trial can't be aborted/reset mid-playback -->
         <button
             v-if="!lockControls"
-            class="bg-ink rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-transform duration-200 hover:-translate-y-0.5 hover:opacity-85 focus-ring"
+            class="bg-ink rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-transform duration-200 cursor-pointer hover:opacity-85 focus-ring"
             @click="end"
             id="endButton"
         >
             <svg
                 viewBox="0 0 64 64"
-                width="1.75rem"
-                height="1.75rem"
+                width="1.375rem"
+                height="1.375rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"
@@ -638,15 +638,15 @@ window.addEventListener('keydown', (event) => {
              button above. -->
         <button
             v-if="!lockControls"
-            class="!text-ink bg-ink/5 rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-all duration-200 hover:bg-ink/10 hover:-translate-y-0.5 disabled:opacity-50 disabled:hover:translate-y-0 focus-ring"
+            class="!text-ink bg-ink/5 rounded-2xl !h-12 !w-12 !px-0 shrink-0 transition-all duration-200 cursor-pointer hover:bg-ink/10 disabled:opacity-50 disabled:cursor-not-allowed focus-ring"
             :disabled="wordIndex == wordList.length - 1 || playState == PlayState.PLAYING"
             @click="wordIndex++"
             id="nextButton"
         >
             <svg
                 viewBox="0 0 64 64"
-                width="2.25rem"
-                height="2.25rem"
+                width="1.375rem"
+                height="1.375rem"
                 xmlns="http://www.w3.org/2000/svg"
                 aria-hidden="true"
                 focusable="false"

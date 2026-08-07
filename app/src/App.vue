@@ -1,5 +1,4 @@
 <script setup>
-import { computed } from 'vue';
 import { useRoute } from 'vue-router';
 import { useTheme } from './composables/useTheme.js';
 import Footer from './components/Footer.vue';
@@ -24,22 +23,6 @@ function navItemClass(path) {
             : "text-ink-light hover:bg-ink/5 hover:text-ink",
     ];
 }
-
-// Footer differs by page: full nav links on most pages, just logo +
-// copyright on focused-task pages (Read, Lab), and none at all on the
-// admin-only Lab Results view. Computed centrally here (rather than each
-// page importing and placing its own <Footer>) so every page gets the
-// exact same footer treatment — same DOM, same non-growing sticky
-// placement — instead of drifting apart one page at a time.
-const footerVariant = computed(() => {
-    if (route.path === '/lab/results') {
-        return 'none';
-    }
-    if (route.path === '/read' || route.path === '/lab') {
-        return 'minimal';
-    }
-    return 'full';
-});
 </script>
 
 <template>
@@ -136,7 +119,7 @@ const footerVariant = computed(() => {
             <main class="flex-1">
                 <router-view></router-view>
             </main>
-            <Footer v-if="footerVariant !== 'none'" :minimal="footerVariant === 'minimal'" />
+            <Footer />
         </div>
     </div>
 </template>

@@ -48,26 +48,31 @@ body {
 
 /* Orbit's rounded-square buttons — solid ink fill with inverted text
    (primary), or an ink-at-35%-opacity outline with full-ink text
-   (secondary). No accent color at all. */
+   (secondary). No accent color at all.
+
+   @apply btn pulls daisyUI's .btn declarations (including its default
+   box-shadow — an inset highlight plus a soft drop shadow, meant for
+   daisyUI's own theme, not this site's flat design) straight into THIS
+   selector's own compiled rule — the element itself never carries a
+   literal "btn" class, only "btn-primary"/"btn-secondary", so a separate
+   ".btn { box-shadow: none }" rule can never match it. Has to be undone
+   right here instead. */
 .btn-primary {
-    @apply btn bg-ink !text-invert border-0 disabled:opacity-50 hover:opacity-85 rounded-2xl;
+    @apply btn bg-ink !text-invert border-0 disabled:opacity-50 hover:opacity-85 rounded-2xl shadow-none;
 }
 
 .btn-secondary {
-    @apply btn bg-transparent border-2 border-ink/35 !text-ink disabled:opacity-50 hover:bg-ink/5 rounded-2xl;
+    @apply btn bg-transparent border-2 border-ink/35 !text-ink disabled:opacity-50 hover:bg-ink/5 rounded-2xl shadow-none;
 }
 
 .focus-ring {
     @apply focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-ink focus-visible:ring-offset-2 focus-visible:ring-offset-bg;
 }
 
-/* daisyUI's base .btn class carries its own default box-shadow (an inset
-   highlight plus a soft drop shadow, both derived from --btn-shadow) —
-   built for daisyUI's own themed buttons, not this site's flat design
-   language, and looked like a stray shadow on every button using .btn
-   (btn-primary/btn-secondary, plus the plain icon buttons like the read
-   page's settings gear). Unlayered, so it beats daisyUI's own layered
-   button.css rule regardless of specificity. */
+/* Covers plain daisyUI .btn usage that isn't going through btn-primary/
+   btn-secondary above (e.g. the read page's settings gear, the modal's
+   close button — both literally class="btn ..."). Unlayered, so it beats
+   daisyUI's own layered button.css rule regardless of specificity. */
 .btn {
     box-shadow: none;
 }

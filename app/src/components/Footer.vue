@@ -1,13 +1,6 @@
 <script setup>
-// minimal drops the nav-links row, matching the design handoff's Read
-// page footer (just logo + copyright) — used on pages meant to stay
-// distraction-free rather than surfacing a full site nav at the bottom.
-defineProps({
-    minimal: {
-        type: Boolean,
-        default: false
-    }
-});
+// No props — rendered identically on every page (see App.vue), so the
+// same nav links show up everywhere instead of varying page to page.
 </script>
 
 <template>
@@ -20,9 +13,10 @@ defineProps({
                 <span class="font-display text-[17px] font-bold text-ink">Orbit</span>
             </div>
 
-            <div v-if="!minimal" class="flex flex-wrap gap-7">
+            <div class="flex flex-wrap gap-7">
                 <router-link to="/" class="text-sm font-semibold text-ink-light hover:text-ink">Home</router-link>
                 <router-link to="/read" class="text-sm font-semibold text-ink-light hover:text-ink">Read</router-link>
+                <router-link to="/extension" class="text-sm font-semibold text-ink-light hover:text-ink">Extension</router-link>
                 <router-link to="/lab" class="text-sm font-semibold text-ink-light hover:text-ink">Lab</router-link>
                 <router-link to="/privacy" class="text-sm font-semibold text-ink-light hover:text-ink">Privacy</router-link>
                 <router-link to="/feedback" class="text-sm font-semibold text-ink-light hover:text-ink">Feedback</router-link>
