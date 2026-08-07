@@ -30,6 +30,24 @@ const Stage = Object.freeze({
 
 const stage = ref(Stage.START);
 
+// Splits a passage's raw text into paragraph-sized chunks for static
+// display (the timed-trial passage and the practice regular-reading text),
+// flagging short, unpunctuated lines as probable section headings — e.g.
+// "Speed dating" or "Lock and key party" in a passage broken into named
+// sections — so they can be styled distinctly instead of just running
+// together with the body text at the same weight and spacing.
+function splitParagraphs(text) {
+    return text
+        .split('\n')
+        .map((line) => line.trim())
+        .filter((line) => line.length > 0)
+        .map((line) => {
+            const wordCount = line.split(/\s+/).length;
+            const looksLikeHeading = wordCount <= 5 && !/[.!?"')]$/.test(line);
+            return { text: line, isHeading: looksLikeHeading };
+        });
+}
+
 // Fisher-Yates shuffle — used to randomly assign passages to trials without
 // repeats (see buildMainTrials below).
 function shuffle(array) {
@@ -406,6 +424,13 @@ async function finalizeRun() {
 </script>
 
 <template>
+    <!-- Fades between stages instead of the previous instant, jarring swap —
+         most noticeable right after an RSVP passage finishes and the screen
+         cuts straight to the next one. mode="out-in" waits for the old
+         stage to fully fade out before the new one fades in, so nothing
+         overlaps mid-transition. -->
+    <Transition name="stage-fade" mode="out-in">
+    <div :key="stage">
     <!-- start screen: a primer covering what the study is, what to expect,
          and where the passages come from, so nothing is a surprise before
          hitting Begin -->
@@ -456,8 +481,14 @@ async function finalizeRun() {
         <p class="mb-4 mt-2 text-center text-xs font-semibold uppercase tracking-widest !text-ink-light">
             Practice — Regular Reading
         </p>
-        <div class="rounded-2xl border border-border bg-card p-6 !text-ink whitespace-pre-line leading-relaxed">
-            {{ PRACTICE_TEXT }}
+        <div class="rounded-2xl border border-border bg-card p-6 !text-ink leading-relaxed">
+            <p
+                v-for="(para, i) in splitParagraphs(PRACTICE_TEXT)"
+                :key="i"
+                :class="para.isHeading ? 'mb-2 mt-5 font-display text-lg font-bold first:mt-0' : 'mb-4 last:mb-0'"
+            >
+                {{ para.text }}
+            </p>
         </div>
         <button class="btn-primary w-full mt-6" @click="onPracticeRegularContinue">Continue</button>
     </div>
@@ -568,8 +599,14 @@ async function finalizeRun() {
         </p>
         <p class="mb-6 text-center text-3xl font-bold !text-ink">{{ timedTimeDisplay }}</p>
 
-        <div class="rounded-2xl border border-border bg-card p-6 !text-ink whitespace-pre-line leading-relaxed">
-            {{ currentTrial.passage.text }}
+        <div class="rounded-2xl border border-border bg-card p-6 !text-ink leading-relaxed">
+            <p
+                v-for="(para, i) in splitParagraphs(currentTrial.passage.text)"
+                :key="i"
+                :class="para.isHeading ? 'mb-2 mt-5 font-display text-lg font-bold first:mt-0' : 'mb-4 last:mb-0'"
+            >
+                {{ para.text }}
+            </p>
         </div>
 
         <button class="btn-primary w-full mt-6" @click="finishTimedTrial()">Done</button>
@@ -664,6 +701,17 @@ async function finalizeRun() {
             </div>
         </div>
     </div>
+    </div>
+    </Transition>
 </template>
 
-<style scoped></style>
+<style scoped>
+.stage-fade-enter-active,
+.stage-fade-leave-active {
+    transition: opacity 0.18s ease;
+}
+.stage-fade-enter-from,
+.stage-fade-leave-to {
+    opacity: 0;
+}
+</style>
