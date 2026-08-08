@@ -3,6 +3,7 @@ import { ref, computed, onUnmounted } from 'vue';
 import { db } from '@/firebase/index.js';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import Reader from '../components/Reader.vue';
+import StudyTimeline from '../components/StudyTimeline.vue';
 import { useLabData } from '@/composables/useRemoteContent.js';
 import labDataFallback from '@/assets/labData.json';
 
@@ -161,21 +162,28 @@ function estimateTrialMinutes(wpm) {
     return (readSeconds + quizSeconds) / 60;
 }
 
-// One row per main trial, in the same fixed order the run actually uses —
-// regular reading then rsvp at each speed, ascending — for the start
-// screen's trial-by-trial breakdown.
-const trialPreview = computed(() =>
-    MAIN_SPEEDS.flatMap((wpm, i) => [
-        { label: `Trial ${i * 2 + 1} — Regular Reading @ ${wpm} wpm`, minutes: estimateTrialMinutes(wpm) },
-        { label: `Trial ${i * 2 + 2} — RSVP @ ${wpm} wpm`, minutes: estimateTrialMinutes(wpm) }
-    ])
-);
+// Start-screen primer, grouped by phase rather than one row per trial —
+// practice first, then one entry per speed covering that speed's regular +
+// RSVP pair together (they always run back-to-back), in the same ascending
+// order the run actually uses.
+const studyPhases = computed(() => [
+    {
+        label: 'Practice Walkthrough',
+        detail: 'A guided tour of both reading styles, unscored.',
+        minutes: PRACTICE_MINUTES_ESTIMATE
+    },
+    ...MAIN_SPEEDS.map((wpm) => ({
+        label: `${wpm} wpm`,
+        detail: 'Regular Reading, then RSVP, each followed by a few questions.',
+        minutes: estimateTrialMinutes(wpm) * 2
+    }))
+]);
 
 // Total primer estimate — practice plus every trial above — so this can't
-// silently drift out of sync with MAIN_SPEEDS or trialPreview the way a
+// silently drift out of sync with MAIN_SPEEDS or studyPhases the way a
 // hardcoded "~10-15 min" string could.
 const totalMinutesEstimate = computed(
-    () => PRACTICE_MINUTES_ESTIMATE + trialPreview.value.reduce((sum, t) => sum + t.minutes, 0)
+    () => studyPhases.value.reduce((sum, p) => sum + p.minutes, 0)
 );
 
 // One passage per trial (timed + rsvp, at each speed), drawn
@@ -505,38 +513,20 @@ async function finalizeRun() {
         <div class="mt-16 rounded-3xl border border-border bg-card p-10 text-left">
             <h2 class="mb-3 text-center text-2xl font-bold !text-ink">Reading Study</h2>
             <p class="mb-6 !text-ink-light">
-                This study compares two ways of reading — <strong class="!text-ink">RSVP</strong> (words shown
-                one at a time, at a fixed pace) and <strong class="!text-ink">regular reading</strong> (a normal
-                passage, at your own pace, under a time limit) — to see how each affects comprehension. Each
-                trial is followed by a few comprehension questions about what you just read.
+                This study has been designed to compare your reading comprehension ability between
+                <strong class="!text-ink">regular reading</strong> (where you're given the whole passage at once,
+                and a time limit to finish) and <strong class="!text-ink">RSVP</strong> (where one word is shown
+                at a time). You'll have a few trials to go through, as broken down below, where you'll be shown
+                a passage and asked a few questions about what you read.
             </p>
 
-            <div class="mb-6 rounded-2xl border border-border bg-bg p-5">
-                <p class="mb-3 text-xs font-semibold uppercase tracking-widest !text-ink-light">What to expect</p>
-                <ul class="flex flex-col gap-2 text-sm">
-                    <li class="flex items-baseline justify-between gap-4">
-                        <span class="!text-ink">Practice walkthrough</span>
-                        <span class="!text-ink-light">~{{ PRACTICE_MINUTES_ESTIMATE }} min</span>
-                    </li>
-                    <li
-                        v-for="t in trialPreview"
-                        :key="t.label"
-                        class="flex items-baseline justify-between gap-4"
-                    >
-                        <span class="!text-ink">{{ t.label }}</span>
-                        <span class="!text-ink-light shrink-0">~{{ t.minutes.toFixed(1) }} min</span>
-                    </li>
-                    <li class="flex items-baseline justify-between gap-4 border-t border-border pt-2 font-semibold">
-                        <span class="!text-ink">Total</span>
-                        <span class="!text-ink">~{{ Math.round(totalMinutesEstimate) }}–{{ Math.round(totalMinutesEstimate * 1.5) }} min</span>
-                    </li>
-                </ul>
-            </div>
+            <p class="mb-3 text-xs font-semibold uppercase tracking-widest !text-ink-light">What to expect</p>
+            <StudyTimeline class="mb-6" :phases="studyPhases" :total-minutes="totalMinutesEstimate" />
 
             <p class="mb-8 text-sm !text-ink-light">
-                Passages are real reading-comprehension texts from
-                <strong class="!text-ink">RACE</strong>, an academic dataset of English exam passages — not
-                filler, so your answers reflect genuine comprehension.
+                The passages you'll be shown are real reading comprehension tests from a dataset called
+                <strong class="!text-ink">RACE</strong>, and you'll be given a random set of English exam writing
+                sections, along with questions from the dataset itself.
             </p>
 
             <button class="btn-primary w-full" @click="beginPractice">Begin</button>
