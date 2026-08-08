@@ -14,6 +14,7 @@ import { passages } from '@/assets/labData.js';
 // into it. SAVING sits between the last quiz and DONE since the Firestore
 // write can fail and need a retry before DONE is reachable.
 const Stage = Object.freeze({
+    ALREADY_COMPLETED: 'already_completed',
     START: 'start',
     PRACTICE_REGULAR: 'practice_regular',
     PRACTICE_QUIZ_DEMO: 'practice_quiz_demo',
@@ -28,7 +29,32 @@ const Stage = Object.freeze({
     DONE: 'done'
 });
 
-const stage = ref(Stage.START);
+// A soft deterrent against the same person submitting multiple runs, not a
+// real safeguard (clearing localStorage or using another browser trivially
+// bypasses it) — just enough friction to stop someone from casually
+// reloading and going again. Set once a run is actually saved (see
+// finalizeRun), not merely started, so an abandoned or crashed session
+// doesn't lock someone out of a real attempt.
+const LAB_COMPLETED_STORAGE_KEY = 'orbit:labCompleted';
+
+function hasAlreadyCompletedLab() {
+    try {
+        return localStorage.getItem(LAB_COMPLETED_STORAGE_KEY) === 'true';
+    } catch {
+        return false;
+    }
+}
+
+function markLabCompleted() {
+    try {
+        localStorage.setItem(LAB_COMPLETED_STORAGE_KEY, 'true');
+    } catch {
+        // localStorage unavailable (e.g. private browsing) — the deterrent
+        // just doesn't apply this time, nothing else depends on it.
+    }
+}
+
+const stage = ref(hasAlreadyCompletedLab() ? Stage.ALREADY_COMPLETED : Stage.START);
 
 // Splits a passage's raw text into paragraph-sized chunks for static
 // display (the timed-trial passage and the practice regular-reading text),
@@ -425,6 +451,7 @@ async function finalizeRun() {
 
     try {
         await addDoc(collection(db, 'labRuns'), runRecord);
+        markLabCompleted();
         stage.value = Stage.DONE;
     } catch (err) {
         console.error('Failed to save lab run:', err);
@@ -443,10 +470,23 @@ async function finalizeRun() {
          overlaps mid-transition. -->
     <Transition name="stage-fade" mode="out-in">
     <div :key="stage">
+    <!-- shown instead of the start screen if this browser already completed
+         a run — a soft deterrent against submitting more than once, not a
+         real guarantee (see hasAlreadyCompletedLab) -->
+    <div v-if="stage === Stage.ALREADY_COMPLETED" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
+            <h2 class="mb-3 text-2xl font-bold !text-ink">You've already taken part</h2>
+            <p class="!text-ink-light">
+                This browser has already submitted a run for this study. Thanks again for participating —
+                if you think this is a mistake, reach out to whoever sent you this link.
+            </p>
+        </div>
+    </div>
+
     <!-- start screen: a primer covering what the study is, what to expect,
          and where the passages come from, so nothing is a surprise before
          hitting Begin -->
-    <div v-if="stage === Stage.START" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
+    <div v-else-if="stage === Stage.START" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
         <div class="mt-16 rounded-3xl border border-border bg-card p-10 text-left">
             <h2 class="mb-3 text-center text-2xl font-bold !text-ink">Reading Study</h2>
             <p class="mb-6 !text-ink-light">
