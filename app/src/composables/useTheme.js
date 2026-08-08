@@ -1,21 +1,31 @@
 import { ref, watch } from 'vue';
 
+const THEME_STORAGE_KEY = 'orbit:themeMode';
+
+function loadStoredTheme() {
+    try {
+        const stored = localStorage.getItem(THEME_STORAGE_KEY);
+        return stored === 'light' || stored === 'dark' ? stored : 'light';
+    } catch {
+        return 'light';
+    }
+}
+
 // Module-level (not created per-call) so every component sharing this
 // composable reads/writes the exact same ref — the standard "global
 // composable" pattern for app-wide state like a theme.
-//
-// No UI control reads or writes this anywhere yet — per the design handoff,
-// only the internal switch needs to exist for now. Flipping it (e.g. from
-// devtools: useTheme().themeMode.value = 'dark') re-themes the whole site
-// immediately, since the watcher below keeps <html>'s data-theme attribute
-// in sync, and style.css's :root[data-theme="dark"] block reassigns every
-// color token from there.
-const themeMode = ref('light');
+const themeMode = ref(loadStoredTheme());
 
 watch(
     themeMode,
     (mode) => {
         document.documentElement.setAttribute('data-theme', mode);
+        try {
+            localStorage.setItem(THEME_STORAGE_KEY, mode);
+        } catch {
+            // localStorage unavailable (private browsing, etc.) — theme just
+            // won't persist across reloads, no need to surface an error
+        }
     },
     { immediate: true }
 );
