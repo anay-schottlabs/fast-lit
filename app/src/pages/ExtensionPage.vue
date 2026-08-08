@@ -1,15 +1,17 @@
 <script setup>
 import { useRouter } from 'vue-router';
-import { ExtensionScripts } from '@/assets/textScripts.js';
+import { useTextScripts } from '@/composables/useRemoteContent.js';
+import textScriptsFallback from '@/assets/textScripts.json';
 
 const router = useRouter();
+const ExtensionScripts = useTextScripts('ExtensionScripts', textScriptsFallback.ExtensionScripts);
 
 function navigateTo(path) {
     router.push(path);
 }
 
 function openStore() {
-    window.open(ExtensionScripts.storeUrl, "_blank");
+    window.open(ExtensionScripts.value.storeUrl, "_blank");
 }
 </script>
 

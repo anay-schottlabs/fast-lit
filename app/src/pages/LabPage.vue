@@ -3,7 +3,12 @@ import { ref, computed, onUnmounted } from 'vue';
 import { db } from '@/firebase/index.js';
 import { collection, addDoc, serverTimestamp } from 'firebase/firestore';
 import Reader from '../components/Reader.vue';
-import { passages } from '@/assets/labData.js';
+import { useLabData } from '@/composables/useRemoteContent.js';
+import labDataFallback from '@/assets/labData.json';
+
+// Passages are plain data (id, text, questions[]) — no class wrapping
+// needed, nothing here ever calls a method on one, just reads fields.
+const passages = useLabData(labDataFallback);
 
 // Every screen the run can be on, in roughly the order a participant moves
 // through them. The practice stages walk through regular reading, then the
@@ -138,30 +143,40 @@ const MAIN_SPEEDS = [250, 450];
 // from the actual pool's average word count/question count rather than a
 // guessed number — reading time is exact (wordCount/wpm), quiz time is a
 // rough 10s/question guess. Individual trials vary with whichever passage
-// gets drawn, so this is an estimate, not a promise.
-const AVG_WORD_COUNT = passages.reduce((sum, p) => sum + p.text.trim().split(/\s+/).length, 0) / passages.length;
-const AVG_QUESTIONS_PER_PASSAGE = passages.reduce((sum, p) => sum + p.questions.length, 0) / passages.length;
+// gets drawn, so this is an estimate, not a promise. Computed (not plain
+// consts) since passages can swap from the bundled fallback to the
+// live-fetched pool after setup runs.
+const AVG_WORD_COUNT = computed(
+    () => passages.value.reduce((sum, p) => sum + p.text.trim().split(/\s+/).length, 0) / passages.value.length
+);
+const AVG_QUESTIONS_PER_PASSAGE = computed(
+    () => passages.value.reduce((sum, p) => sum + p.questions.length, 0) / passages.value.length
+);
 const SECONDS_PER_QUESTION_ESTIMATE = 10;
 const PRACTICE_MINUTES_ESTIMATE = 2;
 
 function estimateTrialMinutes(wpm) {
-    const readSeconds = (AVG_WORD_COUNT / wpm) * 60;
-    const quizSeconds = AVG_QUESTIONS_PER_PASSAGE * SECONDS_PER_QUESTION_ESTIMATE;
+    const readSeconds = (AVG_WORD_COUNT.value / wpm) * 60;
+    const quizSeconds = AVG_QUESTIONS_PER_PASSAGE.value * SECONDS_PER_QUESTION_ESTIMATE;
     return (readSeconds + quizSeconds) / 60;
 }
 
 // One row per main trial, in the same fixed order the run actually uses —
 // regular reading then rsvp at each speed, ascending — for the start
 // screen's trial-by-trial breakdown.
-const trialPreview = MAIN_SPEEDS.flatMap((wpm, i) => [
-    { label: `Trial ${i * 2 + 1} — Regular Reading @ ${wpm} wpm`, minutes: estimateTrialMinutes(wpm) },
-    { label: `Trial ${i * 2 + 2} — RSVP @ ${wpm} wpm`, minutes: estimateTrialMinutes(wpm) }
-]);
+const trialPreview = computed(() =>
+    MAIN_SPEEDS.flatMap((wpm, i) => [
+        { label: `Trial ${i * 2 + 1} — Regular Reading @ ${wpm} wpm`, minutes: estimateTrialMinutes(wpm) },
+        { label: `Trial ${i * 2 + 2} — RSVP @ ${wpm} wpm`, minutes: estimateTrialMinutes(wpm) }
+    ])
+);
 
 // Total primer estimate — practice plus every trial above — so this can't
 // silently drift out of sync with MAIN_SPEEDS or trialPreview the way a
 // hardcoded "~10-15 min" string could.
-const totalMinutesEstimate = PRACTICE_MINUTES_ESTIMATE + trialPreview.reduce((sum, t) => sum + t.minutes, 0);
+const totalMinutesEstimate = computed(
+    () => PRACTICE_MINUTES_ESTIMATE + trialPreview.value.reduce((sum, t) => sum + t.minutes, 0)
+);
 
 // One passage per trial (timed + rsvp, at each speed), drawn
 // without replacement so no passage repeats within a run.
@@ -191,7 +206,7 @@ let trialStartTime = null;
 let trialEndTime = null;
 
 function beginMainTrials() {
-    trials.value = buildMainTrials(passages);
+    trials.value = buildMainTrials(passages.value);
     currentTrialIndex.value = 0;
     completedTrials.value = [];
     showTrialIntro();

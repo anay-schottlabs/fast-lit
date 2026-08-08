@@ -1,8 +1,11 @@
 <script setup>
-import { FeedbackScripts } from '@/assets/textScripts.js';
+import { useTextScripts } from '@/composables/useRemoteContent.js';
+import textScriptsFallback from '@/assets/textScripts.json';
+
+const FeedbackScripts = useTextScripts('FeedbackScripts', textScriptsFallback.FeedbackScripts);
 
 function openForm() {
-    window.open(FeedbackScripts.formUrl, "_blank");
+    window.open(FeedbackScripts.value.formUrl, "_blank");
 }
 </script>
 

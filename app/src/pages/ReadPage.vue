@@ -2,13 +2,22 @@
 import { ref, watch, useTemplateRef } from 'vue';
 import { Readability } from '@mozilla/readability';
 import Reader from '../components/Reader.vue';
-import { ReadScripts } from '@/assets/textScripts.js';
+import { useTextScripts } from '@/composables/useRemoteContent.js';
+import textScriptsFallback from '@/assets/textScripts.json';
 
 const minWpm = 60;
 const maxWpm = 600;
 const wpmStep = 20;
 
 const reader = useTemplateRef("reader");
+
+// Note: since this reads ReadScripts.value once, synchronously, to seed
+// formText's initial value below (before the live fetch in useTextScripts
+// can possibly have resolved yet), it always uses the bundled fallback
+// sample text on first load — same as before this became fetchable. Not
+// worth chasing with a watcher for a demo string the user immediately
+// types over anyway.
+const ReadScripts = useTextScripts('ReadScripts', textScriptsFallback.ReadScripts);
 
 // Persists the active reading text (typed/pasted, or loaded via the Fast Lit
 // Grabber extension) across page reloads. Falls back to the sample text if
@@ -18,9 +27,9 @@ const READ_TEXT_STORAGE_KEY = "fastlit:readText";
 
 function loadSavedText() {
     try {
-        return localStorage.getItem(READ_TEXT_STORAGE_KEY) ?? ReadScripts.sampleText;
+        return localStorage.getItem(READ_TEXT_STORAGE_KEY) ?? ReadScripts.value.sampleText;
     } catch {
-        return ReadScripts.sampleText;
+        return ReadScripts.value.sampleText;
     }
 }
 

@@ -1,8 +1,11 @@
 <script setup>
-import { HomeScripts } from '@/assets/textScripts.js';
 import { ref, computed, onMounted } from 'vue';
 import { db } from '@/firebase/index.js';
 import { collection, getDocs } from "firebase/firestore";
+import { useTextScripts } from '@/composables/useRemoteContent.js';
+import textScriptsFallback from '@/assets/textScripts.json';
+
+const HomeScripts = useTextScripts('HomeScripts', textScriptsFallback.HomeScripts);
 
 const totalWordsRead = ref(0);
 // distinguishes "still loading" from "genuinely zero" so the stat cards

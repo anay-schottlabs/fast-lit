@@ -1,5 +1,8 @@
 <script setup>
-import { PrivacyScripts } from '@/assets/textScripts.js';
+import { useTextScripts } from '@/composables/useRemoteContent.js';
+import textScriptsFallback from '@/assets/textScripts.json';
+
+const PrivacyScripts = useTextScripts('PrivacyScripts', textScriptsFallback.PrivacyScripts);
 </script>
 
 <template>
