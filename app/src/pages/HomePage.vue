@@ -53,7 +53,7 @@ const statCards = computed(() => [
 <template>
     <div>
         <!-- hero -->
-        <section class="mx-auto flex max-w-[900px] flex-col items-center gap-7 px-8 pb-16 pt-[140px] text-center">
+        <section class="mx-auto flex max-w-[1040px] flex-col items-center gap-7 px-8 pb-16 pt-[140px] text-center">
             <!-- mascot: a ring around a dot, with an ambient glow and two small sparkles -->
             <div class="relative flex h-[140px] w-[140px] flex-none items-center justify-center">
                 <div class="absolute h-[196px] w-[196px] rounded-full bg-ink opacity-[.06] blur-[26px]"></div>
@@ -64,10 +64,10 @@ const statCards = computed(() => [
                 </div>
             </div>
 
-            <h1 class="max-w-[720px] font-display text-[56px] font-bold leading-[1.1] text-ink">
+            <h1 class="max-w-[820px] font-display text-[56px] font-bold leading-[1.1] text-ink">
                 {{ HomeScripts.heroTitle }}
             </h1>
-            <p class="max-w-[560px] text-[20px] leading-[1.6] text-ink-light">
+            <p class="max-w-[640px] text-[20px] leading-[1.6] text-ink-light">
                 {{ HomeScripts.heroContent }}
             </p>
 
