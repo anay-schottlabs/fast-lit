@@ -5,7 +5,13 @@
 
 <template>
     <footer class="border-t border-border px-8 py-10">
-        <div class="mx-auto flex max-w-[1180px] flex-wrap items-center justify-between gap-5">
+        <!-- Stacked and centered on mobile (logo, then links, then
+             copyright) — the standard small-site footer layout, since the
+             previous single flex-wrap row (logo/links/copyright as three
+             items justify-between) let the links block wrap on its own
+             mid-row instead of the whole footer reflowing as a unit. Reverts
+             to the original wide row on md+. -->
+        <div class="mx-auto flex max-w-[1180px] flex-col items-center gap-6 text-center md:flex-row md:flex-wrap md:items-center md:justify-between md:gap-5 md:text-left">
             <div class="flex items-center gap-2.5">
                 <div class="flex h-[22px] w-[22px] shrink-0 items-center justify-center rounded-full border-[3px] border-ink/35">
                     <div class="h-[9px] w-[9px] rounded-full bg-ink"></div>
@@ -13,7 +19,7 @@
                 <span class="font-display text-[17px] font-bold text-ink">Orbit</span>
             </div>
 
-            <div class="flex flex-wrap gap-7">
+            <div class="flex flex-wrap justify-center gap-x-6 gap-y-2 md:justify-start md:gap-7">
                 <router-link to="/" class="text-sm font-semibold text-ink-light hover:text-ink">Home</router-link>
                 <router-link to="/read" class="text-sm font-semibold text-ink-light hover:text-ink">Read</router-link>
                 <router-link to="/extension" class="text-sm font-semibold text-ink-light hover:text-ink">Extension</router-link>

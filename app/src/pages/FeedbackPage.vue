@@ -11,7 +11,7 @@ function openForm() {
 
 <template>
     <div class="mx-auto max-w-2xl px-4 pb-24 pt-16">
-        <div class="rounded-3xl border border-border bg-card p-10 text-center">
+        <div class="rounded-3xl border border-border bg-card p-6 text-center sm:p-10">
             <svg
                 class="w-20 h-20 mx-auto mb-6"
                 viewBox="0 0 24 24"

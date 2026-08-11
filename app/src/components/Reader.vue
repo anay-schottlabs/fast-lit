@@ -445,11 +445,11 @@ window.addEventListener('keydown', (event) => {
         ink center word against muted ink-light before/after text, no
         fixation ticks).
     -->
-    <div class="relative my-8 rounded-3xl border border-border bg-card px-6 py-16">
+    <div class="relative my-8 rounded-3xl border border-border bg-card px-4 py-12 sm:px-6 sm:py-16">
         <template v-if="hasContent">
-            <div class="text-5xl font-bold text-center flex sm:text-6xl lg:text-7xl">
+            <div class="flex text-center text-4xl font-bold sm:text-5xl md:text-6xl lg:text-7xl">
                 <!-- Shows the part of the word before the highlighted letter, right-aligned within its flex space -->
-                <span class="flex-1 text-right text-ink-light">
+                <span class="flex-1 break-words text-right text-ink-light">
                     {{ beforeRedLetter }}
                 </span>
                 <!-- Displays the single focal letter — full-strength ink, same weight as before/after, standing out through lightness contrast rather than a separate accent color -->
@@ -457,7 +457,7 @@ window.addEventListener('keydown', (event) => {
                     {{ redLetter }}
                 </span>
                 <!-- Shows the part of the word after the highlighted letter, left-aligned within its flex space -->
-                <span class="flex-1 text-left text-ink-light">
+                <span class="flex-1 break-words text-left text-ink-light">
                     {{ afterRedLetter }}
                 </span>
             </div>

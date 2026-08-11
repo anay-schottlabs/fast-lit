@@ -8,7 +8,7 @@ const PrivacyScripts = useTextScripts('PrivacyScripts', textScriptsFallback.Priv
 <template>
     <div>
         <div class="mx-auto max-w-3xl px-4 pb-16 pt-16">
-            <div class="rounded-3xl border border-border bg-card p-10">
+            <div class="rounded-3xl border border-border bg-card p-6 sm:p-10">
                 <span class="inline-block rounded-full border border-ink/30 bg-ink/10 px-4 py-1 text-xs font-semibold uppercase tracking-widest !text-ink">
                     {{ PrivacyScripts.lastUpdated }}
                 </span>

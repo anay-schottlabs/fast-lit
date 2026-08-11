@@ -53,21 +53,21 @@ const statCards = computed(() => [
 <template>
     <div>
         <!-- hero -->
-        <section class="mx-auto flex max-w-[1040px] flex-col items-center gap-7 px-8 pb-16 pt-[140px] text-center">
+        <section class="mx-auto flex max-w-[1040px] flex-col items-center gap-7 px-5 pb-16 pt-16 text-center sm:px-8 md:pt-[140px]">
             <!-- mascot: a ring around a dot, with an ambient glow and two small sparkles -->
-            <div class="relative flex h-[140px] w-[140px] flex-none items-center justify-center">
-                <div class="absolute h-[196px] w-[196px] rounded-full bg-ink opacity-[.06] blur-[26px]"></div>
+            <div class="relative flex h-[110px] w-[110px] flex-none items-center justify-center sm:h-[140px] sm:w-[140px]">
+                <div class="absolute h-[154px] w-[154px] rounded-full bg-ink opacity-[.06] blur-[26px] sm:h-[196px] sm:w-[196px]"></div>
                 <div class="absolute right-[4px] top-[2px] h-[9px] w-[9px] rounded-full bg-ink opacity-45"></div>
                 <div class="absolute bottom-[8px] left-[-4px] h-[7px] w-[7px] rounded-full bg-ink opacity-30"></div>
-                <div class="flex h-24 w-24 items-center justify-center rounded-full border-[7px] border-ink/35">
-                    <div class="h-[46px] w-[46px] rounded-full bg-ink"></div>
+                <div class="flex h-[76px] w-[76px] items-center justify-center rounded-full border-[6px] border-ink/35 sm:h-24 sm:w-24 sm:border-[7px]">
+                    <div class="h-9 w-9 rounded-full bg-ink sm:h-[46px] sm:w-[46px]"></div>
                 </div>
             </div>
 
-            <h1 class="max-w-[820px] font-display text-[56px] font-bold leading-[1.1] text-ink">
+            <h1 class="max-w-[820px] font-display text-[34px] font-bold leading-[1.1] text-ink sm:text-[44px] md:text-[56px]">
                 {{ HomeScripts.heroTitle }}
             </h1>
-            <p class="max-w-[640px] text-[20px] leading-[1.6] text-ink-light">
+            <p class="max-w-[640px] text-base leading-[1.6] text-ink-light sm:text-[20px]">
                 {{ HomeScripts.heroContent }}
             </p>
 
@@ -84,10 +84,10 @@ const statCards = computed(() => [
         </section>
 
         <!-- stats -->
-        <section class="mx-auto max-w-[1180px] px-8 pb-24">
+        <section class="mx-auto max-w-[1180px] px-5 pb-24 sm:px-8">
             <div class="grid gap-6" style="grid-template-columns:repeat(auto-fit,minmax(220px,1fr))">
                 <div
-                    class="flex flex-col items-center gap-3.5 rounded-[20px] bg-card p-8 text-center"
+                    class="flex flex-col items-center gap-3.5 rounded-[20px] bg-card p-6 text-center sm:p-8"
                     v-for="stat in statCards"
                     :key="stat.label"
                 >
@@ -106,8 +106,8 @@ const statCards = computed(() => [
         </section>
 
         <!-- how it works -->
-        <section class="mx-auto max-w-[1180px] px-8 pb-24">
-            <h2 class="mb-12 text-center font-display text-[34px] font-bold text-ink">How It Works</h2>
+        <section class="mx-auto max-w-[1180px] px-5 pb-24 sm:px-8">
+            <h2 class="mb-12 text-center font-display text-[28px] font-bold text-ink sm:text-[34px]">How It Works</h2>
             <div class="grid gap-6" style="grid-template-columns:repeat(auto-fit,minmax(240px,1fr))">
                 <div
                     class="flex flex-col gap-3.5 rounded-[20px] bg-card p-7"
@@ -124,9 +124,9 @@ const statCards = computed(() => [
         </section>
 
         <!-- closing call to action -->
-        <section class="mx-auto max-w-[1180px] px-8 pb-24">
-            <div class="flex flex-col items-center gap-4 rounded-[28px] bg-card px-8 py-14 text-center">
-                <h2 class="font-display text-[30px] font-bold text-ink">{{ HomeScripts.ctaTitle }}</h2>
+        <section class="mx-auto max-w-[1180px] px-5 pb-24 sm:px-8">
+            <div class="flex flex-col items-center gap-4 rounded-[28px] bg-card px-6 py-10 text-center sm:px-8 sm:py-14">
+                <h2 class="font-display text-[26px] font-bold text-ink sm:text-[30px]">{{ HomeScripts.ctaTitle }}</h2>
                 <p class="text-base text-ink-light">{{ HomeScripts.ctaContent }}</p>
                 <router-link to="/read" class="btn-primary mt-2 min-w-[220px]">{{ HomeScripts.heroButton }}</router-link>
             </div>

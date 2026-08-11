@@ -497,7 +497,7 @@ async function finalizeRun() {
          a run — a soft deterrent against submitting more than once, not a
          real guarantee (see hasAlreadyCompletedLab) -->
     <div v-if="stage === Stage.ALREADY_COMPLETED" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
-        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-6 sm:p-10">
             <h2 class="mb-3 text-2xl font-bold !text-ink">You've already taken part</h2>
             <p class="!text-ink-light">
                 This browser has already submitted a run for this study. Thanks again for participating —
@@ -510,7 +510,7 @@ async function finalizeRun() {
          and where the passages come from, so nothing is a surprise before
          hitting Begin -->
     <div v-else-if="stage === Stage.START" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
-        <div class="mt-16 rounded-3xl border border-border bg-card p-10 text-left">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-6 text-left sm:p-10">
             <h2 class="mb-3 text-center text-2xl font-bold !text-ink">Reading Study</h2>
             <p class="mb-6 !text-ink-light">
                 This study has been designed to compare your reading comprehension ability between
@@ -585,7 +585,7 @@ async function finalizeRun() {
 
     <!-- practice: rsvp intro -->
     <div v-else-if="stage === Stage.PRACTICE_RSVP_INTRO" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
-        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-6 sm:p-10">
             <h2 class="mb-3 text-2xl font-bold !text-ink">Now let's try RSVP</h2>
             <p class="mb-8 !text-ink-light">
                 Words will appear one at a time, right in the middle of the screen, at a fixed pace you don't control.
@@ -615,7 +615,7 @@ async function finalizeRun() {
 
     <!-- practice confirmation screen -->
     <div v-else-if="stage === Stage.PRACTICE_DONE" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
-        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-6 sm:p-10">
             <h2 class="mb-3 text-2xl font-bold !text-ink">Ready to begin the real trials?</h2>
             <p class="mb-8 !text-ink-light">
                 Take a moment if you need it. The real trials work the same way, just at different speeds.
@@ -627,7 +627,7 @@ async function finalizeRun() {
     <!-- what's-next screen before every main trial: names the trial number,
          the mode, and its time limit or wpm, so nothing starts unannounced -->
     <div v-else-if="stage === Stage.TRIAL_INTRO" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
-        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-6 sm:p-10">
             <p class="mb-2 text-xs font-semibold uppercase tracking-widest !text-ink-light">
                 Trial {{ currentTrialIndex + 1 }} of {{ trials.length }}
             </p>
@@ -735,7 +735,7 @@ async function finalizeRun() {
     <!-- saving the run — a distinct screen (not folded into DONE) so a
          failed write shows a retry instead of silently losing the data -->
     <div v-else-if="stage === Stage.SAVING" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
-        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-6 sm:p-10">
             <p v-if="isSaving" class="!text-ink-light">Saving your results…</p>
             <template v-else>
                 <p class="mb-4 text-error">{{ saveError }}</p>
@@ -746,7 +746,7 @@ async function finalizeRun() {
 
     <!-- end screen — a quick, participant-facing look at their own results -->
     <div v-else-if="stage === Stage.DONE" class="mx-auto max-w-xl px-5 pt-16 pb-5 text-center">
-        <div class="mt-16 rounded-3xl border border-border bg-card p-10">
+        <div class="mt-16 rounded-3xl border border-border bg-card p-6 sm:p-10">
             <h2 class="mb-3 text-3xl font-bold !text-ink">Thanks, you're done!</h2>
             <p class="mb-6 !text-ink-light">Here's a quick look at how you did.</p>
 
