@@ -1,6 +1,6 @@
 const grabButton = document.querySelector("#grabButton");
 const grabButtonIcon = grabButton.querySelector(".btn-icon");
-const grabButtonSpinner = grabButton.querySelector(".spinner-border");
+const grabButtonSpinner = grabButton.querySelector(".btn-spinner");
 const grabButtonLabel = grabButton.querySelector(".btn-label");
 
 grabButton.addEventListener("click", grab);
@@ -34,7 +34,7 @@ async function grab() {
             html: grabbedHtml
         });
     } catch (error) {
-        console.error("Fast Lit: failed to grab the page.", error);
+        console.error("Orbit Grabber: failed to grab the page.", error);
     } finally {
         setLoading(false);
     }
@@ -42,7 +42,7 @@ async function grab() {
 
 function setLoading(isLoading) {
     grabButton.disabled = isLoading;
-    grabButtonIcon.classList.toggle("d-none", isLoading);
-    grabButtonSpinner.classList.toggle("d-none", !isLoading);
+    grabButtonIcon.classList.toggle("hidden", isLoading);
+    grabButtonSpinner.classList.toggle("hidden", !isLoading);
     grabButtonLabel.textContent = isLoading ? "Grabbing…" : "Grab Article";
 }

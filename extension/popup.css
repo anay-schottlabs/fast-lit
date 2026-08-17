@@ -1,41 +1,94 @@
+/* Orbit's palette — matches app/src/style.css's light theme tokens exactly,
+   so the popup reads as part of the same product instead of a bolted-on
+   tool. Monochrome: no accent color anywhere. */
 :root {
-    --color-deepblue: #120A3D;
-    --color-red: #E43247;
+    --color-bg: #F2EFE9;
+    --color-card: #FFFFFF;
+    --color-ink: #2B2926;
+    --color-ink-light: #8A8580;
+    --color-border: #D8D3C6;
+    --color-invert: #F7F5F0;
+
+    --font-display: "Baloo 2", sans-serif;
+    --font-sans: "Quicksand", sans-serif;
+}
+
+* {
+    box-sizing: border-box;
 }
 
 body {
-    width: 380px;
+    width: 320px;
     margin: 0;
-    background-color: var(--color-deepblue) !important;
+    background-color: var(--color-bg);
+    color: var(--color-ink);
+    font-family: var(--font-sans);
 }
 
-div, p, span, textarea, button {
-    color: white !important;
+p {
+    margin: 0;
 }
 
-.header-divider {
-    border-bottom: 1px solid rgba(255, 255, 255, 0.12);
+.popup-container {
+    padding: 1.25rem;
 }
 
-.text-red-custom {
-    color: var(--color-red) !important;
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding-bottom: 0.85rem;
+    margin-bottom: 0.85rem;
+    border-bottom: 1px solid var(--color-border);
 }
 
-.text-muted-custom {
-    color: rgba(255, 255, 255, 0.55) !important;
+.header-title {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+}
+
+.header-subtitle {
+    font-family: var(--font-display);
+    font-size: 1.3rem;
+    font-weight: 700;
+    letter-spacing: 0.02em;
+    color: var(--color-ink-light);
 }
 
 .steps-card {
-    background-color: rgba(255, 255, 255, 0.06);
-    border: 1px solid rgba(255, 255, 255, 0.08);
+    background-color: var(--color-card);
+    border: 1px solid var(--color-border);
     border-radius: 0.75rem;
     padding: 0.85rem 1rem;
+    margin-bottom: 1rem;
+}
+
+.step {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+}
+
+.step + .step {
+    margin-top: 0.75rem;
+}
+
+.step p {
+    font-size: 0.85rem;
+    line-height: 1.4;
+}
+
+.step .fw-semibold {
+    font-weight: 600;
 }
 
 .step-number {
-    width: 22px;
-    height: 22px;
-    min-width: 22px;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -43,50 +96,69 @@ div, p, span, textarea, button {
     font-size: 0.7rem;
     font-weight: 700;
     border-radius: 50%;
-    background-color: var(--color-red);
+    background-color: var(--color-bg);
+    border: 1px solid var(--color-border);
 }
 
-.btn-red-custom {
-    background-color: var(--color-red) !important;
-    color: white !important;
-    border-color: var(--color-red) !important;
-    transition: transform 0.15s ease, box-shadow 0.15s ease, opacity 0.15s ease;
+.btn-primary {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    padding: 0.6rem 1rem;
+    font-family: var(--font-sans);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: var(--color-invert);
+    background-color: var(--color-ink);
+    border: none;
+    border-radius: 1rem;
+    cursor: pointer;
+    transition: opacity 0.15s ease, transform 0.15s ease;
 }
 
-.btn-white-custom {
-    background-color: white !important;
-    color: var(--color-red) !important;
+.btn-primary:hover {
+    opacity: 0.85;
 }
 
-.btn-red-custom:hover, .btn-white-custom:hover {
-    opacity: 90%;
-    transform: translateY(-1px);
+.btn-primary:active {
+    transform: translateY(1px);
 }
 
-.btn-red-custom:hover {
-    box-shadow: 0 8px 18px rgba(228, 50, 71, 0.35);
-}
-
-.btn-red-custom:active {
-    transform: translateY(0);
-    box-shadow: none;
-}
-
-.btn-red-custom:disabled {
-    opacity: 70% !important;
-    transform: none;
-    box-shadow: none;
+.btn-primary:disabled {
+    opacity: 0.6;
     cursor: wait;
 }
 
-textarea {
-    resize: none !important;
-    background-color: var(--color-deepblue) !important;
-    border-radius: 0.6rem !important;
+.btn-icon,
+.btn-spinner {
+    display: inline-flex;
 }
 
-/* Make the chevron (the ::after arrow) white in all states */
-.accordion-button::after {
-    /* Bootstrap uses an inline SVG as background-image for the chevron */
-    filter: brightness(0) invert(1) !important;
+.btn-spinner {
+    width: 14px;
+    height: 14px;
+    border: 2px solid var(--color-invert);
+    border-right-color: transparent;
+    border-radius: 50%;
+    animation: spin 0.7s linear infinite;
+}
+
+.btn-icon.hidden,
+.btn-spinner.hidden {
+    display: none;
+}
+
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+.footer {
+    text-align: center;
+    font-size: 0.75rem;
+    color: var(--color-ink-light);
+    margin-top: 0.85rem;
 }
