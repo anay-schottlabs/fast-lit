@@ -64,4 +64,5 @@ __screenshots__/
 analytics/serviceAccountKey.json
 analytics/raw_trials.json
 analytics/summary.md
+analytics/summary.json
 analytics/analytics_output/

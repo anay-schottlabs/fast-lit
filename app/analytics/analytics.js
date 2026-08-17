@@ -36,6 +36,7 @@ const OUTPUT_DIR = path.join(__dirname, 'analytics_output');
 const SERVICE_ACCOUNT_PATH = path.join(__dirname, 'serviceAccountKey.json');
 const RAW_OUTPUT_PATH = path.join(__dirname, 'raw_trials.json');
 const SUMMARY_OUTPUT_PATH = path.join(__dirname, 'summary.md');
+const SUMMARY_JSON_PATH = path.join(__dirname, 'summary.json');
 
 const LOW_SAMPLE_THRESHOLD = 5;
 const EXPECTED_WPMS = [250, 450];
@@ -433,6 +434,21 @@ async function main() {
     const { md, table } = buildSummary({ results, totalSessions: runs.length, totalTrials, unrecognized });
     fs.writeFileSync(SUMMARY_OUTPUT_PATH, md);
 
+    const summaryJson = {
+        generatedAt: new Date().toISOString(),
+        lowSampleThreshold: LOW_SAMPLE_THRESHOLD,
+        groups: results.map((r) => ({
+            condition: r.condition,
+            wpm: r.wpm,
+            n: r.n,
+            meanAccuracy: Number(r.meanAccuracy.toFixed(4)),
+            stddev: Number(r.stddev.toFixed(4)),
+            se: Number(r.se.toFixed(4))
+        })),
+        totals: { totalSessions: runs.length, totalTrials }
+    };
+    fs.writeFileSync(SUMMARY_JSON_PATH, JSON.stringify(summaryJson, null, 2));
+
     console.log('\n' + table + '\n');
     console.log(`Total sessions completed: ${runs.length}`);
     console.log(`Total trials collected: ${totalTrials}`);
@@ -444,6 +460,7 @@ async function main() {
     }
 
     console.log(`\nFull summary written to ${SUMMARY_OUTPUT_PATH}`);
+    console.log(`Machine-readable summary written to ${SUMMARY_JSON_PATH}`);
 }
 
 main()
