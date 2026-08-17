@@ -57,3 +57,11 @@ __screenshots__/
 
 # Vite
 *.timestamp-*-*.mjs
+
+# Standalone lab-data analytics script (analytics/analytics.js) — its
+# service account key, pulled data, and generated output aren't app code
+# and shouldn't be committed.
+analytics/serviceAccountKey.json
+analytics/raw_trials.json
+analytics/summary.md
+analytics/analytics_output/
