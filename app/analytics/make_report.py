@@ -155,13 +155,16 @@ def make_sample_size_chart(groups, low_sample_threshold):
         for xi, n in zip(xs, ns):
             ax.text(xi, n + y_max * 0.02, str(n), ha="center", va="bottom", fontsize=12, fontweight="bold", color=INK_SECONDARY)
 
-    ax.axhline(low_sample_threshold, color="#c98500", linestyle="--", linewidth=1.5)
+    # Neutral dark ink rather than an amber/orange tone — a warm threshold
+    # color washed out against the orange "time-capped normal" bars.
+    ax.axhline(low_sample_threshold, color=INK, linestyle="--", linewidth=1.5)
     ax.text(
         len(SPEEDS) - 1 + width,
         low_sample_threshold + y_max * 0.045,
         f"low-sample threshold (n={low_sample_threshold})",
-        color="#c98500",
+        color=INK,
         fontsize=11,
+        fontweight="bold",
         ha="right",
     )
 

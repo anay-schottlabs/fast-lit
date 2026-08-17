@@ -200,7 +200,9 @@ const thresholdLinePlugin = {
         const { ctx, chartArea, scales } = chart;
         const y = scales.y.getPixelForValue(opts.value);
         ctx.save();
-        ctx.strokeStyle = '#fab219';
+        // Neutral dark ink rather than an amber/orange tone — a warm
+        // threshold color washed out against the orange condition's bars.
+        ctx.strokeStyle = '#0b0b0b';
         ctx.setLineDash([6, 4]);
         ctx.lineWidth = 2;
         ctx.beginPath();
@@ -208,7 +210,7 @@ const thresholdLinePlugin = {
         ctx.lineTo(chartArea.right, y);
         ctx.stroke();
         ctx.setLineDash([]);
-        ctx.fillStyle = '#52514e';
+        ctx.fillStyle = '#0b0b0b';
         ctx.font = "600 13px system-ui, -apple-system, 'Segoe UI', sans-serif";
         ctx.textAlign = 'left';
         ctx.fillText(opts.label ?? `threshold (${opts.value})`, chartArea.left + 8, y - 8);
